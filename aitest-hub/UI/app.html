@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工具台首页 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+<style>
+/* ===== 门户式工具台首页：TAB 分类 + 卡片直达（无侧栏页面专用交互） ===== */
+.hub-head { display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:14px; }
+.hub-head h1 { font-size:24px; font-weight:800; }
+.hub-head .sub { color:var(--text-dim); font-size:13px; margin-top:4px; }
+
+/* 模块卡 */
+.tool-card { display:flex; flex-direction:column; gap:6px; padding:12px 14px; cursor:pointer; position:relative; }
+.tool-card .tc-icon { font-size:22px; line-height:1.2; }
+.tool-card h3 { font-size:14.5px; font-weight:700; }
+.tool-card p {
+  color:var(--text-dim); font-size:12px; line-height:1.5; flex:1;
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+}
+.tool-card .tc-tags { display:flex; gap:5px; flex-wrap:wrap; }
+.tool-card .tc-foot { display:flex; gap:8px; margin-top:4px; }
+.tool-card .tc-enter { margin-left:auto; font-size:13px; font-weight:600; color:var(--primary); }
+.tool-card:hover .tc-enter { text-decoration:underline; }
+
+/* 新增徽标 */
+.tc-badge-new {
+  position:absolute; top:-8px; right:-6px; z-index:2;
+  background:var(--red); color:#fff; font-size:10.5px; font-weight:700;
+  padding:2px 8px; border-radius:999px; transform:rotate(6deg);
+  box-shadow:var(--shadow-sm);
+}
+
+/* ===== 一屏适配（1920x1080 基准）：宽屏加宽 + 4 列网格 ===== */
+.hub { overflow-x: clip; }
+@media (min-width: 1180px) {
+  .hub { max-width: 1560px; }
+  .hub .grid-tools { grid-template-columns: repeat(4, 1fr); }
+}
+@media (max-width: 1179px) {
+  .hub .grid-tools { grid-template-columns: repeat(3, 1fr); }
+}
+.hub.page { padding-top: 14px; padding-bottom: 12px; height: calc(100vh - 58px); overflow-y: auto; overflow-x: hidden; }
+.hub .stat-card { padding: 12px 16px; }
+.hub .stat-card .s-value { font-size: 22px; margin-top: 2px; }
+.hub .stat-card .s-trend { font-size: 11.5px; }
+.hub .grid-tools { gap: 14px; }
+.hub .grid-tools > * { min-width: 0; }
+
+/* TAB 分类栏 */
+.hub-tabs { display:flex; align-items:center; margin-bottom:14px; }
+.hub-tabs .tab { white-space:nowrap; }
+.hub-tabs .hint { margin-left:auto; font-size:12px; color:var(--text-dim); opacity:.75; padding-bottom:4px; white-space:nowrap; }
+@media (max-width: 900px) { .hub-tabs .hint { display:none; } }
+</style>
+</head>
+<body data-require-login>
+
+<!-- ====== 门户首页：无侧栏；TAB 分类功能模块，点击卡片进入对应工作台 ====== -->
+<div class="container page hub">
+  <div class="hub-head">
+    <div>
+      <h1>☀️ Solar Grove · AITest 工具台</h1>
+      <div class="sub">按 TAB 分类浏览功能模块，点击任意卡片进入对应工作台。</div>
+    </div>
+    <div class="flex">
+      <a class="btn btn-ghost" href="index.html">🏠 返回官网首页</a>
+      <a class="btn btn-primary" href="tool-test-cases.html">✨ 打开 AI 测试用例</a>
+    </div>
+  </div>
+
+  <!-- 统计条 -->
+  <div class="grid grid-4 mb-16">
+    <div class="card stat-card">
+      <div class="s-label">可用工具入口</div>
+      <div class="s-value">27</div>
+      <div class="s-trend text-faint">覆盖需求到缺陷全链路与平台治理</div>
+    </div>
+    <div class="card stat-card">
+      <div class="s-label">本月生成用例</div>
+      <div class="s-value" style="color:var(--green)">248</div>
+      <div class="s-trend text-green">↑ 18% 环比上月</div>
+    </div>
+    <div class="card stat-card">
+      <div class="s-label">执行成功率</div>
+      <div class="s-value" style="color:var(--blue)">94.6%</div>
+      <div class="s-trend text-faint">UI / App / 接口近 30 天</div>
+    </div>
+    <div class="card stat-card">
+      <div class="s-label">AI 助手调用</div>
+      <div class="s-value" style="color:var(--orange)">1,204</div>
+      <div class="s-trend text-faint">解析 / 生成 / 修复建议合计</div>
+    </div>
+  </div>
+
+  <!-- TAB 分类 -->
+  <div class="tabs hub-tabs" data-scope="hubPanes">
+    <button class="tab active" data-tab="manage">📐 测试管理<span class="badge-count">6</span></button>
+    <button class="tab" data-tab="exec">⚡ 测试执行<span class="badge-count">7</span></button>
+    <button class="tab" data-tab="ai">🤖 AI 中心<span class="badge-count">8</span></button>
+    <button class="tab" data-tab="plat">🧰 平台与数据<span class="badge-count">6</span></button>
+    <span class="hint">点击卡片进入工作台 →</span>
+  </div>
+
+  <div id="hubPanes"></div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+/* ===== 门户卡片：TAB 数据驱动渲染 + 整卡点击直达工作台 ===== */
+var G = [
+  { p: "manage", v: [
+    { i: "📋", t: "需求管理", d: "AI 需求解析（PDF / Word / TXT）条目化，一键派生用例 / 压测 / 安全资产，需求到资产全链路追溯。", h: "tool-requirement-management", g: [["AI 解析", "red"], ["追溯矩阵", "green"]] },
+    { i: "✨", t: "AI 用例工作台", d: "粘贴需求由 AI 生成结构化测试用例，会话精修与流式输出，支持导出 Excel / Markdown。", h: "tool-test-cases", g: [["AI 生成", "red"], ["会话精修"]] },
+    { i: "🗂️", t: "用例管理", d: "模块树 + 用例库双视图，评审流程、批次执行与结果统计，与 AI 生成、缺陷管理双向关联。", h: "tool-case-management", g: [["模块树"], ["评审", "orange"]] },
+    { i: "🐞", t: "缺陷管理", d: "缺陷全生命周期流转、状态看板、重复缺陷 AI 检测，关联用例与执行记录。", h: "tool-defect-management", g: [["状态流转"], ["AI 查重", "red"]] },
+    { i: "📚", t: "提示词库", d: "集中存放可复用提示词，按场景分类、搜索与一键复制到 Cursor / Agent。", h: "prompts", g: [["分类", "orange"], ["一键复制"]] },
+    { i: "🧠", t: "知识库", d: "测试模式 + Bug 经验库 + 知识条目，AI 智能检索（RAG）溯源引用，供问答与用例生成调用。", h: "tool-knowledge-base", n: 1, g: [["RAG", "red"], ["经验沉淀"]] }
+  ] },
+  { p: "exec", v: [
+    { i: "🎛️", t: "压测编排工作台", d: "JMeter 压测场景编排与 HTTP 批量造数，拖拽组件搭链路，Tab 切换一页完成。", h: "tool-api-scenario-studio", g: [["编排画布", "blue"], ["JMX 导出"]] },
+    { i: "🚀", t: "性能测试", d: "压测场景管理与基线对比，AI 容量评估与瓶颈定位，未达标自动标记 AI 待复检。", h: "tool-performance-testing", g: [["基线对比", "blue"], ["AI 分析", "red"]] },
+    { i: "🔗", t: "接口测试", d: "接口集合、环境变量、断言与用例编排执行，AI 辅助生成断言，串行 / 并行批量跑。", h: "tool-api-testing", g: [["集合管理", "blue"], ["断言"]] },
+    { i: "🛡️", t: "安全测试", d: "OWASP Top 10 安全基线与漏洞管理，AI 修复建议与复验用例，一键转缺陷。", h: "tool-security-testing", g: [["基线", "purple"], ["AI 修复", "red"]] },
+    { i: "🎯", t: "渗透测试", d: "授权渗透计划、攻击面管理、PTES 五阶段用例执行，AI 攻击向量与利用链分析。", h: "tool-pentest-testing", g: [["PTES", "purple"], ["AI 向量", "red"]] },
+    { i: "🖱️", t: "Web UI 自动化", d: "填写步骤调用 OmniFlow 执行 Web 场景，查看截图、录像与运行回放。", h: "tool-ui-automation", g: [["步骤编排", "blue"], ["录像回放"]] },
+    { i: "📱", t: "App 自动化", d: "Android · ADB/Appium 设备池与应用包管理，支持定时任务与执行流水线。", h: "tool-app-automation", g: [["设备池", "purple"], ["流水线"]] }
+  ] },
+  { p: "ai", v: [
+    { i: "💬", t: "AI 问答助手", d: "测试咨询与方法答疑，自动匹配技能库执行任务，RAG 知识引用溯源，多模型切换。", h: "tool-ai-assistant", n: 1, g: [["RAG", "red"], ["技能匹配"]] },
+    { i: "🧩", t: "技能库", d: "沉淀提示词 + 步骤 + 工具的可复用技能包，AI 助手自动匹配调用，支持版本与调用统计。", h: "tool-skill-library", n: 1, g: [["AI 调用", "red"], ["版本管理"]] },
+    { i: "🛠️", t: "Skills 技能中心", d: "Agent 原子技能管理：测试用例 / 分析 / 自动化三类，提示词模板 + MCP 工具绑定。", h: "tool-skills-center", n: 1, g: [["Agent", "red"], ["MCP 绑定"]] },
+    { i: "🤖", t: "Agent 中心", d: "七类测试 Agent 编队：绑定模型、技能集与工作流，一键执行任务并留痕日志。", h: "tool-agent-center", n: 1, g: [["AI 编队", "red"], ["任务执行"]] },
+    { i: "🔀", t: "工作流编排", d: "可视化画布拖拽节点搭链路，技能、MCP、判断与循环节点编排，试运行留痕。", h: "tool-workflow-editor", n: 1, g: [["画布", "purple"], ["节点编排"]] },
+    { i: "📊", t: "AI 报告中心", d: "AI 汇总执行与缺陷数据自动生成测试报告，通过率与风险结论，支持多类型导出。", h: "tool-ai-reports", n: 1, g: [["AI 生成", "red"], ["PDF 导出"]] },
+    { i: "🔍", t: "根因分析", d: "AI 定位失败用例与缺陷根因：置信度评估、影响分级、关联缺陷溯源与排查建议。", h: "tool-root-cause", n: 1, g: [["置信度", "purple"], ["AI 溯源", "red"]] },
+    { i: "🪙", t: "Tokens 消费记录", d: "全站 AI 调用计量：输入 / 输出 / 命中 Token 明细与费用核算，按模型单价计费，支持对账导出。", h: "tool-token-usage", n: 1, g: [["计量", "green"], ["费用核算", "red"]] },
+    { i: "🧽", t: "去 AI 味中心", d: "可启停的润色策略对全站 AI 生成生效，试运行对比润色前后效果。", h: "tool-deai-flavor", n: 1, g: [["策略", "green"], ["AI 对比", "red"]] }
+  ] },
+  { p: "plat", v: [
+    { i: "⚙️", t: "配置中心", d: "统一管理多提供商 AI 模型按角色配置、UI 自动化环境、Dify 助手与通知渠道。", h: "tool-config-center", n: 1, g: [["多模型", "blue"], ["连接测试"]] },
+    { i: "⏰", t: "定时任务", d: "统一调度接口、UI、App 与安全扫描任务，支持 Cron、固定间隔与单次执行，结果通知推送。", h: "tool-scheduler", n: 1, g: [["Cron", "purple"], ["通知推送"]] },
+    { i: "🔌", t: "MCP 服务中心", d: "服务市场与自有服务注册，支持 HTTP / WebSocket / Stdio 协议，含连通性测试与调用统计。", h: "tool-mcp-center", n: 1, g: [["市场", "blue"], ["连通测试"]] },
+    { i: "📜", t: "日志中心", d: "全站操作审计，按类型、模块、操作人与时间段筛选，请求留痕详情并支持导出。", h: "tool-log-center", n: 1, g: [["审计", "blue"], ["导出"]] },
+    { i: "🏭", t: "数据工厂", d: "50+ 工具：测试数据生成、随机、加密、JSON、Crontab，接口与 UI 测试直接引用。", h: "tool-data-factory", n: 1, g: [["测试数据", "green"], ["AI 造景", "red"]] },
+    { i: "🧰", t: "媒体与数据工具箱", d: "图片音频处理，以及 JSON、编解码、文本 Diff、时间戳等开发助手，本地即开即用。", h: "tool-media-data-hub", g: [["JSON", "green"], ["本地处理"]] }
+  ] }
+];
+function mkCard(x) {
+  return '<div class="card card-hover tool-card">' +
+    (x.n ? '<span class="tc-badge-new">NEW</span>' : "") +
+    '<div class="tc-icon">' + x.i + "</div><h3>" + x.t + "</h3><p>" + x.d + "</p>" +
+    '<div class="tc-tags">' + x.g.map(function (t) { return '<span class="tag' + (t[1] ? " tag-" + t[1] : "") + '">' + t[0] + "</span>"; }).join("") + "</div>" +
+    '<div class="tc-foot"><a class="tc-enter" href="' + x.h + '.html">' + "打开 →</a></div></div>";
+}
+var wrap = document.getElementById("hubPanes");
+(function () {
+  var want = window.qs ? qs("tab") : null;
+  if (!want) return;
+  var apply = function () {
+    var tb = document.querySelector('.hub-tabs .tab[data-tab="' + want + '"]');
+    if (tb) tb.click();
+  };
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", apply);
+  else apply();
+})();
+G.forEach(function (gr, gi) {
+  var d = document.createElement("div");
+  d.className = "tab-pane" + (gi === 0 ? " active" : "");
+  d.setAttribute("data-pane", gr.p);
+  d.innerHTML = '<div class="grid grid-tools">' + gr.v.map(mkCard).join("") + "</div>";
+  wrap.appendChild(d);
+});
+/* 整卡点击 = 打开对应工作台 */
+wrap.addEventListener("click", function (e) {
+  if (e.target.closest("a")) return;
+  var c = e.target.closest(".tool-card");
+  if (c) { var a = c.querySelector(".tc-enter"); if (a) location.href = a.href; }
+});
+</script>
+</body>
+</html>

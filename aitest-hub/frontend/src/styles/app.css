@@ -1,0 +1,29 @@
+/* SPA-only helpers（设计系统见 index.css 各分层） */
+.pg-size {
+  font-size: 12.5px;
+  color: var(--text-dim, #7b8794);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  flex: none;
+}
+.pg-size-sel {
+  border: 1px solid var(--border, #e3e8ef);
+  border-radius: 6px;
+  padding: 4px 6px;
+  background: #fff;
+  font-size: 12.5px;
+  color: inherit;
+  cursor: pointer;
+}
+.cap-clip { overflow: hidden; }
+.cap-fade {
+  position: relative;
+}
+.cap-fade::after {
+  content: "";
+  position: absolute; left: 0; right: 0; bottom: 0; height: 34px;
+  background: linear-gradient(180deg, transparent, var(--card, #fff));
+  pointer-events: none;
+}

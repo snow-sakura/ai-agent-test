@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工作流编排 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / 工作流编排</div>
+    <div class="page-head">
+      <div>
+        <h1>🔀 工作流编排</h1>
+        <div class="sub">可视化流程画布：拖拽节点搭链路、配置出边顺序，执行时按边依次调度技能与工具，全程留痕</div>
+      </div>
+      <div class="flex">
+        <a class="btn btn-ghost" href="tool-skills-center.html">🛠️ Skills 技能中心</a>
+        <a class="btn btn-ghost" href="tool-agent-center.html">🤖 Agent 中心</a>
+        <button class="btn btn-primary" data-open-modal="modal-wf">＋ 新建流程</button>
+      </div>
+    </div>
+
+    <div class="banner banner-info">ℹ️ 对应平台 WorkflowEditor 模块：节点类型来自<a href="tool-skills-center.html">技能中心</a>与<a href="tool-mcp-center.html">MCP 服务</a>；出边决定执行顺序（一个节点可有多条出边按序执行），流程发布后可被 <a href="tool-agent-center.html">Agent</a> 与<a href="tool-scheduler.html">定时任务</a>调用。</div>
+
+    <div class="tabs" data-scope="wf">
+      <button class="tab active" data-tab="list">📋 流程列表 <span class="badge-count" id="wf-cnt">0</span></button>
+      <button class="tab" data-tab="canvas">🎨 可视化画布</button>
+    </div>
+
+    <div id="wf">
+      <!-- ============ 流程列表 ============ -->
+      <div class="tab-pane active" data-pane="list">
+        <div class="filter-bar">
+          <input class="input search" id="wf-kw" placeholder="🔍 搜索流程名称 / 描述">
+          <select class="select" id="wf-status"><option value="">全部状态</option><option>草稿</option><option>已发布</option></select>
+          <button class="btn btn-ghost btn-sm" id="wf-reset">重置</button>
+        </div>
+        <div id="wf-table"></div>
+      </div>
+
+      <!-- ============ 可视化画布 ============ -->
+      <div class="tab-pane" data-pane="canvas">
+        <div class="grid" style="grid-template-columns: 230px 1fr; gap:14px">
+          <!-- 左：节点类型 + 出边配置 -->
+          <div>
+            <div class="card" style="padding:14px">
+              <div class="card-title" style="font-size:13.5px">➕ 添加节点（点击画布追加）</div>
+              <div style="display:flex; flex-direction:column; gap:6px" id="nt-list">
+                <button class="btn btn-sm btn-ghost" data-nt="start" style="text-align:left; justify-content:flex-start">🚦 开始节点</button>
+                <button class="btn btn-sm btn-ghost" data-nt="skill" style="text-align:left; justify-content:flex-start">🛠️ 技能节点</button>
+                <button class="btn btn-sm btn-ghost" data-nt="mcp" style="text-align:left; justify-content:flex-start">🔌 MCP 工具节点</button>
+                <button class="btn btn-sm btn-ghost" data-nt="judge" style="text-align:left; justify-content:flex-start">⚖️ 条件判断节点</button>
+                <button class="btn btn-sm btn-ghost" data-nt="loop" style="text-align:left; justify-content:flex-start">🔁 循环节点</button>
+                <button class="btn btn-sm btn-ghost" data-nt="end" style="text-align:left; justify-content:flex-start">🏁 结束节点</button>
+              </div>
+            </div>
+            <div class="card mt-16" style="padding:14px">
+              <div class="card-title" style="font-size:13.5px">🔗 出边顺序配置</div>
+              <div class="text-faint" style="font-size:11.5px; margin-bottom:8px">选中节点后为其配置后续节点（按序执行）</div>
+              <div id="edge-cfg" style="display:flex; flex-direction:column; gap:8px">
+                <div class="text-faint" style="font-size:12px">先选中画布中的节点</div>
+              </div>
+            </div>
+          </div>
+          <!-- 右：画布 -->
+          <div class="card" style="padding:14px">
+            <div class="flex-between mb-8">
+              <div class="card-title" style="margin:0; font-size:13.5px">🎨 画布 · <span id="cv-wf-name">退款回归全链路</span> <span class="tag" id="cv-wf-ver">v2.1</span></div>
+              <div class="flex">
+                <button class="btn btn-sm btn-ghost" id="cv-clear">清空</button>
+                <button class="btn btn-sm btn-success" id="cv-run">▶ 试运行</button>
+                <button class="btn btn-sm btn-primary" id="cv-save">💾 保存流程</button>
+              </div>
+            </div>
+            <div id="canvas" style="min-height:380px; border:1.5px dashed var(--border); border-radius:10px; padding:14px; display:flex; flex-wrap:wrap; gap:10px; align-content:flex-start; background:repeating-linear-gradient(45deg, transparent, transparent 12px, rgba(0,0,0,0.015) 12px, rgba(0,0,0,0.015) 24px)"></div>
+            <div class="text-faint mt-8" style="font-size:11.5px">💡 点击节点选中（高亮），再次点击配置名称 / JSON；选中后可在左侧配置出边</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 新建流程弹窗 -->
+<div class="modal-mask" id="modal-wf">
+  <div class="modal">
+    <div class="modal-head"><h3 id="wf-modal-title">＋ 新建流程</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>流程名称 <span class="text-red">*</span></label><input class="input" id="ff-name" placeholder="如：退款回归全链路"></div>
+      <div class="field"><label>描述</label><input class="input" id="ff-desc" placeholder="流程用途说明"></div>
+      <div class="hint">创建后进入画布添加节点与出边</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="ff-save">💾 创建并进入画布</button>
+    </div>
+  </div>
+</div>
+
+<!-- 节点配置弹窗 -->
+<div class="modal-mask" id="modal-node">
+  <div class="modal">
+    <div class="modal-head"><h3 id="nd-title">节点配置</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>节点名称</label><input class="input" id="nd-name" placeholder="如：执行登录用例"></div>
+      <div class="field"><label>节点类型</label><input class="input mono" id="nd-type" readonly></div>
+      <div class="field"><label>配置 (JSON)</label><textarea class="textarea mono" id="nd-json" rows="5" placeholder='{"skill": "AG-08", "params": {}}'></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-danger" id="nd-del">删除节点</button>
+      <button class="btn btn-primary" id="nd-save">保存配置</button>
+    </div>
+  </div>
+</div>
+
+<!-- 执行结果弹窗 -->
+<div class="modal-mask" id="modal-run">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3>执行结果</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div id="run-summary" class="mb-16"></div>
+      <div class="table-wrap" style="border:none"><table class="table"><thead><tr><th>节点名称</th><th>类型</th><th>状态</th><th>耗时</th></tr></thead><tbody id="run-rows"></tbody></table></div>
+    </div>
+    <div class="modal-foot">
+      <a class="btn btn-ghost" href="tool-log-center.html">📜 查看日志中心</a>
+      <button class="btn btn-primary" data-close-modal>关闭</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  var NT = {
+    start: { label: "开始", icon: "🚦", cls: "tag-green" },
+    skill: { label: "技能", icon: "🛠️", cls: "tag-blue" },
+    mcp: { label: "MCP 工具", icon: "🔌", cls: "tag-purple" },
+    judge: { label: "条件判断", icon: "⚖️", cls: "tag-orange" },
+    loop: { label: "循环", icon: "🔁", cls: "tag" },
+    end: { label: "结束", icon: "🏁", cls: "tag-red" }
+  };
+  var workflows = [
+    { id: "WF-08", name: "退款回归全链路", desc: "解析需求 → 生成用例 → 执行接口回归 → 结果通知", status: "已发布", ver: "v2.1", created: "2026-09-19", nodes: 6, runs: 23 },
+    { id: "WF-07", name: "夜间安全扫描流水", desc: "安全基线扫描 → 高危过滤 → 企微告警", status: "已发布", ver: "v1.3", created: "2026-09-12", nodes: 4, runs: 9 },
+    { id: "WF-06", name: "需求变更同步", desc: "需求解析 → 受影响用例标记 → 通知负责人", status: "草稿", ver: "v0.5", created: "2026-09-08", nodes: 3, runs: 2 },
+    { id: "WF-05", name: "缺陷自动归因", desc: "失败日志采集 → 技能归因分析 → 建议缺陷草稿", status: "草稿", ver: "v0.3", created: "2026-09-02", nodes: 3, runs: 5 }
+  ];
+  // 画布状态（当前编辑 WF-08）
+  var canvasNodes = [
+    { key: "n1", type: "start", name: "开始", cfg: {} },
+    { key: "n2", type: "mcp", name: "解析需求文档", cfg: { mcp: "需求文档解析" } },
+    { key: "n3", type: "skill", name: "生成回归用例", cfg: { skill: "AG-08" } },
+    { key: "n4", type: "skill", name: "执行接口回归", cfg: { skill: "AG-02" } },
+    { key: "n5", type: "judge", name: "全部通过?", cfg: { expr: "pass_rate == 1" } },
+    { key: "n6", type: "end", name: "推送结果", cfg: { notify: "wecom" } }
+  ];
+  var canvasEdges = { n1: ["n2"], n2: ["n3"], n3: ["n4"], n4: ["n5"], n5: ["n6"] };
+  var selected = null;
+
+  /* ================= 流程列表 ================= */
+  function renderList() {
+    document.getElementById("wf-cnt").textContent = workflows.length;
+    var kw = document.getElementById("wf-kw").value.trim().toLowerCase();
+    var st = document.getElementById("wf-status").value;
+    var d = workflows.filter(function (w) {
+      return (!kw || (w.name + w.desc).toLowerCase().indexOf(kw) >= 0) && (!st || w.status === st);
+    });
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>ID</th><th>流程名称</th><th>节点数</th><th>版本</th><th>执行次数</th><th>状态</th><th>创建时间</th><th style="width:230px">操作</th></tr></thead><tbody>';
+    if (!d.length) html += '<tr><td colspan="8"><div class="empty"><div class="e-icon">🔀</div><div class="e-text">无匹配流程</div></div></td></tr>';
+    d.forEach(function (w) {
+      html += '<tr><td class="mono">' + w.id + "</td>" +
+        '<td><div class="cell-main">' + w.name + '</div><div class="cell-sub">' + w.desc + "</div></td>" +
+        '<td class="mono">' + w.nodes + "</td>" +
+        '<td><span class="tag">' + w.ver + "</span></td>" +
+        '<td class="mono">' + w.runs + "</td>" +
+        "<td>" + (w.status === "已发布" ? '<span class="tag tag-green">已发布</span>' : '<span class="tag tag-orange">草稿</span>') + "</td>" +
+        '<td class="mono" style="font-size:12px">' + w.created + "</td>" +
+        '<td><div class="row-actions" style="opacity:1">' +
+        '<button class="btn btn-sm btn-ghost" data-cv="' + w.id + '">画布</button>' +
+        '<button class="btn btn-sm btn-ghost" data-run="' + w.id + '">执行</button>' +
+        '<button class="btn btn-sm btn-ghost" data-pub="' + w.id + '">' + (w.status === "草稿" ? "发布" : "撤回") + "</button>" +
+        '<button class="btn btn-sm btn-danger" data-del="' + w.id + '">删除</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("wf-table").innerHTML = html;
+    bindList();
+  }
+  function bindList() {
+    document.querySelectorAll("[data-cv]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var w = workflows.find(function (x) { return x.id === b.dataset.cv; });
+        document.querySelector('.tab[data-tab="canvas"]').click();
+        document.getElementById("cv-wf-name").textContent = w.name;
+        document.getElementById("cv-wf-ver").textContent = w.ver;
+        toast("已载入「" + w.name + "」到画布", "info");
+      });
+    });
+    document.querySelectorAll("[data-run]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var w = workflows.find(function (x) { return x.id === b.dataset.run; });
+        toast("流程「" + w.name + "」开始执行…", "info");
+        setTimeout(function () { showRunResult(w); w.runs++; renderList(); }, 1600);
+      });
+    });
+    document.querySelectorAll("[data-pub]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var w = workflows.find(function (x) { return x.id === b.dataset.pub; });
+        var toPub = w.status === "草稿";
+        var doIt = function () {
+          w.status = toPub ? "已发布" : "草稿";
+          if (toPub) w.ver = w.ver.replace(/v(\d+)\.(\d+)/, function (m, a, c) { return "v" + a + "." + (+c + 1); });
+          renderList(); toast(toPub ? "流程已发布 " + w.ver : "已撤回为草稿", "success");
+        };
+        if (toPub) confirmAction({ title: "发布流程", message: "发布后「" + w.name + "」可被 Agent 与定时任务调用，确定发布？", onOk: doIt });
+        else doIt();
+      });
+    });
+    document.querySelectorAll("[data-del]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var w = workflows.find(function (x) { return x.id === b.dataset.del; });
+        confirmAction({ title: "删除流程", message: "确定删除「" + w.name + "」吗？引用它的定时任务将失效。", onOk: function () {
+          workflows = workflows.filter(function (x) { return x.id !== w.id; });
+          renderList(); toast("流程已删除", "success");
+        }});
+      });
+    });
+  }
+  ["wf-kw", "wf-status"].forEach(function (id, i) {
+    document.getElementById(id).addEventListener(i === 0 ? "input" : "change", debounce(renderList, i === 0 ? 200 : 0));
+  });
+  document.getElementById("wf-reset").addEventListener("click", function () {
+    document.getElementById("wf-kw").value = ""; document.getElementById("wf-status").value = "";
+    renderList(); toast("筛选已重置", "info");
+  });
+
+  /* ================= 画布 ================= */
+  function renderCanvas() {
+    var cv = document.getElementById("canvas");
+    cv.innerHTML = canvasNodes.map(function (n) {
+      var t = NT[n.type];
+      var edges = canvasEdges[n.key] || [];
+      return '<div class="cv-node' + (selected === n.key ? " sel" : "") + '" data-nk="' + n.key + '" style="border:1.5px solid var(--border); border-radius:10px; padding:10px 14px; cursor:pointer; background:#fff; min-width:130px; ' + (selected === n.key ? "outline:2px solid var(--primary); outline-offset:2px;" : "") + '">' +
+        '<div style="font-size:18px">' + t.icon + '</div>' +
+        '<div style="font-size:13px; font-weight:700; margin-top:4px">' + n.name + '</div>' +
+        '<div style="margin-top:4px"><span class="tag ' + t.cls + '" style="font-size:10.5px">' + t.label + '</span>' +
+        (edges.length ? '<span class="text-faint" style="font-size:10.5px; margin-left:4px">→ ' + edges.length + " 边</span>" : "") + "</div></div>" +
+        (edges.length ? '<div style="align-self:center; color:var(--text-faint); font-size:16px">→</div>' : "");
+    }).join("") || '<div class="text-faint" style="padding:40px; width:100%; text-align:center">画布为空，从左侧点击节点类型添加</div>';
+    cv.querySelectorAll("[data-nk]").forEach(function (el) {
+      el.addEventListener("click", function () { selectNode(el.dataset.nk); });
+    });
+    renderEdgeCfg();
+  }
+  function selectNode(key) {
+    selected = (selected === key) ? null : key;
+    renderCanvas();
+    if (!selected) return;
+    var n = canvasNodes.find(function (x) { return x.key === key; });
+    if (!n) return;
+    document.getElementById("nd-title").textContent = "节点配置：" + n.name;
+    document.getElementById("nd-name").value = n.name;
+    document.getElementById("nd-type").value = n.type + " · " + NT[n.type].label;
+    document.getElementById("nd-json").value = JSON.stringify(n.cfg, null, 2);
+    document.getElementById("nd-del").style.display = (n.type === "start") ? "none" : "";
+    openModal("modal-node");
+  }
+  function renderEdgeCfg() {
+    var box = document.getElementById("edge-cfg");
+    if (!selected) { box.innerHTML = '<div class="text-faint" style="font-size:12px">先选中画布中的节点</div>'; return; }
+    var n = canvasNodes.find(function (x) { return x.key === selected; });
+    var others = canvasNodes.filter(function (x) { return x.key !== selected && x.type !== "start"; });
+    var cur = canvasEdges[selected] || [];
+    box.innerHTML = '<div style="font-size:12.5px; font-weight:600; margin-bottom:6px">「' + n.name + "」的出边（按序）</div>" +
+      cur.map(function (k, i) {
+        var t = canvasNodes.find(function (x) { return x.key === k; });
+        return '<div class="flex-between" style="padding:6px 10px; border:1px solid var(--border); border-radius:8px; font-size:12.5px"><span>' + (i + 1) + ". " + t.name + '</span><button class="btn btn-sm btn-ghost" data-rm-edge="' + k + '">移除</button></div>';
+      }).join("") +
+      '<select class="select mt-8" id="edge-add"><option value="">＋ 添加出边…</option>' +
+      others.filter(function (o) { return cur.indexOf(o.key) < 0; }).map(function (o) { return '<option value="' + o.key + '">' + o.name + "</option>"; }).join("") + "</select>";
+    box.querySelectorAll("[data-rm-edge]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        canvasEdges[selected] = (canvasEdges[selected] || []).filter(function (k) { return k !== b.dataset.rmEdge; });
+        renderCanvas();
+      });
+    });
+    var sel = document.getElementById("edge-add");
+    if (sel) sel.addEventListener("change", function () {
+      if (!sel.value) return;
+      canvasEdges[selected] = (canvasEdges[selected] || []).concat(sel.value);
+      renderCanvas();
+    });
+  }
+  document.querySelectorAll("[data-nt]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var t = b.dataset.nt;
+      var key = "n" + (canvasNodes.length + 1) + "_" + Math.floor(Math.random() * 90 + 10);
+      canvasNodes.push({ key: key, type: t, name: NT[t].label + "节点", cfg: {} });
+      renderCanvas();
+      toast("已添加" + NT[t].label + "节点", "success");
+    });
+  });
+  document.getElementById("nd-save").addEventListener("click", function () {
+    if (!selected) return;
+    var n = canvasNodes.find(function (x) { return x.key === selected; });
+    var nm = document.getElementById("nd-name").value.trim();
+    if (!nm) return toast("请填写节点名称", "error");
+    try { n.cfg = JSON.parse(document.getElementById("nd-json").value || "{}"); }
+    catch (e) { return toast("JSON 格式错误：" + e.message.slice(0, 40), "error"); }
+    n.name = nm;
+    closeModal("modal-node");
+    renderCanvas(); toast("节点配置已保存", "success");
+  });
+  document.getElementById("nd-del").addEventListener("click", function () {
+    if (!selected) return;
+    var key = selected;
+    canvasNodes = canvasNodes.filter(function (x) { return x.key !== key; });
+    delete canvasEdges[key];
+    Object.keys(canvasEdges).forEach(function (k) {
+      canvasEdges[k] = canvasEdges[k].filter(function (t) { return t !== key; });
+    });
+    selected = null;
+    closeModal("modal-node");
+    renderCanvas(); toast("节点已删除（出边同步清理）", "success");
+  });
+  document.getElementById("cv-clear").addEventListener("click", function () {
+    confirmAction({ title: "清空画布", message: "将移除全部节点与出边（不影响已保存流程），确定吗？", onOk: function () {
+      canvasNodes = []; canvasEdges = {}; selected = null; renderCanvas(); toast("画布已清空", "success");
+    }});
+  });
+  document.getElementById("cv-save").addEventListener("click", function () {
+    var name = document.getElementById("cv-wf-name").textContent;
+    var w = workflows.find(function (x) { return x.name === name; });
+    if (w) { w.nodes = canvasNodes.length; }
+    else {
+      workflows.unshift({ id: "WF-" + (9 + workflows.length - 4), name: name, desc: "画布新建流程", status: "草稿", ver: "v0.1", created: "刚刚", nodes: canvasNodes.length, runs: 0 });
+    }
+    toast("流程已保存（" + canvasNodes.length + " 节点）", "success");
+    renderList();
+  });
+  document.getElementById("cv-run").addEventListener("click", function () {
+    if (!canvasNodes.length) return toast("画布为空，先添加节点", "warn");
+    var btn = this;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 执行中…';
+    setTimeout(function () {
+      btn.disabled = false; btn.textContent = "▶ 试运行";
+      showRunResult({ name: document.getElementById("cv-wf-name").textContent, id: "试运行" });
+    }, 1800);
+  });
+  function showRunResult(w) {
+    var rows = canvasNodes.map(function (n, i) {
+      var ok = Math.random() > 0.15;
+      return "<tr><td>" + n.name + '</td><td><span class="tag ' + NT[n.type].cls + '">' + NT[n.type].label + "</span></td>" +
+        "<td>" + (ok ? '<span class="tag tag-green">成功</span>' : '<span class="tag tag-red">失败</span>') + '</td><td class="mono">' + (0.2 + Math.random() * 3).toFixed(1) + "s</td></tr>";
+    }).join("");
+    var pass = canvasNodes.filter(function (_, i) { return rows.indexOf("失败", rows.indexOf("<td>" + canvasNodes[i].name)) === -1; }).length;
+    document.getElementById("run-summary").innerHTML =
+      '<span class="tag tag-blue">' + w.name + '</span><span class="tag">' + canvasNodes.length + " 节点</span>" +
+      '<span class="tag tag-green">通过 ' + canvasNodes.filter(function (n) { return Math.random() > 0.15; }).length + "/" + canvasNodes.length + "</span>";
+    document.getElementById("run-rows").innerHTML = rows;
+    openModal("modal-run");
+    toast("执行完成，结果已写入日志中心", "success");
+  }
+
+  /* ================= 新建流程 ================= */
+  document.getElementById("ff-save").addEventListener("click", function () {
+    var n = document.getElementById("ff-name").value.trim();
+    if (!n) return toast("请填写流程名称", "error");
+    workflows.unshift({ id: "WF-" + (9 + workflows.length - 4), name: n, desc: document.getElementById("ff-desc").value || "—", status: "草稿", ver: "v0.1", created: "刚刚", nodes: 0, runs: 0 });
+    closeModal("modal-wf");
+    document.getElementById("ff-name").value = ""; document.getElementById("ff-desc").value = "";
+    document.getElementById("cv-wf-name").textContent = n;
+    document.getElementById("cv-wf-ver").textContent = "v0.1";
+    canvasNodes = []; canvasEdges = {}; selected = null;
+    renderCanvas(); renderList();
+    document.querySelector('.tab[data-tab="canvas"]').click();
+    toast("流程已创建，请添加节点", "success");
+  });
+
+  renderList(); renderCanvas();
+})();
+</script>
+</body>
+</html>

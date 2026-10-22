@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>技能库 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / 技能库</div>
+    <div class="page-head">
+      <div>
+        <h1>🧩 技能库</h1>
+        <div class="sub">沉淀可复用的测试技能（提示词 + 步骤模板 + 工具组合），供 AI 助手与 Agent 调用，支持版本与使用统计</div>
+      </div>
+      <div class="flex">
+        <a class="btn btn-ghost" href="prompts.html">📚 提示词库</a>
+        <a class="btn btn-ghost" href="tool-ai-assistant.html">💬 AI 问答助手</a>
+        <button class="btn btn-primary" data-open-modal="modal-skill">＋ 新建技能</button>
+      </div>
+    </div>
+
+    <div class="banner banner-info">ℹ️ 技能 = 提示词模板 + 执行步骤 + 可调用工具的组合包。AI 问答助手会根据问题自动匹配技能；技能可发布版本、统计调用，并在 AI 用例 / 安全 / 性能等模块中直接引用。</div>
+
+    <div class="tabs" data-scope="sk">
+      <button class="tab active" data-tab="lib">🧩 技能列表 <span class="badge-count" id="sk-cnt">0</span></button>
+      <button class="tab" data-tab="usage">📈 调用记录</button>
+    </div>
+
+    <div id="sk">
+      <!-- ============ 技能列表 ============ -->
+      <div class="tab-pane active" data-pane="lib">
+        <div class="filter-bar">
+          <input class="input search" id="s-kw" placeholder="🔍 搜索技能名称 / 描述">
+          <select class="select" id="s-cat"><option value="">全部分类</option><option>用例设计</option><option>缺陷分析</option><option>接口测试</option><option>安全测试</option><option>性能测试</option><option>自动化</option></select>
+          <select class="select" id="s-status"><option value="">全部状态</option><option>已发布</option><option>草稿</option><option>已下架</option></select>
+        </div>
+        <div id="s-grid" class="grid grid-3"></div>
+        <div class="pagination" id="s-page"></div>
+      </div>
+
+      <!-- ============ 调用记录 ============ -->
+      <div class="tab-pane" data-pane="usage">
+        <div id="u-table"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 新建/编辑技能弹窗 -->
+<div class="modal-mask" id="modal-skill">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="sk-modal-title">＋ 新建技能</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="grid grid-2" style="gap:12px">
+        <div class="field"><label>技能名称 <span class="text-red">*</span></label><input class="input" id="fk-name" placeholder="如：退款需求→用例技能包"></div>
+        <div class="field"><label>分类</label><select class="select" id="fk-cat"><option>用例设计</option><option>缺陷分析</option><option>接口测试</option><option>安全测试</option><option>性能测试</option><option>自动化</option></select></div>
+      </div>
+      <div class="field"><label>技能描述</label><input class="input" id="fk-desc" placeholder="一句话说明技能用途"></div>
+      <div class="field"><label>系统提示词（System Prompt）</label>
+        <textarea class="textarea mono" id="fk-prompt" rows="5" placeholder="你是一名资深测试工程师，擅长…"></textarea>
+      </div>
+      <div class="field"><label>执行步骤（每行一步）</label>
+        <textarea class="textarea mono" id="fk-steps" rows="4" placeholder="1. 解析需求要点&#10;2. 调用用例生成&#10;3. 输出结构化用例"></textarea>
+      </div>
+      <div class="field"><label>可调用工具（AI 关联）</label>
+        <div class="flex" style="gap:8px; flex-wrap:wrap">
+          <label class="checkbox"><input type="checkbox" checked> 用例生成</label>
+          <label class="checkbox"><input type="checkbox"> 数据工厂</label>
+          <label class="checkbox"><input type="checkbox"> 接口测试</label>
+          <label class="checkbox"><input type="checkbox"> 安全基线</label>
+          <label class="checkbox"><input type="checkbox"> 性能分析</label>
+          <label class="checkbox"><input type="checkbox"> 缺陷查重</label>
+        </div>
+        <div class="hint">AI 助手执行该技能时可自动调用以上模块能力（Function Calling）</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="fk-ai">🤖 AI 生成技能草稿</button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="fk-save">💾 保存技能</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  var skills = [
+    { id: "SK-01", name: "退款需求→用例技能包", cat: "用例设计", status: "已发布", ver: "v1.3", uses: 86, desc: "解析退款类需求，输出功能+边界+异常用例集", tools: ["用例生成", "数据工厂"] },
+    { id: "SK-02", name: "接口断言生成技能", cat: "接口测试", status: "已发布", ver: "v2.0", uses: 142, desc: "按接口文档自动生成状态码/Schema/业务断言", tools: ["接口测试"] },
+    { id: "SK-03", name: "安全基线核查技能", cat: "安全测试", status: "已发布", ver: "v1.1", uses: 57, desc: "按 OWASP Top 10 逐项核查并输出修复建议", tools: ["安全基线", "缺陷查重"] },
+    { id: "SK-04", name: "性能瓶颈定位技能", cat: "性能测试", status: "已发布", ver: "v1.0", uses: 34, desc: "结合压测曲线与慢日志给出瓶颈假设与调优建议", tools: ["性能分析"] },
+    { id: "SK-05", name: "崩溃日志归因技能", cat: "缺陷分析", status: "草稿", ver: "v0.4", uses: 12, desc: "聚类崩溃堆栈，定位可疑模块并建议排查方向", tools: ["缺陷查重"] },
+    { id: "SK-06", name: "自动化脚本生成技能", cat: "自动化", status: "草稿", ver: "v0.2", uses: 5, desc: "按操作步骤生成 Selenium / Appium 脚本骨架", tools: ["用例生成"] }
+  ];
+  var usages = [
+    { time: "2026-09-22 09:12", skill: "接口断言生成技能", by: "AI 问答助手", scene: "接口测试 · /v1/pay", dur: "3.2s", result: "成功" },
+    { time: "2026-09-22 08:40", skill: "退款需求→用例技能包", by: "AI 用例工作台", scene: "REQ-2026-0125", dur: "8.6s", result: "成功" },
+    { time: "2026-09-21 17:22", skill: "安全基线核查技能", by: "AI 问答助手", scene: "支付模块扫描", dur: "12.4s", result: "成功" },
+    { time: "2026-09-21 15:03", skill: "性能瓶颈定位技能", by: "AI 问答助手", scene: "秒杀下单链路", dur: "15.1s", result: "成功" },
+    { time: "2026-09-20 11:48", skill: "崩溃日志归因技能", by: "AI 问答助手", scene: "APP 崩溃聚类", dur: "9.8s", result: "失败" }
+  ];
+  var PAGE = 10, page = 1, pageSize = 10;
+  var C_CLS = { "用例设计": "tag-red", "缺陷分析": "tag-orange", "接口测试": "tag-blue", "安全测试": "tag-purple", "性能测试": "tag-green", "自动化": "tag" };
+  var S_CLS = { "已发布": "tag-green", "草稿": "tag-orange", "已下架": "tag" };
+
+  /* ---------- 技能卡片 ---------- */
+  function filtered() {
+    var kw = document.getElementById("s-kw").value.trim().toLowerCase();
+    var cat = document.getElementById("s-cat").value;
+    var st = document.getElementById("s-status").value;
+    return skills.filter(function (s) {
+      return (!kw || (s.name + s.desc).toLowerCase().indexOf(kw) >= 0) && (!cat || s.cat === cat) && (!st || s.status === st);
+    });
+  }
+  function renderGrid() {
+    document.getElementById("sk-cnt").textContent = skills.length;
+    var d = filtered();
+    var pages = Math.max(1, Math.ceil(d.length / pageSize));
+    if (page > pages) page = pages;
+    var rows = d.slice((page - 1) * pageSize, page * pageSize);
+    var grid = document.getElementById("s-grid");
+    grid.innerHTML = rows.length ? rows.map(function (s, i) {
+      return '<div class="card card-hover">' +
+        '<div class="flex-between"><span class="tag ' + C_CLS[s.cat] + '">' + s.cat + '</span><span class="tag">' + s.ver + "</span></div>" +
+        '<h3 style="font-size:15px; margin:10px 0 6px">' + s.name + "</h3>" +
+        '<p class="text-dim" style="font-size:12.5px">' + s.desc + "</p>" +
+        '<div class="mt-8">' + s.tools.map(function (t) { return '<span class="tag tag-red" style="margin-right:4px">🔧 ' + t + "</span>"; }).join("") + "</div>" +
+        '<div class="flex-between mt-16"><span class="text-faint" style="font-size:12px">📊 调用 ' + s.uses + ' 次</span>' +
+        '<div class="flex"><span class="tag ' + S_CLS[s.status] + '">' + s.status + "</span>" +
+        '<button class="btn btn-sm btn-ghost" data-edit="' + s.id + '">编辑</button>' +
+        '<button class="btn btn-sm btn-primary" data-use="' + s.id + '">调用</button></div></div></div>';
+    }).join("") : '<div class="card" style="grid-column:1/-1"><div class="empty"><div class="e-icon">🧩</div><div class="e-text">无匹配技能</div></div></div>';
+    // 分页
+    var pg = document.getElementById("s-page");
+    pg.innerHTML = d.length ? (function () {
+      var h = '<span class="page-info">共 ' + d.length + " 条 · 第 " + page + "/" + pages + " 页</span>";
+      h += '<label class="pg-size">每页 <select class="pg-size-sel" id="sk-psel">' + [10, 20, 50, 100].map(function (n) { return '<option value="' + n + '"' + (n === pageSize ? " selected" : "") + ">" + n + "</option>"; }).join("") + "</select> 条</label>";
+      h += '<button class="page-btn txt" data-gp="1"' + (page <= 1 ? " disabled" : "") + '>首页</button>';
+      h += '<button class="page-btn txt" data-gp="' + (page - 1) + '"' + (page <= 1 ? " disabled" : "") + '>上一页</button>';
+      for (var p2 = 1; p2 <= pages; p2++) h += '<button class="page-btn' + (p2 === page ? " active" : "") + '" data-gp="' + p2 + '">' + p2 + "</button>";
+      h += '<button class="page-btn txt" data-gp="' + (page + 1) + '"' + (page >= pages ? " disabled" : "") + '>下一页</button>';
+      h += '<button class="page-btn txt" data-gp="' + pages + '"' + (page >= pages ? " disabled" : "") + '>末页</button>';
+      return h;
+    })() : "";
+    pg.querySelectorAll("[data-gp]").forEach(function (b) {
+      b.addEventListener("click", function () { if (b.disabled) return; var p = +b.dataset.gp; if (p >= 1 && p <= pages) { page = p; renderGrid(); } });
+    });
+    var skPsel = document.getElementById("sk-psel");
+    if (skPsel) skPsel.addEventListener("change", function () { pageSize = parseInt(skPsel.value, 10); page = 1; renderGrid(); });
+    grid.querySelectorAll("[data-edit]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var s = skills.find(function (x) { return x.id === b.dataset.edit; });
+        document.getElementById("sk-modal-title").textContent = "编辑技能 · " + s.id;
+        document.getElementById("fk-name").value = s.name;
+        document.getElementById("fk-desc").value = s.desc;
+        openModal("modal-skill");
+      });
+    });
+    grid.querySelectorAll("[data-use]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var s = skills.find(function (x) { return x.id === b.dataset.use; });
+        toast("正在调用技能「" + s.name + "」…", "info");
+        setTimeout(function () {
+          s.uses++;
+          usages.unshift({ time: "刚刚", skill: s.name, by: "手动调用", scene: s.cat, dur: (2 + Math.random() * 6).toFixed(1) + "s", result: Math.random() > 0.2 ? "成功" : "失败" });
+          renderGrid(); renderUsage();
+          toast("技能调用完成 ✅ 可在调用记录查看", "success");
+        }, 1500);
+      });
+    });
+  }
+  ["s-kw", "s-cat", "s-status"].forEach(function (id, i) {
+    document.getElementById(id).addEventListener(i === 0 ? "input" : "change", debounce(renderGrid, i === 0 ? 200 : 0));
+  });
+
+  /* ---------- 调用记录 ---------- */
+  function renderUsage() {
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>时间</th><th>技能</th><th>调用方</th><th>场景</th><th>耗时</th><th>结果</th></tr></thead><tbody>';
+    usages.forEach(function (u) {
+      html += '<tr><td class="mono" style="font-size:12px">' + u.time + "</td>" +
+        '<td><div class="cell-main">' + u.skill + "</div></td><td>" + u.by + "</td>" +
+        '<td class="cell-sub">' + u.scene + '</td><td class="mono">' + u.dur + "</td>" +
+        "<td>" + (u.result === "成功" ? '<span class="tag tag-green">成功</span>' : '<span class="tag tag-red">失败</span>') + "</td></tr>";
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("u-table").innerHTML = html;
+  }
+
+  /* ---------- 新建/保存 ---------- */
+  document.getElementById("fk-ai").addEventListener("click", function () {
+    toast("AI 正在根据技能名称生成草稿…", "info");
+    setTimeout(function () {
+      document.getElementById("fk-prompt").value = "你是一名资深测试工程师。请基于输入的需求或问题，按以下步骤输出结果：\n1. 提取关键业务规则与边界\n2. 给出结构化测试点\n3. 标注优先级与风险";
+      document.getElementById("fk-steps").value = "1. 解析输入内容\n2. 调用用例生成工具\n3. 汇总输出结构化结果";
+      toast("AI 草稿已生成，请确认后保存", "success");
+    }, 1100);
+  });
+  document.getElementById("fk-save").addEventListener("click", function () {
+    var n = document.getElementById("fk-name").value.trim();
+    if (!n) return toast("请填写技能名称", "error");
+    skills.unshift({ id: "SK-" + String(skills.length + 1).padStart(2, "0"), name: n, cat: document.getElementById("fk-cat").value, status: "草稿", ver: "v0.1", uses: 0, desc: document.getElementById("fk-desc").value || "—", tools: ["用例生成"] });
+    closeModal("modal-skill");
+    document.getElementById("fk-name").value = ""; document.getElementById("fk-desc").value = "";
+    page = 1; renderGrid(); toast("技能已保存为草稿，发布后可被 AI 助手调用", "success");
+  });
+
+  if (qs("tab")) {
+    var tb = document.querySelector('.tab[data-tab="' + qs("tab") + '"]');
+    if (tb) tb.click();
+  }
+
+  renderGrid(); renderUsage();
+})();
+</script>
+</body>
+</html>

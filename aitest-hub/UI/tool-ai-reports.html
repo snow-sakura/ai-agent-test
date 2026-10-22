@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 报告中心 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / AI 报告中心</div>
+    <div class="page-head">
+      <div>
+        <h1>📊 AI 报告中心</h1>
+        <div class="sub">AI 自动汇总执行与缺陷数据生成测试报告：通过率 / 缺陷数 / 风险结论，支持多类型与多模型</div>
+      </div>
+      <div class="flex">
+        <a class="btn btn-ghost" href="tool-root-cause.html">🔍 根因分析</a>
+        <button class="btn btn-primary" data-open-modal="modal-rp">✨ AI 生成报告</button>
+      </div>
+    </div>
+
+    <div class="banner banner-info">ℹ️ 对应平台 AIReports 模块：报告由 AI 汇总测试执行结果与缺陷数据自动生成；生成时应用的「去 AI 味」策略与模型来自<a href="tool-config-center.html">配置中心</a>，结论措辞受 <a href="tool-deai-flavor.html">去 AI 味中心</a>策略约束。</div>
+
+    <!-- 统计 -->
+    <div class="tabs">
+      <button class="tab active" data-tab="stats">📊 统计概览</button>
+      <button class="tab" data-tab="list">📄 报告列表</button>
+    </div>
+    <div class="tab-panes">
+    <div class="tab-pane active" data-pane="stats">
+      <div class="banner">数据总览与快捷入口；详细数据请切到「📄 报告列表」查看（支持筛选与分页）。</div>
+<div class="grid grid-4 mb-16">
+      <div class="card stat-card"><div class="s-label">报告总数</div><div class="s-value" id="rp-total">0</div></div>
+      <div class="card stat-card"><div class="s-label">生成中</div><div class="s-value" style="color:var(--orange)" id="rp-running">0</div></div>
+      <div class="card stat-card"><div class="s-label">平均通过率</div><div class="s-value" style="color:var(--green)">92.4%</div></div>
+      <div class="card stat-card"><div class="s-label">累计缺陷发现</div><div class="s-value" style="color:var(--red)">47</div></div>
+    </div>
+
+    </div>
+    <div class="tab-pane" data-pane="list">
+    <div class="filter-bar">
+      <input class="input search" id="rp-kw" placeholder="🔍 搜索报告名称…">
+      <select class="select" id="rp-status"><option value="">全部状态</option><option>已生成</option><option>生成中</option><option>生成失败</option></select>
+      <select class="select" id="rp-type"><option value="">全部类型</option><option>回归测试报告</option><option>冒烟测试报告</option><option>性能测试报告</option><option>安全测试报告</option><option>版本质量报告</option></select>
+      <button class="btn btn-ghost btn-sm" id="rp-reset">重置筛选</button>
+    </div>
+
+    <div id="rp-table"></div>
+    </div>
+    </div>
+  </main>
+</div>
+
+<!-- AI 生成报告弹窗 -->
+<div class="modal-mask" id="modal-rp">
+  <div class="modal">
+    <div class="modal-head"><h3>✨ AI 生成报告</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>报告名称 <span class="text-red">*</span></label><input class="input" id="rf-name" placeholder="请输入报告名称"></div>
+      <div class="field"><label>描述</label><input class="input" id="rf-desc" placeholder="请输入报告描述"></div>
+      <div class="field"><label>报告类型</label>
+        <select class="select" id="rf-type"><option>回归测试报告</option><option>冒烟测试报告</option><option>性能测试报告</option><option>安全测试报告</option><option>版本质量报告</option></select>
+      </div>
+      <div class="field"><label>数据来源</label>
+        <div class="flex" style="gap:8px; flex-wrap:wrap">
+          <label class="checkbox"><input type="checkbox" checked> 执行记录</label>
+          <label class="checkbox"><input type="checkbox" checked> 缺陷数据</label>
+          <label class="checkbox"><input type="checkbox"> 需求追溯矩阵</label>
+          <label class="checkbox"><input type="checkbox"> 性能基线</label>
+        </div>
+      </div>
+      <div class="field"><label>AI 模型</label>
+        <select class="select" id="rf-model"><option>DeepSeek-V3</option><option>通义千问-Max</option><option>硅基流动 · GLM-4</option></select>
+      </div>
+      <label class="checkbox"><input type="checkbox" id="rf-deai" checked> 应用「去 AI 味」策略（简报压缩 · 测试术语规范化）</label>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="rf-go">🚀 开始生成</button>
+    </div>
+  </div>
+</div>
+
+<!-- 报告详情弹窗 -->
+<div class="modal-mask" id="modal-rp-view">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="rv-title">报告详情</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body" id="rv-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="rv-export">⬇️ 导出 PDF</button>
+      <button class="btn btn-primary" data-close-modal>关闭</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  var T_CLS = { "回归测试报告": "tag-blue", "冒烟测试报告": "tag-green", "性能测试报告": "tag-purple", "安全测试报告": "tag-red", "版本质量报告": "tag-orange" };
+  var reports = [
+    { id: "AR-21", name: "9 月第 3 周回归测试报告", desc: "支付核心链路回归（12 条）", type: "回归测试报告", status: "已生成", pass: "100%", defects: 0, model: "DeepSeek-V3", created: "2026-09-22 02:35", dur: "35s", summary: "本轮回归 12/12 通过，P99 320ms。无新增缺陷。风险提示：验证码接口弱网超时率 2.1%，建议纳入下轮专项。" },
+    { id: "AR-20", name: "主站冒烟日报 0921", desc: "UI 冒烟 5 场景", type: "冒烟测试报告", status: "已生成", pass: "80%", defects: 1, model: "通义千问-Max", created: "2026-09-21 16:30", dur: "28s", summary: "5 场景通过 4 个，场景 3 支付按钮元素未找到。已提缺陷 BUG-2049（P1），疑似前端改版未同步定位脚本。" },
+    { id: "AR-19", name: "秒杀链路压测报告", desc: "阶梯压测 500→6000 QPS", type: "性能测试报告", status: "已生成", pass: "75%", defects: 2, model: "DeepSeek-V3", created: "2026-09-20 18:12", dur: "41s", summary: "目标 6000 QPS 实测 4500 后错误率 3.2%。瓶颈：DB 连接池打满。建议扩容连接池至 200 并开启读写分离。" },
+    { id: "AR-18", name: "支付模块安全周报", desc: "OWASP 基线扫描", type: "安全测试报告", status: "已生成", pass: "92%", defects: 1, model: "DeepSeek-V3", created: "2026-09-19 04:10", dur: "38s", summary: "基线通过率 92%，新增 1 项中危：接口限流缺失。AI 修复建议已生成，复验用例已创建。" },
+    { id: "AR-17", name: "v2.4 版本质量报告", desc: "版本全量质量汇总", type: "版本质量报告", status: "生成中", pass: "—", defects: 0, model: "DeepSeek-V3", created: "2026-09-22 16:50", dur: "—", summary: "" },
+    { id: "AR-16", name: "退款功能专项报告", desc: "退款全链路专项", type: "回归测试报告", status: "生成失败", pass: "—", defects: 0, model: "通义千问-Max", created: "2026-09-18 10:22", dur: "—", summary: "AI 调用超时（30s），可重试。" }
+  ];
+
+  function refreshStats() {
+    document.getElementById("rp-total").textContent = reports.length;
+    document.getElementById("rp-running").textContent = reports.filter(function (r) { return r.status === "生成中"; }).length;
+  }
+  function render() {
+    refreshStats();
+    var kw = document.getElementById("rp-kw").value.trim().toLowerCase();
+    var st = document.getElementById("rp-status").value;
+    var tp = document.getElementById("rp-type").value;
+    var d = reports.filter(function (r) {
+      return (!kw || r.name.toLowerCase().indexOf(kw) >= 0) && (!st || r.status === st) && (!tp || r.type === tp);
+    });
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>报告名称</th><th>类型</th><th>状态</th><th>通过率</th><th>缺陷数</th><th>AI 模型</th><th>创建时间</th><th style="width:130px">操作</th></tr></thead><tbody>';
+    if (!d.length) html += '<tr><td colspan="8"><div class="empty"><div class="e-icon">📊</div><div class="e-text">无匹配报告</div></div></td></tr>';
+    d.forEach(function (r) {
+      html += '<tr><td><div class="cell-main">' + r.name + '</div><div class="cell-sub">' + r.desc + "</div></td>" +
+        '<td><span class="tag ' + T_CLS[r.type] + '">' + r.type + "</span></td>" +
+        "<td>" + (r.status === "已生成" ? '<span class="tag tag-green">已生成</span>' : r.status === "生成中" ? '<span class="tag tag-orange">生成中…</span>' : '<span class="tag tag-red">失败</span>') + "</td>" +
+        '<td class="mono">' + r.pass + "</td>" +
+        '<td class="mono">' + (r.defects || "—") + "</td>" +
+        '<td class="cell-sub" style="font-size:12px">' + r.model + "</td>" +
+        '<td class="mono" style="font-size:12px">' + r.created + "</td>" +
+        '<td><div class="row-actions" style="opacity:1">' +
+        (r.status === "已生成" ? '<button class="btn btn-sm btn-ghost" data-v="' + r.id + '">详情</button>' : '<button class="btn btn-sm btn-ghost" data-retry="' + r.id + '">重试</button>') +
+        '<button class="btn btn-sm btn-danger" data-del="' + r.id + '">删除</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("rp-table").innerHTML = html;
+    bind();
+  }
+  function bind() {
+    document.querySelectorAll("[data-v]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var r = reports.find(function (x) { return x.id === b.dataset.v; });
+        document.getElementById("rv-title").textContent = r.name;
+        document.getElementById("rv-body").innerHTML =
+          '<div class="flex mb-16" style="flex-wrap:wrap"><span class="tag ' + T_CLS[r.type] + '">' + r.type + '</span><span class="tag tag-green">通过率 ' + r.pass + '</span><span class="tag tag-red">缺陷 ' + r.defects + '</span><span class="tag">🧠 ' + r.model + '</span><span class="tag mono" style="font-size:11px">' + r.created + '</span><span class="tag">⏱ ' + r.dur + "</span></div>" +
+          '<div class="field"><label>AI 报告结论</label><div class="code-block" style="white-space:normal">' + r.summary + "</div></div>" +
+          '<div class="mt-16 flex" style="gap:8px"><a class="btn btn-ghost btn-sm" href="tool-defect-management.html">🐞 缺陷管理</a><a class="btn btn-ghost btn-sm" href="tool-root-cause.html">🔍 对失败项做根因分析 →</a></div>';
+        openModal("modal-rp-view");
+      });
+    });
+    document.querySelectorAll("[data-retry]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var r = reports.find(function (x) { return x.id === b.dataset.retry; });
+        toast("正在重试生成「" + r.name + "」…", "info");
+        r.status = "生成中"; render();
+        setTimeout(function () {
+          r.status = "已生成"; r.pass = "88%"; r.defects = 1; r.dur = "33s";
+          r.summary = "（重试成功）退款全链路 8/9 用例通过，超时未审核自动取消场景失败，已提缺陷并建议增加自动审核兜底。";
+          render(); toast("报告生成成功 ✅", "success");
+        }, 1800);
+      });
+    });
+    document.querySelectorAll("[data-del]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var r = reports.find(function (x) { return x.id === b.dataset.del; });
+        confirmAction({ title: "删除报告", message: "确定删除「" + r.name + "」吗？该操作不可恢复。", onOk: function () {
+          reports = reports.filter(function (x) { return x.id !== r.id; });
+          render(); toast("报告已删除", "success");
+        }});
+      });
+    });
+  }
+  ["rp-kw", "rp-status", "rp-type"].forEach(function (id, i) {
+    document.getElementById(id).addEventListener(i === 0 ? "input" : "change", debounce(render, i === 0 ? 200 : 0));
+  });
+  document.getElementById("rp-reset").addEventListener("click", function () {
+    document.getElementById("rp-kw").value = ""; document.getElementById("rp-status").value = ""; document.getElementById("rp-type").value = "";
+    render(); toast("筛选已重置", "info");
+  });
+
+  /* ---------- AI 生成 ---------- */
+  document.getElementById("rf-go").addEventListener("click", function () {
+    var n = document.getElementById("rf-name").value.trim();
+    if (!n) return toast("请输入报告名称", "error");
+    var r = { id: "AR-" + (22 + reports.length - 6), name: n, desc: document.getElementById("rf-desc").value || "—", type: document.getElementById("rf-type").value, status: "生成中", pass: "—", defects: 0, model: document.getElementById("rf-model").value, created: "刚刚", dur: "—", summary: "" };
+    reports.unshift(r);
+    closeModal("modal-rp");
+    document.getElementById("rf-name").value = ""; document.getElementById("rf-desc").value = "";
+    render(); toast("AI 正在汇总数据生成报告…", "info");
+    setTimeout(function () {
+      r.status = "已生成"; r.pass = (86 + Math.floor(Math.random() * 12)) + "%"; r.defects = Math.floor(Math.random() * 3); r.dur = (25 + Math.floor(Math.random() * 20)) + "s";
+      r.summary = "AI 汇总完成：本轮测试通过率 " + r.pass + "，发现 " + r.defects + " 项缺陷。结论与风险已按「简报压缩」策略输出（3 句内）。详细数据见执行记录与缺陷管理。";
+      render(); toast("报告生成完成 ✅", "success");
+    }, 2200);
+  });
+  document.getElementById("rv-export").addEventListener("click", function () { toast("报告 PDF 导出成功（演示）", "success"); });
+
+  render();
+})();
+</script>
+</body>
+</html>

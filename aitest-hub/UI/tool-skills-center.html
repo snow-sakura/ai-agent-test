@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Skills 技能中心 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / Skills 技能中心</div>
+    <div class="page-head">
+      <div>
+        <h1>🛠️ Skills 技能中心</h1>
+        <div class="sub">平台级 Agent 技能管理：测试用例 / 分析 / 自动化三类技能，提示词模板 + 使用统计，供 Agent 执行与工作流编排调用</div>
+      </div>
+      <div class="flex">
+        <a class="btn btn-ghost" href="tool-skill-library.html">🧩 技能库（提示词组合包）</a>
+        <a class="btn btn-ghost" href="tool-mcp-center.html">🔌 MCP 服务中心</a>
+        <button class="btn btn-primary" data-open-modal="modal-skill2">＋ 创建技能</button>
+      </div>
+    </div>
+
+    <div class="banner banner-info">ℹ️ 对应平台 SkillManagement 模块：与「技能库」定位不同——技能库面向<strong>提示词与工具组合包</strong>，技能中心面向 <strong>Agent 可执行的原子技能</strong>（含 MCP 工具绑定与工作流节点）。技能经启用后出现在<a href="tool-ai-assistant.html">AI 问答助手</a>与 Agent 编排的可选列表中。</div>
+
+    <div class="tabs">
+      <button class="tab active" data-tab="stats">📊 统计概览</button>
+      <button class="tab" data-tab="list">🛠️ 技能列表</button>
+    </div>
+    <div class="tab-panes">
+    <div class="tab-pane active" data-pane="stats">
+      <div class="banner">数据总览与快捷入口；详细数据请切到「🛠️ 技能列表」查看（支持筛选与分页）。</div>
+<div class="grid grid-4 mb-16">
+      <div class="card stat-card"><div class="s-label">技能总数</div><div class="s-value" id="sk2-total">0</div></div>
+      <div class="card stat-card"><div class="s-label">启用中</div><div class="s-value" style="color:var(--green)" id="sk2-on">0</div></div>
+      <div class="card stat-card"><div class="s-label">本周调用</div><div class="s-value" style="color:var(--blue)">326</div></div>
+      <div class="card stat-card"><div class="s-label">MCP 工具绑定</div><div class="s-value" style="color:var(--orange)">4</div></div>
+    </div>
+
+    </div>
+    <div class="tab-pane" data-pane="list">
+    <div class="filter-bar">
+      <input class="input search" id="k-kw" placeholder="🔍 搜索技能名称 / 描述">
+      <select class="select" id="k-cat"><option value="">全部类型</option><option>测试用例</option><option>分析</option><option>自动化</option></select>
+      <select class="select" id="k-status"><option value="">全部状态</option><option>启用</option><option>禁用</option></select>
+      <button class="btn btn-ghost btn-sm" id="k-reset">重置</button>
+    </div>
+
+    <div id="k-table"></div>
+    </div>
+    </div>
+  </main>
+</div>
+
+<!-- 创建/编辑技能弹窗 -->
+<div class="modal-mask" id="modal-skill2">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="k-modal-title">＋ 创建技能</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="grid grid-2" style="gap:12px">
+        <div class="field"><label>技能名称 <span class="text-red">*</span></label><input class="input" id="kf-name" placeholder="如：接口异常场景补全"></div>
+        <div class="field"><label>类型</label>
+          <div class="flex" style="gap:14px">
+            <label class="checkbox"><input type="radio" name="kf-cat" value="测试用例" checked> 测试用例</label>
+            <label class="checkbox"><input type="radio" name="kf-cat" value="分析"> 分析</label>
+            <label class="checkbox"><input type="radio" name="kf-cat" value="自动化"> 自动化</label>
+          </div>
+        </div>
+      </div>
+      <div class="field"><label>描述</label><input class="input" id="kf-desc" placeholder="技能用途说明"></div>
+      <div class="field"><label>提示词模板 <span class="text-red">*</span></label>
+        <textarea class="textarea mono" id="kf-prompt" rows="6" placeholder="技能的提示词模板，支持变量：{{input}} {{context}} {{mcp.data}}"></textarea>
+        <div class="hint">支持占位变量；绑定 MCP 服务后可用 <span class="mono">{{mcp.服务名}}</span> 引用其返回</div>
+      </div>
+      <div class="field"><label>MCP 工具绑定（AI 关联）</label>
+        <div class="flex" style="gap:8px; flex-wrap:wrap">
+          <label class="checkbox"><input type="checkbox"> 数据工厂</label>
+          <label class="checkbox"><input type="checkbox" checked> 需求文档解析</label>
+          <label class="checkbox"><input type="checkbox"> MySQL 查询</label>
+          <label class="checkbox"><input type="checkbox"> 企业微信通知</label>
+          <label class="checkbox"><input type="checkbox"> 本地命令执行</label>
+        </div>
+        <div class="hint">绑定<a href="tool-mcp-center.html" target="_blank">MCP 服务中心</a>已连接的服务，技能执行时自动调用</div>
+      </div>
+      <label class="checkbox"><input type="checkbox" id="kf-enable" checked> 创建后立即启用</label>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="kf-save">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 技能详情弹窗 -->
+<div class="modal-mask" id="modal-view">
+  <div class="modal">
+    <div class="modal-head"><h3 id="vw-title">技能详情</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body" id="vw-body"></div>
+    <div class="modal-foot"><button class="btn btn-primary" data-close-modal>关闭</button></div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  var skills = [
+    { id: "AG-08", name: "用例补充生成", cat: "测试用例", desc: "对已有用例集补充边界与异常场景", status: "启用", uses: 96, mcp: ["需求文档解析"], prompt: "基于 {{context}} 已有用例，补充遗漏的边界/异常用例…" },
+    { id: "AG-07", name: "接口异常场景补全", cat: "测试用例", desc: "按参数枚举生成异常组合用例", status: "启用", uses: 74, mcp: ["数据工厂"], prompt: "对接口 {{input}} 的每个参数生成异常取值组合…" },
+    { id: "AG-06", name: "失败日志根因分析", cat: "分析", desc: "聚类失败日志输出根因假设", status: "启用", uses: 58, mcp: ["MySQL 查询"], prompt: "分析以下失败记录 {{input}}，输出根因与修复建议…" },
+    { id: "AG-05", name: "质量周报生成", cat: "分析", desc: "汇总执行/缺陷数据生成周报", status: "启用", uses: 41, mcp: ["企业微信通知"], prompt: "根据 {{context}} 数据生成测试质量周报…" },
+    { id: "AG-04", name: "UI 步骤脚本化", cat: "自动化", desc: "自然语言步骤转 Playwright 脚本", status: "启用", uses: 37, mcp: [], prompt: "将 {{input}} 步骤转为 Playwright 脚本…" },
+    { id: "AG-03", name: "回归集智能筛选", cat: "分析", desc: "按代码变更圈定回归范围", status: "禁用", uses: 12, mcp: ["本地命令执行"], prompt: "根据变更 {{input}} 圈定需回归的用例…" }
+  ];
+  var C_CLS = { "测试用例": "tag-blue", "分析": "tag-purple", "自动化": "tag-orange" };
+
+  function refreshStats() {
+    document.getElementById("sk2-total").textContent = skills.length;
+    document.getElementById("sk2-on").textContent = skills.filter(function (s) { return s.status === "启用"; }).length;
+  }
+
+  function render() {
+    refreshStats();
+    var kw = document.getElementById("k-kw").value.trim().toLowerCase();
+    var cat = document.getElementById("k-cat").value;
+    var st = document.getElementById("k-status").value;
+    var d = skills.filter(function (s) {
+      return (!kw || (s.name + s.desc).toLowerCase().indexOf(kw) >= 0) && (!cat || s.cat === cat) && (!st || s.status === st);
+    });
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>ID</th><th>技能名称</th><th>类型</th><th>MCP 绑定</th><th>使用次数</th><th>状态</th><th style="width:220px">操作</th></tr></thead><tbody>';
+    if (!d.length) html += '<tr><td colspan="7"><div class="empty"><div class="e-icon">🛠️</div><div class="e-text">无匹配技能</div></div></td></tr>';
+    d.forEach(function (s) {
+      html += '<tr><td class="mono">' + s.id + "</td>" +
+        '<td><div class="cell-main">' + s.name + '</div><div class="cell-sub">' + s.desc + "</div></td>" +
+        '<td><span class="tag ' + C_CLS[s.cat] + '">' + s.cat + "</span></td>" +
+        "<td>" + (s.mcp.length ? s.mcp.map(function (m) { return '<span class="tag" style="margin-right:3px">🔌 ' + m + "</span>"; }).join("") : '<span class="text-faint" style="font-size:12px">无</span>') + "</td>" +
+        '<td class="mono">' + s.uses + "</td>" +
+        "<td>" + (s.status === "启用" ? '<span class="tag tag-green">启用</span>' : '<span class="tag">禁用</span>') + "</td>" +
+        '<td><div class="row-actions" style="opacity:1">' +
+        '<button class="btn btn-sm btn-ghost" data-view="' + s.id + '">查看</button>' +
+        '<button class="btn btn-sm btn-ghost" data-edit="' + s.id + '">编辑</button>' +
+        '<button class="btn btn-sm btn-ghost" data-toggle="' + s.id + '">' + (s.status === "启用" ? "禁用" : "启用") + "</button>" +
+        '<button class="btn btn-sm btn-danger" data-del="' + s.id + '">删除</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("k-table").innerHTML = html;
+    bind();
+  }
+  function bind() {
+    document.querySelectorAll("[data-view]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var s = skills.find(function (x) { return x.id === b.dataset.view; });
+        openModal("modal-view") || null;
+        var m = document.getElementById("modal-view");
+        document.getElementById("vw-title").textContent = s.name;
+        document.getElementById("vw-body").innerHTML =
+          '<div class="kv"><span>ID</span><b class="mono">' + s.id + '</b></div>' +
+          '<div class="kv"><span>类型</span><b>' + s.cat + '</b></div>' +
+          '<div class="kv"><span>状态</span><b>' + s.status + ' · 调用 ' + s.uses + ' 次</b></div>' +
+          '<div class="field mt-16"><label>提示词模板</label><div class="code-block">' + s.prompt.replace(/</g, "&lt;") + "</div></div>" +
+          '<div class="kv"><span>MCP 绑定</span><b>' + (s.mcp.join("、") || "无") + "</b></div>";
+        m.classList.add("show");
+      });
+    });
+    document.querySelectorAll("[data-edit]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var s = skills.find(function (x) { return x.id === b.dataset.edit; });
+        document.getElementById("k-modal-title").textContent = "编辑技能 · " + s.id;
+        document.getElementById("kf-name").value = s.name;
+        document.getElementById("kf-desc").value = s.desc;
+        document.getElementById("kf-prompt").value = s.prompt;
+        openModal("modal-skill2");
+      });
+    });
+    document.querySelectorAll("[data-toggle]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var s = skills.find(function (x) { return x.id === b.dataset.toggle; });
+        s.status = s.status === "启用" ? "禁用" : "启用";
+        render(); toast("技能已" + s.status, "success");
+      });
+    });
+    document.querySelectorAll("[data-del]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var s = skills.find(function (x) { return x.id === b.dataset.del; });
+        confirmAction({ title: "删除技能", message: "确定删除「" + s.name + "」吗？引用该技能的工作流节点将失效。", onOk: function () {
+          skills = skills.filter(function (x) { return x.id !== s.id; });
+          render(); toast("技能已删除", "success");
+        }});
+      });
+    });
+  }
+  ["k-kw", "k-cat", "k-status"].forEach(function (id, i) {
+    document.getElementById(id).addEventListener(i === 0 ? "input" : "change", debounce(render, i === 0 ? 200 : 0));
+  });
+  document.getElementById("k-reset").addEventListener("click", function () {
+    document.getElementById("k-kw").value = ""; document.getElementById("k-cat").value = ""; document.getElementById("k-status").value = "";
+    render(); toast("筛选已重置", "info");
+  });
+  document.getElementById("kf-save").addEventListener("click", function () {
+    var n = document.getElementById("kf-name").value.trim();
+    if (!n) return toast("请填写技能名称", "error");
+    if (!document.getElementById("kf-prompt").value.trim()) return toast("请填写提示词模板", "error");
+    skills.unshift({ id: "AG-" + (9 + skills.length - 6), name: n, cat: document.querySelector('input[name="kf-cat"]:checked').value, desc: document.getElementById("kf-desc").value || "—", status: document.getElementById("kf-enable").checked ? "启用" : "禁用", uses: 0, mcp: [], prompt: document.getElementById("kf-prompt").value });
+    closeModal("modal-skill2");
+    document.getElementById("kf-name").value = ""; document.getElementById("kf-desc").value = ""; document.getElementById("kf-prompt").value = "";
+    render(); toast("技能已创建" + (document.getElementById("kf-enable").checked ? "并启用" : ""), "success");
+  });
+
+  if (qs("tab")) { /* 保持 ?tab= 兼容 */ }
+
+  render();
+})();
+</script>
+</body>
+</html>

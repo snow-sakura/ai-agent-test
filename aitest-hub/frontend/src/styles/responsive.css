@@ -1,0 +1,35 @@
+/* ---------------- 响应式 ---------------- */
+@media (max-width: 900px) {
+  .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
+  .auth-wrap { grid-template-columns: 1fr; }
+  .auth-left { display: none; }
+  .workspace { grid-template-columns: 1fr; }
+  .sidebar { display: none; }
+}
+/* 宽屏内容区（工具台 main）：栅格更密，充分利用 1920 横向空间 */
+@media (min-width: 1700px) {
+  .grid-3 { grid-template-columns: repeat(3, 1fr); }
+  .filter-bar { flex-wrap: wrap; }
+}
+
+/* ---------------- 矮屏一屏适配（高度 ≤ 820px：整体压缩纵向节奏） ----------------
+   工作台/工具页在 1366×768 等常见笔记本屏上尽量收进一屏；
+   表格超高时改由 .table-wrap 内部滚动，保证筛选栏与分页条始终可见。 */
+@media (max-height: 820px) {
+  .main-area { padding: 14px 20px; }
+  .page-head { margin-bottom: 12px; }
+  .page-head h1 { font-size: 18px; }
+  .tabs { margin-bottom: 12px; }
+  .tab { padding: 6px 12px; }
+  .filter-bar { padding: 9px 12px; margin-bottom: 12px; }
+  .card { padding: 14px 16px; }
+  .card-title { font-size: 14px; margin-bottom: 10px; }
+  .stat-card { padding: 10px 14px; }
+  .stat-card .s-value { font-size: 20px; margin-top: 2px; }
+  .table th, .table td { padding: 7px 12px; }
+  .pagination { margin-top: 10px; }
+  .banner { padding: 8px 12px; margin-bottom: 12px; font-size: 12.5px; }
+  .grid { gap: 12px; }
+  .field { margin-bottom: 12px; }
+  .workspace .table-wrap { max-height: 48vh; overflow: auto; }
+}

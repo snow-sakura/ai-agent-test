@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>注册 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-noinject-topbar>
+
+<div class="auth-wrap">
+  <!-- 左侧品牌区 -->
+  <div class="auth-left">
+    <div class="auth-brandline">
+      <a class="brand" href="index.html"><span class="logo">AT</span>AITest Hub</a>
+    </div>
+    <div style="max-width:420px; position:relative; z-index:1">
+      <h1 style="font-size:30px; line-height:1.35">加入 AITest Hub<br>开始你的第一叠测试拍立得</h1>
+      <p class="text-dim mt-16" style="font-size:14.5px">注册即享九大模块免费体验：压测编排 · AI 用例 · 接口测试 · 用例与缺陷管理 · UI / App 自动化 · 提示词库 · 工具箱。</p>
+      <div class="grid grid-2 mt-24" style="gap:10px">
+        <div class="card" style="padding:12px 14px"><span class="tag tag-orange">🧪 压测编排</span></div>
+        <div class="card" style="padding:12px 14px"><span class="tag tag-red">🤖 AI 用例</span></div>
+        <div class="card" style="padding:12px 14px"><span class="tag tag-blue">🔗 接口测试</span></div>
+        <div class="card" style="padding:12px 14px"><span class="tag tag-purple">📱 App 自动化</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 右侧注册表单 -->
+  <div class="auth-panel">
+    <div class="auth-card">
+      <h2>创建账号 ✨</h2>
+      <p class="sub">已有账号？<a href="auth.html">直接登录</a></p>
+
+      <form id="reg-form" novalidate>
+        <div class="field" id="f-nick">
+          <label for="nick">昵称</label>
+          <input class="input" id="nick" type="text" placeholder="给自己起个名字，如：wxh" maxlength="20">
+          <div class="err-msg">昵称不能为空</div>
+        </div>
+
+        <div class="field" id="f-phone">
+          <label for="phone">手机号</label>
+          <input class="input" id="phone" type="tel" placeholder="请输入 11 位手机号" maxlength="11">
+          <div class="err-msg">请输入正确的 11 位手机号</div>
+        </div>
+
+        <div class="field" id="f-code">
+          <label for="code">短信验证码</label>
+          <div class="input-group">
+            <input class="input" id="code" type="text" placeholder="6 位验证码" maxlength="6" style="flex:1">
+            <button type="button" class="btn btn-ghost" id="send-code" style="white-space:nowrap">获取验证码</button>
+          </div>
+          <div class="err-msg">请输入 6 位验证码</div>
+          <div class="hint">演示环境：任意 6 位数字均可通过</div>
+        </div>
+
+        <div class="field" id="f-pass">
+          <label for="pass">设置密码</label>
+          <div class="relative">
+            <input class="input" id="pass" type="password" placeholder="8-32 位，含字母与数字" style="padding-right:44px">
+            <button type="button" class="pw-toggle" id="pw-toggle">👁</button>
+          </div>
+          <div class="err-msg">密码需 8 位以上且同时包含字母和数字</div>
+          <div class="progress mt-8"><div class="bar" id="pw-bar" style="width:0%"></div></div>
+          <div class="hint" id="pw-hint">密码强度：—</div>
+        </div>
+
+        <div class="field" id="f-pass2">
+          <label for="pass2">确认密码</label>
+          <input class="input" id="pass2" type="password" placeholder="再输入一次密码">
+          <div class="err-msg">两次输入的密码不一致</div>
+        </div>
+
+        <div class="field" id="f-agree">
+          <label class="checkbox"><input type="checkbox" id="agree"> 我已阅读并同意 <a href="#" onclick="toast('演示环境：服务协议占位页','info');return false">《服务协议》</a> 与 <a href="#" onclick="toast('演示环境：隐私政策占位页','info');return false">《隐私政策》</a></label>
+          <div class="err-msg">请先勾选同意协议</div>
+        </div>
+
+        <button class="btn btn-primary btn-lg" type="submit" id="reg-btn" style="width:100%">注 册</button>
+
+        <p class="text-faint mt-16" style="font-size:12.5px; text-align:center">
+          已有账号？<a href="auth.html">登录</a> · <a href="index.html">返回首页</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  var form = document.getElementById("reg-form");
+  var phone = document.getElementById("phone");
+  var code = document.getElementById("code");
+  var pass = document.getElementById("pass");
+  var pass2 = document.getElementById("pass2");
+  var btn = document.getElementById("reg-btn");
+
+  function setErr(id, msg) {
+    var f = document.getElementById(id);
+    f.classList.add("has-err");
+    if (msg) f.querySelector(".err-msg").textContent = msg;
+  }
+  function clearErr(id) { document.getElementById(id).classList.remove("has-err"); }
+
+  // 密码可见切换
+  document.getElementById("pw-toggle").addEventListener("click", function () {
+    var show = pass.type === "password";
+    pass.type = show ? "text" : "password";
+    this.textContent = show ? "🙈" : "👁";
+  });
+
+  // 密码强度条
+  pass.addEventListener("input", function () {
+    var v = pass.value, score = 0;
+    if (v.length >= 8) score++;
+    if (/[a-zA-Z]/.test(v) && /\d/.test(v)) score++;
+    if (/[^a-zA-Z0-9]/.test(v)) score++;
+    if (v.length >= 12) score++;
+    var pct = [0, 30, 55, 80, 100][score];
+    var label = ["—", "弱", "一般", "较强", "强"][score];
+    var color = ["var(--border-light)", "var(--red)", "var(--orange)", "var(--blue)", "var(--green)"][score];
+    var bar = document.getElementById("pw-bar");
+    bar.style.width = pct + "%"; bar.style.background = color;
+    document.getElementById("pw-hint").textContent = "密码强度：" + label;
+    clearErr("f-pass");
+  });
+
+  // 输入即清错
+  [["nick","f-nick"],["phone","f-phone"],["code","f-code"],["pass2","f-pass2"]].forEach(function (p) {
+    document.getElementById(p[0]).addEventListener("input", function () { clearErr(p[1]); });
+  });
+  document.getElementById("agree").addEventListener("change", function () { clearErr("f-agree"); });
+
+  // 发送验证码（60s 倒计时）
+  var cd = null;
+  document.getElementById("send-code").addEventListener("click", function () {
+    if (!/^1\d{10}$/.test(phone.value.trim())) { setErr("f-phone"); return toast("请先输入正确的手机号", "error"); }
+    if (cd) return;
+    var b = this, left = 60;
+    b.disabled = true;
+    toast("验证码已发送（演示：任意 6 位数字）", "success");
+    cd = setInterval(function () {
+      left--;
+      b.textContent = left + "s 后重发";
+      if (left <= 0) { clearInterval(cd); cd = null; b.disabled = false; b.textContent = "获取验证码"; }
+    }, 1000);
+  });
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var ok = true;
+    if (!document.getElementById("nick").value.trim()) { setErr("f-nick"); ok = false; }
+    if (!/^1\d{10}$/.test(phone.value.trim())) { setErr("f-phone"); ok = false; }
+    if (!/^\d{6}$/.test(code.value.trim())) { setErr("f-code"); ok = false; }
+    var pv = pass.value;
+    if (pv.length < 8 || !/[a-zA-Z]/.test(pv) || !/\d/.test(pv)) { setErr("f-pass"); ok = false; }
+    if (pass2.value !== pv || !pass2.value) { setErr("f-pass2"); ok = false; }
+    if (!document.getElementById("agree").checked) { setErr("f-agree"); ok = false; }
+    if (!ok) { toast("请检查表单填写", "error"); return; }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> 注册中…';
+    setTimeout(function () {
+      if (phone.value.trim() === Auth.ACCOUNT) {
+        btn.disabled = false; btn.textContent = "注 册";
+        setErr("f-phone", "该手机号已注册（演示账号），请直接登录");
+        toast("该手机号已注册，请直接登录", "error");
+        return;
+      }
+      toast("注册成功！已自动登录，即将进入工具台…", "success");
+      Auth.login();
+      setTimeout(function () { location.href = qs("redirect") || "index.html"; }, 800);
+    }, 900);
+  });
+})();
+</script>
+</body>
+</html>

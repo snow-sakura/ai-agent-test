@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tokens 消费记录 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / Tokens 消费记录</div>
+    <div class="page-head">
+      <div>
+        <h1>🪙 Tokens 消费记录</h1>
+        <div class="sub">全站 AI 调用计量：来源模块 / 调用内容 / 输入·输出·命中 Token 明细 / 费用核算，按模型单价自动计费，支持导出对账</div>
+      </div>
+      <div class="flex">
+        <a class="btn btn-ghost" href="tool-config-center.html?tab=ai">⚙️ 模型与额度</a>
+        <a class="btn btn-ghost" href="tool-log-center.html">📜 日志中心</a>
+        <button class="btn btn-primary" id="tu-export">⬇️ 导出对账 CSV</button>
+      </div>
+    </div>
+
+    <div class="banner banner-info">ℹ️ 计量口径：命中（RAG / 缓存 / 前缀复用）部分按 2 折计费；费用 = 输入×单价 + 输出×单价 + 命中×单价的 20%。单价在<a href="tool-config-center.html?tab=ai">配置中心</a>按模型维护，数据与<a href="tool-log-center.html">日志中心</a>的 AI 调用记录一一对应。</div>
+
+    <!-- 汇总统计 -->
+    <div class="grid grid-4 mb-16">
+      <div class="card stat-card"><div class="s-label">本月总消费</div><div class="s-value" id="tu-cost">¥0.00</div><div class="s-trend text-faint" id="tu-reqs">0 次调用</div></div>
+      <div class="card stat-card"><div class="s-label">输入 Tokens</div><div class="s-value" style="color:var(--blue)" id="tu-in">0</div><div class="s-trend text-faint">单价最低成本项</div></div>
+      <div class="card stat-card"><div class="s-label">输出 Tokens</div><div class="s-value" style="color:var(--purple)" id="tu-out">0</div><div class="s-trend text-faint">输出单价通常为输入 2~4 倍</div></div>
+      <div class="card stat-card"><div class="s-label">命中 Tokens</div><div class="s-value" style="color:var(--green)" id="tu-hit">0</div><div class="s-trend text-green">⬇ 已为你节省 ¥0.00</div></div>
+    </div>
+
+    <!-- 筛选 -->
+    <div class="filter-bar">
+      <input class="input search" id="t-kw" placeholder="🔍 搜索调用内容 / 记录 ID">
+      <select class="select" id="t-module"><option value="">全部来源模块</option><option>AI 用例工作台</option><option>AI 问答助手</option><option>AI 报告中心</option><option>根因分析</option><option>技能中心</option><option>Agent 中心</option><option>需求管理</option><option>去 AI 味中心</option></select>
+      <select class="select" id="t-model"><option value="">全部模型</option><option>DeepSeek-V3</option><option>通义千问-Max</option><option>硅基流动 · GLM-4</option></select>
+      <input class="input" id="t-start" type="date" value="2026-09-16" style="width:145px">
+      <span class="text-faint">至</span>
+      <input class="input" id="t-end" type="date" value="2026-09-22" style="width:145px">
+      <button class="btn btn-ghost btn-sm" id="t-reset">重置</button>
+    </div>
+
+    <!-- 消费明细表 -->
+    <div id="tu-table"></div>
+    <div class="pagination" id="tu-page"></div>
+  </main>
+</div>
+
+<!-- 消费详情弹窗 -->
+<div class="modal-mask" id="modal-tu">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="tv-title">消费详情</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div id="tv-meta" class="mb-16" style="display:flex; gap:8px; flex-wrap:wrap"></div>
+      <div class="field"><label>调用内容</label><div class="code-block" id="tv-content" style="white-space:normal; max-height:120px; overflow-y:auto"></div></div>
+      <div class="table-wrap mt-16" style="border:none">
+        <table class="table"><thead><tr><th>计量项</th><th>Tokens</th><th>单价（¥/千 Token）</th><th>计费规则</th><th>费用</th></tr></thead><tbody id="tv-rows"></tbody></table>
+      </div>
+      <div class="flex-between mt-16" style="padding:10px 14px; background:var(--primary-soft); border-radius:8px">
+        <span style="font-weight:700">合计费用</span><b class="mono" id="tv-total" style="font-size:16px; color:var(--primary)">¥0.0000</b>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <a class="btn btn-ghost" id="tv-log" href="tool-log-center.html">📜 查看对应日志</a>
+      <button class="btn btn-primary" data-close-modal>关闭</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  /* 模型单价（¥ / 千 Token） */
+  var PRICE = { "DeepSeek-V3": { in: 0.002, out: 0.008, hit: 0.0004 }, "通义千问-Max": { in: 0.004, out: 0.012, hit: 0.0008 }, "硅基流动 · GLM-4": { in: 0.001, out: 0.004, hit: 0.0002 } };
+  var records = [
+    { id: "TU-3121", time: "2026-09-22 16:42:18", module: "技能中心", model: "DeepSeek-V3", content: "调用技能「失败日志根因分析」生成分析结论", input: 1240, output: 868, hit: 320, dur: "4.2s", logId: "OP-1288" },
+    { id: "TU-3120", time: "2026-09-22 15:31:22", module: "Agent 中心", model: "DeepSeek-V3", content: "AT-11 用例生成官：为退款功能生成 20 条测试用例", input: 2140, output: 3610, hit: 860, dur: "42s", logId: "OP-1287" },
+    { id: "TU-3119", time: "2026-09-22 14:20:05", module: "AI 报告中心", model: "DeepSeek-V3", content: "生成「9 月第 3 周回归测试报告」汇总结论", input: 3120, output: 940, hit: 1240, dur: "35s", logId: "OP-1285" },
+    { id: "TU-3118", time: "2026-09-22 11:08:47", module: "去 AI 味中心", model: "通义千问-Max", content: "试运行对比「口语化人味」策略润色效果", input: 680, output: 720, hit: 0, dur: "3.1s", logId: "OP-1284" },
+    { id: "TU-3117", time: "2026-09-22 09:12:33", module: "AI 问答助手", model: "DeepSeek-V3", content: "咨询：秒杀场景压测方案怎么定 QPS（RAG 引用知识库 3 条）", input: 1560, output: 1180, hit: 640, dur: "6.8s", logId: "OP-1283" },
+    { id: "TU-3116", time: "2026-09-21 17:45:12", module: "根因分析", model: "DeepSeek-V3", content: "RC-31 App 冒烟步骤 4 元素未找到——根因定位", input: 2480, output: 1120, hit: 980, dur: "24s", logId: "OP-1282" },
+    { id: "TU-3115", time: "2026-09-21 16:02:19", module: "需求管理", model: "DeepSeek-V3", content: "解析 PRD《退款模块 v2.1》输出结构化测试点", input: 4820, output: 2210, hit: 1620, dur: "18.6s", logId: "OP-1281" },
+    { id: "TU-3114", time: "2026-09-21 10:30:08", module: "AI 用例工作台", model: "DeepSeek-V3", content: "流式生成退款功能用例集（会话第 3 轮精修）", input: 1960, output: 3240, hit: 520, dur: "12.4s", logId: "OP-1279" },
+    { id: "TU-3113", time: "2026-09-20 15:22:41", module: "Agent 中心", model: "通义千问-Max", content: "AT-10 接口巡检员：核心接口巡检 12 个（定时触发）", input: 1420, output: 860, hit: 380, dur: "1m12s", logId: "OP-1278" },
+    { id: "TU-3112", time: "2026-09-20 09:45:27", module: "技能中心", model: "硅基流动 · GLM-4", content: "调用技能「接口断言生成技能」生成 /v1/pay 断言", input: 740, output: 520, hit: 180, dur: "3.2s", logId: "OP-1277" },
+    { id: "TU-3111", time: "2026-09-19 11:02:56", module: "根因分析", model: "通义千问-Max", content: "RC-29 退款说明 200 字截断——缺陷溯源分析", input: 1680, output: 760, hit: 540, dur: "19s", logId: "OP-1275" },
+    { id: "TU-3110", time: "2026-09-19 04:10:33", module: "AI 报告中心", model: "DeepSeek-V3", content: "生成「支付模块安全周报」基线扫描结论", input: 2240, output: 1080, hit: 890, dur: "38s", logId: "OP-1274" }
+  ];
+  function cost(r) {
+    var p = PRICE[r.model] || PRICE["DeepSeek-V3"];
+    return r.input / 1000 * p.in + r.output / 1000 * p.out + (r.hit / 1000 * p.hit);
+  }
+  function money(v) { return "¥" + v.toFixed(4); }
+  var fmt = function (n) { return n.toLocaleString("zh-CN"); };
+  var PAGE = 10, page = 1;
+
+  function refreshStats() {
+    var sum = { cost: 0, input: 0, output: 0, hit: 0 };
+    records.forEach(function (r) {
+      sum.cost += cost(r); sum.input += r.input; sum.output += r.output; sum.hit += r.hit;
+    });
+    var p = PRICE["DeepSeek-V3"];
+    var saved = sum.hit / 1000 * p.in * 0.8; // 命中按 2 折，节省 80%
+    document.getElementById("tu-cost").textContent = "¥" + sum.cost.toFixed(2);
+    document.getElementById("tu-reqs").textContent = records.length + " 次调用";
+    document.getElementById("tu-in").textContent = fmt(sum.input);
+    document.getElementById("tu-out").textContent = fmt(sum.output);
+    document.getElementById("tu-hit").textContent = fmt(sum.hit);
+    document.querySelector(".stat-card:last-child .s-trend").textContent = "⬇ 已为你节省 ¥" + saved.toFixed(2);
+  }
+
+  function inRange(t) {
+    var s = document.getElementById("t-start").value, e = document.getElementById("t-end").value;
+    var d = t.slice(0, 10);
+    return (!s || d >= s) && (!e || d <= e);
+  }
+  function filtered() {
+    var kw = document.getElementById("t-kw").value.trim().toLowerCase();
+    var md = document.getElementById("t-module").value;
+    var ml = document.getElementById("t-model").value;
+    return records.filter(function (r) {
+      return (!kw || (r.content + r.id).toLowerCase().indexOf(kw) >= 0) && (!md || r.module === md) && (!ml || r.model === ml) && inRange(r.time);
+    });
+  }
+  function render() {
+    refreshStats();
+    var d = filtered();
+    var pages = Math.max(1, Math.ceil(d.length / PAGE));
+    if (page > pages) page = pages;
+    var rows = d.slice((page - 1) * PAGE, page * PAGE);
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>记录 ID</th><th>时间</th><th>来源模块</th><th>模型</th><th>调用内容</th><th>输入</th><th>输出</th><th>命中</th><th>费用</th><th style="width:70px">详情</th></tr></thead><tbody>';
+    if (!rows.length) html += '<tr><td colspan="10"><div class="empty"><div class="e-icon">🪙</div><div class="e-text">无匹配消费记录</div></div></td></tr>';
+    rows.forEach(function (r) {
+      html += '<tr><td class="mono">' + r.id + "</td>" +
+        '<td class="mono" style="font-size:12px; white-space:nowrap">' + r.time + "</td>" +
+        '<td><span class="tag tag-blue">' + r.module + "</span></td>" +
+        '<td class="cell-sub" style="font-size:12px">' + r.model + "</td>" +
+        '<td style="max-width:240px"><div class="cell-main" style="font-size:12.5px; white-space:normal">' + r.content + "</div></td>" +
+        '<td class="mono" style="color:var(--blue)">' + fmt(r.input) + "</td>" +
+        '<td class="mono" style="color:var(--purple)">' + fmt(r.output) + "</td>" +
+        '<td class="mono" style="color:var(--green)">' + fmt(r.hit) + "</td>" +
+        '<td class="mono" style="font-weight:700">' + money(cost(r)) + "</td>" +
+        '<td><div class="row-actions" style="opacity:1"><button class="btn btn-sm btn-ghost" data-v="' + r.id + '">详情</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("tu-table").innerHTML = html;
+    var pg = document.getElementById("tu-page");
+    pg.innerHTML = d.length ? (function () {
+      var h = '<span class="page-info">共 ' + d.length + " 条 · 第 " + page + "/" + pages + " 页</span>";
+      h += '<button class="page-btn txt" data-gp="1"' + (page <= 1 ? " disabled" : "") + ">首页</button>";
+      h += '<button class="page-btn txt" data-gp="' + (page - 1) + '"' + (page <= 1 ? " disabled" : "") + ">上一页</button>";
+      var start = Math.max(1, Math.min(page - 2, pages - 4)), end = Math.min(pages, start + 4);
+      for (var i = start; i <= end; i++) h += '<button class="page-btn' + (i === page ? " active" : "") + '" data-gp="' + i + '">' + i + "</button>";
+      h += '<button class="page-btn txt" data-gp="' + (page + 1) + '"' + (page >= pages ? " disabled" : "") + ">下一页</button>";
+      h += '<button class="page-btn txt" data-gp="' + pages + '">末页</button>';
+      return h;
+    })() : "";
+    pg.querySelectorAll("[data-gp]").forEach(function (b) {
+      b.addEventListener("click", function () { if (b.disabled) return; page = +b.dataset.gp; render(); });
+    });
+    document.querySelectorAll("[data-v]").forEach(function (b) {
+      b.addEventListener("click", function () { openDetail(records.find(function (x) { return x.id === b.dataset.v; })); });
+    });
+  }
+
+  function openDetail(r) {
+    var p = PRICE[r.model] || PRICE["DeepSeek-V3"];
+    document.getElementById("tv-title").textContent = "消费详情 · " + r.id;
+    document.getElementById("tv-meta").innerHTML =
+      '<span class="tag tag-blue">' + r.module + '</span><span class="tag">🧠 ' + r.model + '</span>' +
+      '<span class="tag mono" style="font-size:11px">' + r.time + '</span><span class="tag">⏱ ' + r.dur + "</span>";
+    document.getElementById("tv-content").textContent = r.content;
+    var cIn = r.input / 1000 * p.in, cOut = r.output / 1000 * p.out, cHit = r.hit / 1000 * p.hit;
+    document.getElementById("tv-rows").innerHTML =
+      "<tr><td>输入 Tokens</td><td class=\"mono\">" + fmt(r.input) + '</td><td class="mono">' + p.in.toFixed(4) + '</td><td class="cell-sub">全价</td><td class="mono">' + money(cIn) + "</td></tr>" +
+      "<tr><td>输出 Tokens</td><td class=\"mono\">" + fmt(r.output) + '</td><td class="mono">' + p.out.toFixed(4) + '</td><td class="cell-sub">全价</td><td class="mono">' + money(cOut) + "</td></tr>" +
+      "<tr><td>命中 Tokens</td><td class=\"mono\">" + fmt(r.hit) + '</td><td class="mono">' + p.hit.toFixed(4) + '</td><td class="cell-sub">RAG/缓存 2 折</td><td class="mono">' + money(cHit) + "</td></tr>";
+    document.getElementById("tv-total").textContent = money(cost(r));
+    document.getElementById("tv-log").href = "tool-log-center.html";
+    openModal("modal-tu");
+  }
+
+  var ids = ["t-kw", "t-module", "t-model", "t-start", "t-end"];
+  ids.forEach(function (id, i) {
+    document.getElementById(id).addEventListener(i === 0 ? "input" : "change", debounce(render, i === 0 ? 200 : 0));
+  });
+  document.getElementById("t-reset").addEventListener("click", function () {
+    ids.forEach(function (id) { document.getElementById(id).value = ""; });
+    document.getElementById("t-start").value = "2026-09-16"; document.getElementById("t-end").value = "2026-09-22";
+    page = 1; render(); toast("筛选已重置", "info");
+  });
+  document.getElementById("tu-export").addEventListener("click", function () {
+    var n = filtered().length;
+    if (!n) return toast("当前筛选无数据可导出", "warn");
+    toast("已导出 " + n + " 条消费记录（tokens-usage.csv，演示）", "success");
+  });
+
+  if (qs("tab")) { var tb = document.querySelector('.tab[data-tab="' + qs("tab") + '"]'); if (tb) tb.click(); }
+  render();
+})();
+</script>
+</body>
+</html>

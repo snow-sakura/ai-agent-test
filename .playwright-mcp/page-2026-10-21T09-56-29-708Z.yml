@@ -1,0 +1,123 @@
+- generic [ref=f7e3]:
+  - banner [ref=f7e4]:
+    - link "AT AITest Hub" [ref=f7e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f7e6]: AT
+      - text: AITest Hub
+    - generic [ref=f7e7]:
+      - generic [ref=f7e8]:
+        - link "🗂️ 卡片列表" [ref=f7e9] [cursor=pointer]:
+          - /url: /app
+          - generic [ref=f7e10]: 🗂️
+          - text: 卡片列表
+        - link "🌐 官网首页" [ref=f7e11] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f7e12]: 🌐
+          - text: 官网首页
+        - button "⚙️ 个人设置" [ref=f7e13] [cursor=pointer]:
+          - generic [ref=f7e14]: ⚙️
+          - text: 个人设置
+        - button "🚪 退出登录" [ref=f7e15] [cursor=pointer]:
+          - generic [ref=f7e16]: 🚪
+          - text: 退出登录
+      - generic [ref=f7e17]:
+        - generic [ref=f7e18]: S
+        - generic [ref=f7e19]: snow-sakura · 测试工程师
+  - generic [ref=f7e20]:
+    - complementary [ref=f7e21]:
+      - generic [ref=f7e22]:
+        - link "← 返回卡片列表" [ref=f7e23] [cursor=pointer]:
+          - /url: /app
+        - generic [ref=f7e24]:
+          - generic [ref=f7e25]: 🤖
+          - text: AI 用例工作台
+      - navigation [ref=f7e26]:
+        - generic [ref=f7e27]:
+          - generic [ref=f7e28]: 🏠
+          - generic [ref=f7e29]: 总览
+    - main [ref=f7e30]:
+      - generic [ref=f7e31]:
+        - link "工具台" [ref=f7e32] [cursor=pointer]:
+          - /url: /app
+        - text: / AI 用例工作台
+      - generic [ref=f7e33]:
+        - generic [ref=f7e34]:
+          - heading "🤖 AI 用例工作台" [level=1] [ref=f7e35]
+          - generic [ref=f7e36]: 粘贴需求 → AI 生成结构化用例 → 会话精修 → 导出 Excel / Markdown
+        - generic [ref=f7e37]:
+          - button "⬇️ 导出 Markdown" [ref=f7e38] [cursor=pointer]
+          - button "⬇️ 导出 Excel" [ref=f7e39] [cursor=pointer]
+          - button "💾 保存用例集" [ref=f7e40] [cursor=pointer]
+      - generic [ref=f7e41]:
+        - generic [ref=f7e42]:
+          - generic [ref=f7e43]:
+            - button "✍️ 单条生成" [ref=f7e44] [cursor=pointer]
+            - button "🚀 序列生成" [ref=f7e45] [cursor=pointer]
+          - generic [ref=f7e46]:
+            - generic [ref=f7e47]:
+              - text: 📋 需求输入
+              - generic [ref=f7e48]: AI
+            - generic [ref=f7e49]:
+              - generic [ref=f7e50]: 需求来源
+              - combobox [ref=f7e51] [cursor=pointer]:
+                - option "📝 粘贴需求文本" [selected]
+                - option "🎨 蓝湖需求链接"
+                - option "📎 上传附件（PRD / 图片）"
+            - generic [ref=f7e52]:
+              - generic [ref=f7e53]: 需求描述 *
+              - textbox "粘贴 PRD 需求描述，或输入功能点说明…" [ref=f7e54]: 订单退款功能需求： 1. 用户在订单详情页点击「申请退款」按钮，进入退款申请页 2. 退款原因为必填下拉框，共 7 项枚举（不想要了/拍错了/质量问题/与描述不符/未按约定时间发货/其他/商家原因） 3. 退款说明为选填文本框，最多 200 字，超出禁止输入 4. 提交后生成退款单，状态为「待审核」，可撤销 5. 审核通过后 1-3 个工作日原路退回；拒绝后可重新申请
+            - generic [ref=f7e55]:
+              - generic [ref=f7e56]: 用例生成风格
+              - generic [ref=f7e57]:
+                - generic [ref=f7e58] [cursor=pointer]:
+                  - checkbox "功能用例" [checked] [ref=f7e59]
+                  - text: 功能用例
+                - generic [ref=f7e60] [cursor=pointer]:
+                  - checkbox "边界分析" [checked] [ref=f7e61]
+                  - text: 边界分析
+                - generic [ref=f7e62] [cursor=pointer]:
+                  - checkbox "异常流" [ref=f7e63]
+                  - text: 异常流
+                - generic [ref=f7e64] [cursor=pointer]:
+                  - checkbox "接口用例" [ref=f7e65]
+                  - text: 接口用例
+            - generic [ref=f7e66]:
+              - generic [ref=f7e67]: AI 模型
+              - combobox [ref=f7e68] [cursor=pointer]:
+                - option "默认模型" [selected]
+            - button "✨ AI 生成用例" [ref=f7e69] [cursor=pointer]
+          - generic [ref=f7e70]:
+            - generic [ref=f7e71]:
+              - text: 🕘 历史用例集
+              - button "清空" [ref=f7e72] [cursor=pointer]
+            - generic [ref=f7e74]:
+              - generic [ref=f7e75]:
+                - generic [ref=f7e76]: 用例生成序列 · 10:44:51…
+                - generic [ref=f7e77]: 2026/10/21 10:54:57 · 193 条
+              - button "载入" [ref=f7e78] [cursor=pointer]
+        - generic [ref=f7e79]:
+          - generic [ref=f7e80]:
+            - generic [ref=f7e81]:
+              - text: 💬 AI 会话
+              - generic [ref=f7e82]: 就绪
+            - generic [ref=f7e85]:
+              - generic [ref=f7e86]: 🤖
+              - generic [ref=f7e87]: 你好，我是用例生成助手。请在左侧粘贴需求或填写蓝湖链接，选择生成风格后点击「AI 生成用例」。生成后你可以继续对话精修，例如：“补充支付失败场景”、“边界值再细化”。
+            - generic [ref=f7e88]:
+              - textbox "输入精修指令，如：补充退款审核拒绝的异常场景…" [ref=f7e89]
+              - button "发送" [ref=f7e90] [cursor=pointer]
+          - generic [ref=f7e91]:
+            - generic [ref=f7e92]:
+              - generic [ref=f7e93]:
+                - text: 📝 生成的用例
+                - generic [ref=f7e94]: 0 条
+              - generic [ref=f7e95]:
+                - textbox "🔍 搜索用例…" [ref=f7e96]
+                - combobox [ref=f7e97] [cursor=pointer]:
+                  - option "全部优先级" [selected]
+                  - option "P0"
+                  - option "P1"
+                  - option "P2"
+            - generic [ref=f7e98]:
+              - generic [ref=f7e99]: 📝
+              - generic [ref=f7e100]: 暂无用例，点击左侧「AI 生成用例」开始

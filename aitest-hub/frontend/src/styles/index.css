@@ -1,0 +1,13 @@
+/* ============================================================
+   AITest Hub 样式入口（分层按原 base.css 级联顺序拼接）
+   勿打乱顺序：shell 覆盖 layout，portal 覆盖 hub 相关规则
+   ============================================================ */
+@import './tokens.css';
+@import './reset.css';
+@import './chrome.css';
+@import './components.css';
+@import './layout.css';
+@import './responsive.css';
+@import './shell.css';
+@import './portal.css';
+@import './app.css';

@@ -1,0 +1,231 @@
+- generic [ref=f1e2]:
+  - banner [ref=f1e3]:
+    - generic [ref=f1e4]:
+      - generic [ref=f1e5]: AT
+      - text: AITest Hub · 序列生成演示
+    - generic [ref=f1e6]: 免费模型 = 单任务序列（串行保护额度）｜付费模型 = 并行序列（多路提速）
+  - generic [ref=f1e7]:
+    - text: 🧪 这是 纯 GitHub Pages 静态演示：无后端、无真实 AI 调用，调度引擎为浏览器内模拟； 配置与历史记录保存在你的浏览器 localStorage。完整产品形态请自托管仓库
+    - link "snow-sakura/aitest-hub" [ref=f1e8] [cursor=pointer]:
+      - /url: https://github.com/snow-sakura/aitest-hub
+    - text: 。
+  - generic [ref=f1e9]:
+    - generic [ref=f1e10]:
+      - generic [ref=f1e11]:
+        - heading "⚙️ 模型与计费档位 配置存本地" [level=3] [ref=f1e12]:
+          - text: ⚙️ 模型与计费档位
+          - generic [ref=f1e13]: 配置存本地
+        - generic [ref=f1e14]:
+          - generic [ref=f1e15]:
+            - generic [ref=f1e16]: DeepSeek-V3
+            - combobox [ref=f1e17]:
+              - option "🆓 免费 · 单任务序列" [selected]
+              - option "💎 付费 · 并行序列"
+          - generic [ref=f1e18]:
+            - generic [ref=f1e19]: 通义千问 Qwen-Plus
+            - combobox [ref=f1e20]:
+              - option "🆓 免费 · 单任务序列"
+              - option "💎 付费 · 并行序列" [selected]
+          - generic [ref=f1e21]:
+            - generic [ref=f1e22]: 智谱 GLM-4-Plus
+            - combobox [ref=f1e23]:
+              - option "🆓 免费 · 单任务序列" [selected]
+              - option "💎 付费 · 并行序列"
+          - generic [ref=f1e24]:
+            - generic [ref=f1e25]: OpenAI GPT-4o
+            - combobox [ref=f1e26]:
+              - option "🆓 免费 · 单任务序列"
+              - option "💎 付费 · 并行序列" [selected]
+        - generic [ref=f1e27]: 档位决定下方序列的调度策略；修改自动保存。
+      - generic [ref=f1e28]:
+        - heading "🚀 提交生成序列" [level=3] [ref=f1e29]
+        - generic [ref=f1e30]:
+          - generic [ref=f1e31]: 任务清单（每行一条，≤ 20 条）
+          - textbox [ref=f1e32]: 订单退款的申请退款流程，设计功能与边界用例 优惠券领取与下单使用流程，重点并发领取与过期边界 发票抬头申请与邮件送达，含校验失败异常用例
+        - generic [ref=f1e33]:
+          - generic [ref=f1e34]: AI 模型
+          - combobox [ref=f1e35]:
+            - option "🆓 DeepSeek-V3"
+            - option "💎 通义千问 Qwen-Plus" [selected]
+            - option "🆓 智谱 GLM-4-Plus"
+            - option "💎 OpenAI GPT-4o"
+        - generic [ref=f1e36]: 🔀 付费模型 · 3 路并行序列3 个任务 · 预计墙钟 ≈ ceil(3 ÷ 3) 批
+        - generic [ref=f1e285]:
+          - generic [ref=f1e286]: 并发路数（付费 1-8）
+          - spinbutton [ref=f1e287]: "3"
+        - generic [ref=f1e38]:
+          - checkbox "模拟 1 个任务失败（演示重试）" [checked] [active] [ref=f1e39]
+          - text: 模拟 1 个任务失败（演示重试）
+        - button "🚀 开始序列生成" [ref=f1e40] [cursor=pointer]
+        - generic [ref=f1e41]: 串行耗时 ≈ 各任务之和；并行耗时 ≈ 最慢批次。对照勾选任务数即可直观感受差异。
+    - generic [ref=f1e42]:
+      - generic [ref=f1e43]:
+        - heading "📈 序列时间线 🆓 单任务串行" [level=3] [ref=f1e103]:
+          - text: 📈 序列时间线
+          - generic [ref=f1e104]: 🆓 单任务串行
+        - generic [ref=f1e125]:
+          - generic [ref=f1e126]: SQ-MVJA2ABA · DeepSeek-V3
+          - generic [ref=f1e127]: 任务 3/3（✅3 ❌0）
+          - generic [ref=f1e128]: 100%
+        - generic [ref=f1e46]:
+          - generic [ref=f1e130]:
+            - generic [ref=f1e131]: "01"
+            - generic [ref=f1e132]: ✅ 成功
+            - generic [ref=f1e133]: 订单退款的申请退款流程，设计功能与边界用例
+            - generic [ref=f1e134]: 5 条 · 1.8s
+          - generic [ref=f1e135]:
+            - generic [ref=f1e136]: "02"
+            - generic [ref=f1e137]: ✅ 成功
+            - generic [ref=f1e138]: 优惠券领取与下单使用流程，重点并发领取与过期边界
+            - generic [ref=f1e139]: 5 条 · 1.3s
+          - generic [ref=f1e140]:
+            - generic [ref=f1e141]: "03"
+            - generic [ref=f1e142]: ✅ 成功
+            - generic [ref=f1e143]: 发票抬头申请与邮件送达，含校验失败异常用例
+            - generic [ref=f1e144]: 5 条 · 1.5s
+        - generic [ref=f1e123]: 已完成
+      - generic [ref=f1e48]:
+        - heading "📝 最新序列生成用例 15 条" [level=3] [ref=f1e146]:
+          - text: 📝 最新序列生成用例
+          - generic [ref=f1e50]: 15 条
+        - table [ref=f1e147]:
+          - rowgroup [ref=f1e148]:
+            - row [ref=f1e149]:
+              - columnheader "编号" [ref=f1e150]
+              - columnheader "用例" [ref=f1e151]
+              - columnheader "优先级" [ref=f1e152]
+              - columnheader "步骤" [ref=f1e153]
+          - rowgroup [ref=f1e154]:
+            - row [ref=f1e155]:
+              - cell "TC-1" [ref=f1e156]
+              - cell "订单退款的申请退款流程，…｜正常主流程" [ref=f1e157]
+              - cell "P0" [ref=f1e158]
+              - cell "按需求主路径操作" [ref=f1e160]
+            - row [ref=f1e161]:
+              - cell "TC-2" [ref=f1e162]
+              - cell "订单退款的申请退款流程，…｜必填项为空校验" [ref=f1e163]
+              - cell "P1" [ref=f1e164]
+              - cell "关键输入置空后提交" [ref=f1e166]
+            - row [ref=f1e167]:
+              - cell "TC-3" [ref=f1e168]
+              - cell "订单退款的申请退款流程，…｜边界值上下限" [ref=f1e169]
+              - cell "P1" [ref=f1e170]
+              - cell "输入长度/数量边界±1" [ref=f1e172]
+            - row [ref=f1e173]:
+              - cell "TC-4" [ref=f1e174]
+              - cell "订单退款的申请退款流程，…｜并发重复提交" [ref=f1e175]
+              - cell "P2" [ref=f1e176]
+              - cell "快速重复提交/多端同时操作" [ref=f1e178]
+            - row [ref=f1e179]:
+              - cell "TC-5" [ref=f1e180]
+              - cell "订单退款的申请退款流程，…｜服务异常降级" [ref=f1e181]
+              - cell "P2" [ref=f1e182]
+              - cell "依赖服务超时/断网重试" [ref=f1e184]
+            - row [ref=f1e185]:
+              - cell "TC-6" [ref=f1e186]
+              - cell "优惠券领取与下单使用流程…｜正常主流程" [ref=f1e187]
+              - cell "P0" [ref=f1e188]
+              - cell "按需求主路径操作" [ref=f1e190]
+            - row [ref=f1e191]:
+              - cell "TC-7" [ref=f1e192]
+              - cell "优惠券领取与下单使用流程…｜必填项为空校验" [ref=f1e193]
+              - cell "P1" [ref=f1e194]
+              - cell "关键输入置空后提交" [ref=f1e196]
+            - row [ref=f1e197]:
+              - cell "TC-8" [ref=f1e198]
+              - cell "优惠券领取与下单使用流程…｜边界值上下限" [ref=f1e199]
+              - cell "P1" [ref=f1e200]
+              - cell "输入长度/数量边界±1" [ref=f1e202]
+            - row [ref=f1e203]:
+              - cell "TC-9" [ref=f1e204]
+              - cell "优惠券领取与下单使用流程…｜并发重复提交" [ref=f1e205]
+              - cell "P2" [ref=f1e206]
+              - cell "快速重复提交/多端同时操作" [ref=f1e208]
+            - row [ref=f1e209]:
+              - cell "TC-10" [ref=f1e210]
+              - cell "优惠券领取与下单使用流程…｜服务异常降级" [ref=f1e211]
+              - cell "P2" [ref=f1e212]
+              - cell "依赖服务超时/断网重试" [ref=f1e214]
+            - row [ref=f1e215]:
+              - cell "TC-11" [ref=f1e216]
+              - cell "发票抬头申请与邮件送达，…｜正常主流程" [ref=f1e217]
+              - cell "P0" [ref=f1e218]
+              - cell "按需求主路径操作" [ref=f1e220]
+            - row [ref=f1e221]:
+              - cell "TC-12" [ref=f1e222]
+              - cell "发票抬头申请与邮件送达，…｜必填项为空校验" [ref=f1e223]
+              - cell "P1" [ref=f1e224]
+              - cell "关键输入置空后提交" [ref=f1e226]
+            - row [ref=f1e227]:
+              - cell "TC-13" [ref=f1e228]
+              - cell "发票抬头申请与邮件送达，…｜边界值上下限" [ref=f1e229]
+              - cell "P1" [ref=f1e230]
+              - cell "输入长度/数量边界±1" [ref=f1e232]
+            - row [ref=f1e233]:
+              - cell "TC-14" [ref=f1e234]
+              - cell "发票抬头申请与邮件送达，…｜并发重复提交" [ref=f1e235]
+              - cell "P2" [ref=f1e236]
+              - cell "快速重复提交/多端同时操作" [ref=f1e238]
+            - row [ref=f1e239]:
+              - cell "TC-15" [ref=f1e240]
+              - cell "发票抬头申请与邮件送达，…｜服务异常降级" [ref=f1e241]
+              - cell "P2" [ref=f1e242]
+              - cell "依赖服务超时/断网重试" [ref=f1e244]
+      - generic [ref=f1e53]:
+        - heading "🗂 演示记录 localStorage 持久化 · 首次自动加载 GitHub 种子数据 导出 JSON 清空" [level=3] [ref=f1e54]:
+          - text: 🗂 演示记录
+          - generic [ref=f1e55]: localStorage 持久化 · 首次自动加载 GitHub 种子数据
+          - button "导出 JSON" [ref=f1e56] [cursor=pointer]
+          - button "清空" [ref=f1e57] [cursor=pointer]
+        - table [ref=f1e59]:
+          - rowgroup [ref=f1e60]:
+            - row [ref=f1e61]:
+              - columnheader "编号" [ref=f1e62]
+              - columnheader "时间" [ref=f1e63]
+              - columnheader "模型" [ref=f1e64]
+              - columnheader "调度" [ref=f1e65]
+              - columnheader "任务" [ref=f1e66]
+              - columnheader "用例" [ref=f1e67]
+              - columnheader "耗时" [ref=f1e68]
+              - columnheader "状态" [ref=f1e69]
+          - rowgroup [ref=f1e70]:
+            - row [ref=f1e245]:
+              - cell "SQ-MVJA2ABA" [ref=f1e246]
+              - cell "2026/10/22 16:27:07" [ref=f1e247]
+              - cell "DeepSeek-V3" [ref=f1e248]
+              - cell "➡️ 串行" [ref=f1e249]
+              - cell "3（✅3）" [ref=f1e250]
+              - cell "15" [ref=f1e251]
+              - cell "5s" [ref=f1e252]
+              - cell "已完成" [ref=f1e253]
+            - row [ref=f1e255]:
+              - cell "SQ-DEMO-0001" [ref=f1e256]
+              - cell "2026-10-20 14:02:11" [ref=f1e257]
+              - cell "DeepSeek-V3" [ref=f1e258]
+              - cell "➡️ 串行" [ref=f1e259]
+              - cell "3（✅3）" [ref=f1e260]
+              - cell "28" [ref=f1e261]
+              - cell "12s" [ref=f1e262]
+              - cell "已完成" [ref=f1e263]
+            - row [ref=f1e265]:
+              - cell "SQ-DEMO-0002" [ref=f1e266]
+              - cell "2026-10-20 15:37:48" [ref=f1e267]
+              - cell "OpenAI GPT-4o" [ref=f1e268]
+              - cell "🔀 并行×3" [ref=f1e269]
+              - cell "6（✅6）" [ref=f1e270]
+              - cell "74" [ref=f1e271]
+              - cell "5s" [ref=f1e272]
+              - cell "已完成" [ref=f1e273]
+            - row [ref=f1e275]:
+              - cell "SQ-DEMO-0003" [ref=f1e276]
+              - cell "2026-10-20 18:20:03" [ref=f1e277]
+              - cell "通义千问 Qwen-Plus" [ref=f1e278]
+              - cell "🔀 并行×3" [ref=f1e279]
+              - cell "4（✅3 ❌1）" [ref=f1e280]
+              - cell "41" [ref=f1e281]
+              - cell "4s" [ref=f1e282]
+              - cell "部分失败" [ref=f1e283]
+  - contentinfo [ref=f1e101]:
+    - text: AITest Hub Demo · 本页仅模拟调度策略用于演示 ·
+    - link "GitHub 仓库" [ref=f1e102] [cursor=pointer]:
+      - /url: https://github.com/snow-sakura/aitest-hub

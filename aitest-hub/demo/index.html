@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>序列生成演示 · AITest Hub（纯 GitHub Pages）</title>
+<style>
+  :root {
+    --bg: #0b1220; --panel: #101a2e; --panel2: #0d1626; --border: #1f2c47;
+    --txt: #e6ecf7; --dim: #93a4c3; --faint: #5c6f93;
+    --green: #22c55e; --red: #ef4444; --orange: #f59e0b; --purple: #a78bfa; --blue: #38bdf8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--txt); font: 14px/1.6 "PingFang SC","Microsoft YaHei",system-ui,sans-serif; min-height: 100vh; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 22px 18px 60px; }
+  header.hero { text-align: center; padding: 26px 0 8px; }
+  .logo { display: inline-flex; align-items: center; gap: 10px; font-size: 24px; font-weight: 700; }
+  .logo .mark { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg,#38bdf8,#a78bfa); display: inline-grid; place-items: center; font-size: 16px; color: #0b1220; }
+  .sub { color: var(--dim); margin-top: 8px; }
+  .banner { margin: 16px 0; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--panel2); color: var(--dim); font-size: 12.5px; }
+  .grid { display: grid; grid-template-columns: 400px 1fr; gap: 14px; align-items: start; }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 14px; }
+  .card h3 { font-size: 15px; margin-bottom: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; color: var(--dim); font-size: 12.5px; margin-bottom: 5px; }
+  textarea, select, input[type="number"] { width: 100%; background: var(--panel2); color: var(--txt); border: 1px solid var(--border); border-radius: 9px; padding: 9px 11px; font: inherit; font-size: 13px; }
+  textarea { resize: vertical; min-height: 120px; }
+  .tag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 9px; border-radius: 99px; font-size: 11.5px; border: 1px solid var(--border); background: var(--panel2); color: var(--dim); }
+  .t-green { color: var(--green); border-color: rgba(34,197,94,.35); background: rgba(34,197,94,.08); }
+  .t-red { color: var(--red); border-color: rgba(239,68,68,.35); background: rgba(239,68,68,.08); }
+  .t-orange { color: var(--orange); border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.08); }
+  .t-purple { color: var(--purple); border-color: rgba(167,139,250,.35); background: rgba(167,139,250,.08); }
+  .t-blue { color: var(--blue); border-color: rgba(56,189,248,.35); background: rgba(56,189,248,.08); }
+  .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border: 1px solid var(--border); background: var(--panel2); color: var(--txt); border-radius: 9px; padding: 8px 14px; font: inherit; font-size: 13px; cursor: pointer; }
+  .btn:hover { border-color: var(--faint); }
+  .btn.primary { background: linear-gradient(135deg,#2563eb,#7c3aed); border: none; color: #fff; width: 100%; padding: 10px; font-weight: 600; }
+  .btn.primary:disabled { opacity: .55; cursor: not-allowed; }
+  .btn.small { padding: 4px 10px; font-size: 12px; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .hint { color: var(--faint); font-size: 11.5px; margin-top: 6px; }
+  .preview { border: 1px dashed var(--border); border-radius: 10px; padding: 10px 12px; font-size: 12.5px; color: var(--dim); }
+  .mono { font-family: ui-monospace,SFMono-Regular,Menlo,monospace; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { padding: 7px 9px; border-bottom: 1px solid var(--border); text-align: left; }
+  th { color: var(--faint); font-weight: 500; }
+  .bar { height: 8px; border: 1px solid var(--border); border-radius: 99px; overflow: hidden; margin: 8px 0 12px; }
+  .bar > div { height: 100%; width: 0; background: var(--green); transition: width .4s; }
+  .bar.fail > div { background: var(--orange); }
+  .item { display: flex; gap: 8px; align-items: center; padding: 8px 11px; border: 1px solid var(--border); border-radius: 9px; margin-bottom: 6px; font-size: 12.5px; }
+  .item .idx { color: var(--faint); min-width: 20px; }
+  .item .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .item .dur { color: var(--faint); font-size: 11px; }
+  .empty { text-align: center; color: var(--faint); padding: 26px 10px; font-size: 13px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .flex1 { flex: 1; }
+  .num { width: 90px !important; }
+  .model-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 9px; margin-bottom: 6px; font-size: 13px; }
+  .model-row select { width: 210px; }
+  a { color: var(--blue); }
+  footer { text-align: center; color: var(--faint); font-size: 12px; margin-top: 30px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <div class="logo"><span class="mark">AT</span>AITest Hub · 序列生成演示</div>
+    <div class="sub">免费模型 = 单任务序列（串行保护额度）｜付费模型 = 并行序列（多路提速）</div>
+  </header>
+
+  <div class="banner">
+    🧪 这是 <b>纯 GitHub Pages 静态演示</b>：无后端、无真实 AI 调用，调度引擎为浏览器内模拟；
+    配置与历史记录保存在你的浏览器 localStorage。完整产品形态请自托管仓库
+    <a href="https://github.com/snow-sakura/aitest-hub" target="_blank">snow-sakura/aitest-hub</a>。
+  </div>
+
+  <div class="grid">
+    <!-- 左列 -->
+    <div>
+      <div class="card">
+        <h3>⚙️ 模型与计费档位 <span class="tag t-blue">配置存本地</span></h3>
+        <div id="modelList"></div>
+        <div class="hint">档位决定下方序列的调度策略；修改自动保存。</div>
+      </div>
+
+      <div class="card">
+        <h3>🚀 提交生成序列</h3>
+        <div class="field">
+          <label>任务清单（每行一条，≤ 20 条）</label>
+          <textarea id="tasks">订单退款的申请退款流程，设计功能与边界用例
+优惠券领取与下单使用流程，重点并发领取与过期边界
+发票抬头申请与邮件送达，含校验失败异常用例</textarea>
+        </div>
+        <div class="field">
+          <label>AI 模型</label>
+          <select id="modelSel"></select>
+        </div>
+        <div class="field preview" id="preview"></div>
+        <div class="field" id="concWrap" style="display:none">
+          <label>并发路数（付费 1-8）</label>
+          <input class="num" type="number" id="conc" min="1" max="8" value="3" />
+        </div>
+        <div class="field row">
+          <label class="row" style="margin:0"><input type="checkbox" id="simFail" /> 模拟 1 个任务失败（演示重试）</label>
+        </div>
+        <button class="btn primary" id="start">🚀 开始序列生成</button>
+        <div class="hint">串行耗时 ≈ 各任务之和；并行耗时 ≈ 最慢批次。对照勾选任务数即可直观感受差异。</div>
+      </div>
+    </div>
+
+    <!-- 右列 -->
+    <div>
+      <div class="card">
+        <h3 id="seqTitle">📈 序列时间线</h3>
+        <div id="seqHead"></div>
+        <div class="bar" id="bar"><div id="barIn"></div></div>
+        <div id="items"><div class="empty">尚未提交序列 —— 在左侧填写任务清单后点击「开始序列生成」</div></div>
+        <div class="row" id="seqActions" style="margin-top:10px"></div>
+      </div>
+
+      <div class="card">
+        <h3>📝 最新序列生成用例 <span class="tag t-green" id="caseCnt">0 条</span></h3>
+        <div id="cases"><div class="empty">完成一个序列后，这里展示生成的结构化用例</div></div>
+      </div>
+
+      <div class="card">
+        <h3>🗂 演示记录 <span class="hint flex1">localStorage 持久化 · 首次自动加载 GitHub 种子数据</span>
+          <button class="btn small" id="exportBtn">导出 JSON</button>
+          <button class="btn small" id="clearBtn">清空</button>
+        </h3>
+        <div style="overflow-x:auto">
+        <table>
+          <thead><tr><th>编号</th><th>时间</th><th>模型</th><th>调度</th><th>任务</th><th>用例</th><th>耗时</th><th>状态</th></tr></thead>
+          <tbody id="recBody"></tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>AITest Hub Demo · 本页仅模拟调度策略用于演示 · <a href="https://github.com/snow-sakura/aitest-hub" target="_blank">GitHub 仓库</a></footer>
+</div>
+
+<script>
+"use strict";
+/* ---------------- 种子与存储 ---------------- */
+var RAW = "https://raw.githubusercontent.com/snow-sakura/aitest-hub/main/demo/data/seed.json";
+var FALLBACK = {
+  models: [
+    { id: "deepseek-v3", name: "DeepSeek-V3", tier: "free" },
+    { id: "qwen-plus", name: "通义千问 Qwen-Plus", tier: "paid" },
+    { id: "glm-4", name: "智谱 GLM-4-Plus", tier: "free" },
+    { id: "gpt-4o", name: "OpenAI GPT-4o", tier: "paid" }
+  ],
+  records: [
+    { id: "SQ-DEMO-0001", time: "2026-10-20 14:02:11", model: "DeepSeek-V3", tier: "free", mode: "serial", concurrency: 1, status: "已完成", tasks: 3, done: 3, fail: 0, cases: 28, seconds: 12 },
+    { id: "SQ-DEMO-0002", time: "2026-10-20 15:37:48", model: "OpenAI GPT-4o", tier: "paid", mode: "parallel", concurrency: 3, status: "已完成", tasks: 6, done: 6, fail: 0, cases: 74, seconds: 5 }
+  ]
+};
+var K_M = "aitesthub_demo_models_v1", K_R = "aitesthub_demo_records_v1";
+function lsGet(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
+function lsSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+var models = lsGet(K_M, null);
+var records = lsGet(K_R, null);
+
+/* 首次：拉种子（本地 data/ 优先 → GitHub raw → 内置兜底） */
+if (!models || !records) {
+  (function () {
+    function apply(seed) {
+      if (!lsGet(K_M, null) && seed.models) { models = seed.models; lsSet(K_M, models); }
+      if (!lsGet(K_R, null) && seed.records) { records = seed.records; lsSet(K_R, records); }
+      renderModels(); renderRecords();
+    }
+    fetch("data/seed.json").then(function (r) { if (!r.ok) throw 0; return r.json(); })
+      .catch(function () { return fetch(RAW).then(function (r) { if (!r.ok) throw 0; return r.json(); }); })
+      .catch(function () { return FALLBACK; })
+      .then(apply);
+  })();
+} else { models = models; records = records; }
+if (!models) models = FALLBACK.models;
+if (!records) records = [];
+
+/* ---------------- 模型配置 ---------------- */
+function tierTag(t) { return t === "paid" ? '<span class="tag t-orange">💎 付费</span>' : '<span class="tag t-green">🆓 免费</span>'; }
+function renderModels() {
+  var el = document.getElementById("modelList"), h = "";
+  models.forEach(function (m, i) {
+    h += '<div class="model-row"><span class="flex1">' + esc(m.name) + "</span>" +
+      '<select data-i="' + i + '"><option value="free"' + (m.tier === "free" ? " selected" : "") + ">🆓 免费 · 单任务序列</option>" +
+      '<option value="paid"' + (m.tier === "paid" ? " selected" : "") + ">💎 付费 · 并行序列</option></select></div>";
+  });
+  el.innerHTML = h;
+  el.querySelectorAll("select").forEach(function (s) {
+    s.onchange = function () {
+      models[+s.dataset.i].tier = s.value;
+      lsSet(K_M, models); refreshModelSel(); refreshPreview();
+    };
+  });
+  refreshModelSel();
+}
+function refreshModelSel() {
+  var sel = document.getElementById("modelSel"), cur = sel.value;
+  sel.innerHTML = models.map(function (m) {
+    return '<option value="' + m.id + '"' + (m.id === cur ? " selected" : "") + ">" + (m.tier === "paid" ? "💎" : "🆓") + " " + esc(m.name) + "</option>";
+  }).join("");
+}
+function curModel() {
+  var id = document.getElementById("modelSel").value;
+  for (var i = 0; i < models.length; i++) if (models[i].id === id) return models[i];
+  return models[0];
+}
+function taskLines() {
+  return document.getElementById("tasks").value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean);
+}
+function refreshPreview() {
+  var m = curModel(), n = Math.max(1, taskLines().length);
+  var paid = m.tier === "paid";
+  var conc = Math.min(8, Math.max(1, +document.getElementById("conc").value || 3));
+  document.getElementById("concWrap").style.display = paid ? "" : "none";
+  document.getElementById("preview").innerHTML = paid
+    ? "🔀 <b>付费模型 · " + conc + " 路并行序列</b><br>" + n + " 个任务 · 预计墙钟 ≈ ceil(" + n + " ÷ " + conc + ") 批"
+    : "➡️ <b>免费模型 · 单任务序列（并发 1，串行保护额度）</b><br>" + n + " 个任务 · 预计墙钟 ≈ 各任务耗时之和";
+}
+
+/* ---------------- 用例模拟 ---------------- */
+function fakeCases(req, idxBase) {
+  var key = req.length > 12 ? req.slice(0, 12) + "…" : req;
+  return [
+    { name: key + "｜正常主流程", pri: "P0", steps: "按需求主路径操作", exp: "流程走通，状态与数据一致" },
+    { name: key + "｜必填项为空校验", pri: "P1", steps: "关键输入置空后提交", exp: "阻止提交并逐项红字提示" },
+    { name: key + "｜边界值上下限", pri: "P1", steps: "输入长度/数量边界±1", exp: "边界内允许、越界禁止且提示正确" },
+    { name: key + "｜并发重复提交", pri: "P2", steps: "快速重复提交/多端同时操作", exp: "幂等，无重复单据或脏数据" },
+    { name: key + "｜服务异常降级", pri: "P2", steps: "依赖服务超时/断网重试", exp: "友好报错可重试，不产生半成品数据" }
+  ].map(function (c, i) { c.id = "TC-" + (idxBase + i); return c; });
+}
+
+/* ---------------- 序列引擎（模拟） ---------------- */
+var seq = null, timer = null, caseIdx = 1;
+function statusCls(s) { return s === "成功" ? "t-green" : s === "执行中" ? "t-purple" : s === "失败" ? "t-red" : s === "已取消" ? "" : "t-blue"; }
+function statusIcon(s) { return { "等待中": "⏳", "执行中": "🔄", "成功": "✅", "失败": "❌", "已取消": "⊘" }[s] || "•"; }
+
+document.getElementById("start").onclick = function () {
+  var lines = taskLines();
+  if (!lines.length) { alert("请至少填写一条任务需求"); return; }
+  if (lines.length > 20) { alert("单序列最多 20 个任务"); return; }
+  var m = curModel(), paid = m.tier === "paid";
+  var conc = paid ? Math.min(8, Math.max(1, +document.getElementById("conc").value || 3)) : 1;
+  var failAt = document.getElementById("simFail").checked ? Math.floor(Math.random() * lines.length) : -1;
+  seq = {
+    id: "SQ-" + Date.now().toString(36).toUpperCase(),
+    t0: Date.now(), model: m.name, tier: m.tier, mode: paid ? "parallel" : "serial",
+    conc: conc, failAt: failAt,
+    items: lines.map(function (r, i) { return { name: r.slice(0, 28), full: r, status: "等待中", ms: 0, cases: [], willFail: i === failAt }; })
+  };
+  document.getElementById("seqTitle").innerHTML = "📈 序列时间线 <span class='tag " + (paid ? "t-orange" : "t-green") + "'>" + (paid ? "💎 并行 " + conc + " 路" : "🆓 单任务串行") + "</span>";
+  document.getElementById("seqActions").innerHTML = '<button class="btn small" id="cancelBtn">⏹ 取消序列</button>';
+  document.getElementById("cancelBtn").onclick = cancelSeq;
+  renderSeq();
+  timer = setInterval(tick, 250);
+};
+function cancelSeq() {
+  if (!seq) return;
+  seq.items.forEach(function (it) { if (it.status !== "成功") it.status = "已取消"; });
+  clearInterval(timer); timer = null;
+  finish("已取消");
+}
+function tick() {
+  if (!seq) return;
+  var running = seq.items.filter(function (i) { return i.status === "执行中"; });
+  /* 推进执行中的任务 */
+  running.forEach(function (it) {
+    it.ms += 250;
+    var need = it.need || (it.need = 1200 + Math.random() * 600);
+    if (it.ms >= need) {
+      if (it.willFail) { it.status = "失败"; }
+      else { it.status = "成功"; it.cases = fakeCases(it.full, caseIdx); caseIdx += it.cases.length; }
+    }
+  });
+  /* 调度新任务 */
+  var cap = seq.mode === "serial" ? 0 : seq.conc;
+  var active = seq.items.filter(function (i) { return i.status === "执行中"; }).length;
+  for (var i = 0; i < seq.items.length && (seq.mode === "serial" ? active === 0 : active < cap); i++) {
+    var it = seq.items[i];
+    if (it.status === "等待中") { it.status = "执行中"; it.ms = 0; it.need = 1200 + Math.random() * 600; active++; }
+  }
+  renderSeq();
+  if (!seq.items.some(function (i) { return i.status === "执行中" || i.status === "等待中"; })) {
+    clearInterval(timer); timer = null;
+    var fail = seq.items.filter(function (i) { return i.status === "失败"; }).length;
+    finish(fail ? (fail === seq.items.length ? "全部失败" : "部分失败") : "已完成");
+  }
+}
+function finish(status) {
+  var done = seq.items.filter(function (i) { return i.status === "成功"; });
+  var fail = seq.items.filter(function (i) { return i.status === "失败"; }).length;
+  var secs = Math.round((Date.now() - seq.t0) / 1000);
+  var cases = [];
+  seq.items.forEach(function (i) { cases = cases.concat(i.cases || []); });
+  /* 结果区 */
+  var h = "";
+  cases.slice(0, 30).forEach(function (c) {
+    h += "<tr><td class='mono'>" + c.id + "</td><td>" + esc(c.name) + "</td><td><span class='tag " + (c.pri === "P0" ? "t-red" : c.pri === "P1" ? "t-orange" : "") + "'>" + c.pri + "</span></td><td>" + esc(c.steps) + "</td></tr>";
+  });
+  document.getElementById("cases").innerHTML = cases.length
+    ? '<table><thead><tr><th>编号</th><th>用例</th><th>优先级</th><th>步骤</th></tr></thead><tbody>' + h + "</tbody></table>" + (cases.length > 30 ? '<div class="hint">仅展示前 30 条</div>' : "")
+    : '<div class="empty">本次序列没有成功用例</div>';
+  document.getElementById("caseCnt").textContent = cases.length + " 条";
+  /* 动作区 */
+  var acts = '<span class="tag ' + (status === "已完成" ? "t-green" : status === "部分失败" ? "t-orange" : "t-blue") + '">' + status + "</span>";
+  if (fail) acts += ' <button class="btn small" id="retryBtn">🔁 重试失败任务</button>';
+  document.getElementById("seqActions").innerHTML = acts;
+  var rb = document.getElementById("retryBtn");
+  if (rb) rb.onclick = function () {
+    seq.items.forEach(function (it) { if (it.status === "失败") { it.status = "等待中"; it.ms = 0; it.willFail = false; } });
+    document.getElementById("seqActions").innerHTML = '<button class="btn small" id="cancelBtn">⏹ 取消序列</button>';
+    document.getElementById("cancelBtn").onclick = cancelSeq;
+    timer = setInterval(tick, 250);
+  };
+  /* 记录 */
+  records.unshift({
+    id: seq.id, time: new Date().toLocaleString("zh-CN", { hour12: false }),
+    model: seq.model, tier: seq.tier, mode: seq.mode, concurrency: seq.conc,
+    status: status, tasks: seq.items.length, done: done.length, fail: fail,
+    cases: cases.length, seconds: secs
+  });
+  records = records.slice(0, 50);
+  lsSet(K_R, records); renderRecords();
+}
+function renderSeq() {
+  var done = seq.items.filter(function (i) { return i.status === "成功"; }).length;
+  var fail = seq.items.filter(function (i) { return i.status === "失败"; }).length;
+  var fin = done + fail + seq.items.filter(function (i) { return i.status === "已取消"; }).length;
+  var pct = Math.round(fin / seq.items.length * 100);
+  document.getElementById("seqHead").innerHTML =
+    '<div class="row" style="font-size:12px;color:var(--dim)"><span class="flex1 mono">' + seq.id + " · " + esc(seq.model) + "</span>" +
+    "<span>任务 " + fin + "/" + seq.items.length + "（✅" + done + " ❌" + fail + "）</span>" +
+    '<span class="mono">' + pct + "%</span></div>";
+  var bar = document.getElementById("bar");
+  bar.className = "bar" + (fail ? " fail" : "");
+  document.getElementById("barIn").style.width = pct + "%";
+  document.getElementById("items").innerHTML = seq.items.map(function (it, i) {
+    return '<div class="item"><span class="idx mono">' + String(i + 1).padStart(2, "0") + "</span>" +
+      '<span class="tag ' + statusCls(it.status) + '">' + statusIcon(it.status) + " " + it.status + "</span>" +
+      '<span class="name">' + esc(it.name) + "</span>" +
+      (it.status === "成功" ? '<span class="dur">' + (it.cases.length) + " 条 · " + (it.ms / 1000).toFixed(1) + "s</span>" :
+        it.status === "执行中" ? '<span class="dur mono">' + (it.ms / 1000).toFixed(1) + "s</span>" : "") +
+      "</div>";
+  }).join("");
+}
+
+/* ---------------- 记录 ---------------- */
+function renderRecords() {
+  var h = "";
+  records.forEach(function (r) {
+    h += "<tr><td class='mono'>" + r.id + "</td><td>" + r.time + "</td><td>" + esc(r.model) + "</td>" +
+      "<td>" + (r.mode === "parallel" ? "🔀 并行×" + r.concurrency : "➡️ 串行") + "</td>" +
+      "<td>" + r.tasks + "（✅" + r.done + (r.fail ? " ❌" + r.fail : "") + "）</td>" +
+      "<td class='mono'>" + r.cases + "</td><td class='mono'>" + r.seconds + "s</td>" +
+      "<td><span class='tag " + (r.status === "已完成" ? "t-green" : r.status === "部分失败" ? "t-orange" : "t-blue") + "'>" + r.status + "</span></td></tr>";
+  });
+  document.getElementById("recBody").innerHTML = h || '<tr><td colspan="8"><div class="empty">暂无记录</div></td></tr>';
+}
+document.getElementById("clearBtn").onclick = function () {
+  if (!confirm("清空本地演示记录？（不影响 GitHub 种子，刷新可能重新加载）")) return;
+  records = []; lsSet(K_R, records); renderRecords();
+};
+document.getElementById("exportBtn").onclick = function () {
+  var blob = new Blob([JSON.stringify({ app: "aitest-hub-demo", exportedAt: new Date().toISOString(), models: models, records: records }, null, 2)], { type: "application/json" });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "aitest-hub-demo-records.json"; a.click();
+  URL.revokeObjectURL(a.href);
+};
+function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]; }); }
+
+/* 绑定与初始渲染 */
+document.getElementById("tasks").addEventListener("input", refreshPreview);
+document.getElementById("modelSel").addEventListener("change", refreshPreview);
+document.getElementById("conc").addEventListener("input", refreshPreview);
+renderModels(); renderRecords(); refreshPreview();
+</script>
+</body>
+</html>

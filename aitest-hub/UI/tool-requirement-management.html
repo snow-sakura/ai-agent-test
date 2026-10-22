@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>需求管理 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / 需求管理</div>
+    <div class="page-head">
+      <div>
+        <h1>📋 需求管理</h1>
+        <div class="sub">AI 需求解析（PDF / Word / TXT）→ 需求条目化 → 一键派生用例 / 压测场景 / 安全测试项，需求到资产全链路追溯</div>
+      </div>
+      <div class="flex">
+        <button class="btn btn-ghost" id="btn-ai-config">🤖 AI 模型配置</button>
+        <button class="btn btn-primary" data-open-modal="modal-req">＋ 新建需求</button>
+      </div>
+    </div>
+
+    <div class="banner banner-info">ℹ️ 参考 TestHub「AI 需求分析」能力：上传需求文档后 AI 自动解析业务需求并条目化，每条需求可一键派生测试资产，派生结果自动双向关联。</div>
+
+    <!-- 统计 -->
+    <div class="grid grid-4 mb-16">
+      <div class="card stat-card"><div class="s-label">需求总数</div><div class="s-value" id="st-total">0</div></div>
+      <div class="card stat-card"><div class="s-label">已解析条目</div><div class="s-value" style="color:var(--blue)" id="st-items">0</div></div>
+      <div class="card stat-card"><div class="s-label">已派生用例</div><div class="s-value" style="color:var(--green)" id="st-cases">0</div></div>
+      <div class="card stat-card"><div class="s-label">覆盖遗漏风险</div><div class="s-value" style="color:var(--orange)" id="st-risk">0</div></div>
+    </div>
+
+    <div class="tabs" data-scope="rm">
+      <button class="tab active" data-tab="list">📋 需求列表 <span class="badge-count" id="rm-cnt">0</span></button>
+      <button class="tab" data-tab="trace">🔗 追溯矩阵</button>
+      <button class="tab" data-tab="analyze">🤖 AI 需求解析</button>
+    </div>
+
+    <div id="rm">
+      <!-- ============ 需求列表 ============ -->
+      <div class="tab-pane active" data-pane="list">
+        <div class="filter-bar">
+          <input class="input search" id="r-kw" placeholder="🔍 搜索需求编号 / 标题">
+          <select class="select" id="r-status"><option value="">全部状态</option><option>待解析</option><option>已解析</option><option>已派生</option><option>已归档</option></select>
+          <select class="select" id="r-pri"><option value="">全部优先级</option><option>P0</option><option>P1</option><option>P2</option></select>
+          <button class="btn btn-ghost btn-sm" id="r-reset">重置</button>
+        </div>
+        <div id="r-table"></div>
+      </div>
+
+      <!-- ============ 追溯矩阵 ============ -->
+      <div class="tab-pane" data-pane="trace">
+        <div class="banner banner-green">✅ 需求 → 用例 → 缺陷全链路追溯；覆盖遗漏的需求行会以橙色提醒。</div>
+        <div id="trace-table"></div>
+      </div>
+
+      <!-- ============ AI 需求解析 ============ -->
+      <div class="tab-pane" data-pane="analyze">
+        <div class="grid" style="grid-template-columns: 1fr 1.3fr; gap:14px">
+          <div class="card">
+            <div class="card-title">📄 上传需求文档 <span class="tag tag-red">AI</span></div>
+            <div class="card" style="border-style:dashed; text-align:center; padding:28px; cursor:pointer" id="doc-drop">
+              <div style="font-size:30px">📄</div>
+              <div class="text-dim mt-8" style="font-size:12.5px">点击选择或拖拽文档</div>
+              <div class="text-faint" style="font-size:11.5px">支持 PDF / Word / TXT，≤ 20MB</div>
+            </div>
+            <input type="file" id="doc-input" class="hidden" accept=".pdf,.doc,.docx,.txt">
+            <div id="doc-list" class="mt-8"></div>
+            <div class="field mt-16"><label>AI 模型</label>
+              <select class="select" id="ai-model"><option>DeepSeek-V3</option><option>通义千问-Max</option><option>硅基流动 · GLM-4</option><option>GPT-4o</option></select>
+              <div class="hint">多模型支持，可在「AI 模型配置」中测试连通性</div>
+            </div>
+            <div class="field"><label>解析维度</label>
+              <div class="flex" style="gap:8px; flex-wrap:wrap">
+                <label class="checkbox"><input type="checkbox" checked value="业务需求"> 业务需求</label>
+                <label class="checkbox"><input type="checkbox" checked value="边界条件"> 边界条件</label>
+                <label class="checkbox"><input type="checkbox" value="异常流"> 异常流</label>
+                <label class="checkbox"><input type="checkbox" value="性能指标"> 性能指标</label>
+                <label class="checkbox"><input type="checkbox" value="安全要求"> 安全要求</label>
+              </div>
+            </div>
+            <button class="btn btn-primary" id="btn-parse" style="width:100%">✨ 开始 AI 解析</button>
+          </div>
+
+          <div class="card">
+            <div class="card-title">🧠 解析结果（条目化） <span class="tag tag-blue" id="parse-cnt">0 条</span></div>
+            <div id="parse-list" style="display:flex; flex-direction:column; gap:8px; max-height:420px; overflow-y:auto">
+              <div class="empty"><div class="e-icon">🤖</div><div class="e-text">上传文档并开始解析，AI 将自动提取需求条目<br>每条可一键派生测试用例 / 压测场景 / 安全测试项</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 新建需求弹窗 -->
+<div class="modal-mask" id="modal-req">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3>＋ 新建需求</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="grid grid-2" style="gap:12px">
+        <div class="field"><label>需求编号</label><input class="input mono" id="fr-no" placeholder="REQ-2026-0125（留空自动生成）"></div>
+        <div class="field"><label>优先级</label><select class="select" id="fr-pri"><option>P0</option><option>P1</option><option>P2</option></select></div>
+      </div>
+      <div class="field"><label>需求标题 <span class="text-red">*</span></label><input class="input" id="fr-title" placeholder="如：订单退款功能"></div>
+      <div class="field"><label>需求描述</label><textarea class="textarea" id="fr-desc" rows="5" placeholder="粘贴需求描述，或保存后上传文档由 AI 解析…"></textarea></div>
+      <div class="field"><label>需求来源</label><select class="select" id="fr-src"><option>产品 PRD</option><option>蓝湖原型</option><option>用户反馈</option><option>线上缺陷反推</option></select></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="fr-save">💾 保存需求</button>
+    </div>
+  </div>
+</div>
+
+<!-- 需求详情 / 派生弹窗 -->
+<div class="modal-mask" id="modal-req-view">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="fv-title">需求详情</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="flex mb-16" id="fv-meta"></div>
+      <div class="field"><label>需求描述</label><div class="code-block" id="fv-desc" style="white-space:normal"></div></div>
+      <div class="card-title" style="font-size:13.5px">🔗 关联测试资产 <span class="tag tag-green">双向追溯</span></div>
+      <div id="fv-links" style="display:flex; flex-direction:column; gap:8px"></div>
+      <div class="card-title mt-16" style="font-size:13.5px">⚡ 一键派生</div>
+      <div class="grid grid-3" style="gap:10px">
+        <button class="card card-hover" style="cursor:pointer; text-align:center; padding:14px" data-derive="case"><div style="font-size:22px">🤖</div><div class="mt-8" style="font-size:13px">AI 生成用例</div></button>
+        <button class="card card-hover" style="cursor:pointer; text-align:center; padding:14px" data-derive="perf"><div style="font-size:22px">🚀</div><div class="mt-8" style="font-size:13px">派生压测场景</div></button>
+        <button class="card card-hover" style="cursor:pointer; text-align:center; padding:14px" data-derive="sec"><div style="font-size:22px">🛡️</div><div class="mt-8" style="font-size:13px">派生安全测试项</div></button>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI 模型配置弹窗 -->
+<div class="modal-mask" id="modal-ai-config">
+  <div class="modal">
+    <div class="modal-head"><h3>🤖 AI 模型配置</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>当前模型</label>
+        <select class="select" id="cfg-model"><option>DeepSeek-V3</option><option>通义千问-Max</option><option>硅基流动 · GLM-4</option><option>GPT-4o</option></select>
+      </div>
+      <div class="field"><label>API Key</label><input class="input mono" type="password" placeholder="sk-…（演示环境无需填写）"></div>
+      <div class="banner banner-warn" style="margin:0">⚠️ Key 仅保存在本地浏览器，不会上传；可点击「测试连接」验证模型连通性。</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="cfg-test">🔌 测试连接</button>
+      <button class="btn btn-primary" data-close-modal>保存</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  var reqs = [];
+  var japi = function (method, url, data) {
+    var opt = { method: method, headers: { "Content-Type": "application/json" } };
+    var tk = localStorage.getItem("aitesthub_token");
+    if (tk) opt.headers["Authorization"] = "Bearer " + tk;
+    if (data !== undefined) opt.body = JSON.stringify(data);
+    return fetch(url, opt).then(function (r) {
+      return r.json().then(function (j) { if (!r.ok) throw new Error((j && j.detail) || ("HTTP " + r.status)); return j; });
+    });
+  };
+  var gv = function (id) { return document.getElementById(id).value; };
+  var reload = function () {
+    return japi("GET", "/api/requirements").then(function (l) { reqs = l; refreshStats(); renderTable(); renderTrace(); return l; })
+      .catch(function (e) { toast((e && e.message) || "network error", "error"); });
+  };
+
+  var PRI_CLS = { P0: "tag-red", P1: "tag-orange", P2: "tag" };
+  var ST_CLS = { "待解析": "tag-orange", "已解析": "tag-blue", "已派生": "tag-green", "已归档": "tag" };
+  var parseItems = [];
+
+  function refreshStats() {
+    document.getElementById("st-total").textContent = reqs.length;
+    document.getElementById("st-items").textContent = reqs.reduce(function (s, r) { return s + r.items; }, 0);
+    document.getElementById("st-cases").textContent = reqs.reduce(function (s, r) { return s + r.cases; }, 0);
+    document.getElementById("st-risk").textContent = reqs.filter(function (r) { return r.status !== "已归档" && r.cases === 0; }).length;
+    document.getElementById("rm-cnt").textContent = reqs.length;
+  }
+
+  /* ---------- 需求列表 ---------- */
+  function renderTable() {
+    var kw = document.getElementById("r-kw").value.trim().toLowerCase();
+    var st = document.getElementById("r-status").value;
+    var pri = document.getElementById("r-pri").value;
+    var d = reqs.filter(function (r) {
+      return (!kw || (r.id + r.title).toLowerCase().indexOf(kw) >= 0) && (!st || r.status === st) && (!pri || r.pri === pri);
+    });
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>编号</th><th>需求</th><th>优先级</th><th>状态</th><th>条目</th><th>用例</th><th>压测</th><th>安全项</th><th style="width:200px">操作</th></tr></thead><tbody>';
+    if (!d.length) html += '<tr><td colspan="9"><div class="empty"><div class="e-icon">📋</div><div class="e-text">无匹配需求</div></div></td></tr>';
+    d.forEach(function (r) {
+      html += '<tr><td class="mono">' + r.id + "</td>" +
+        '<td><div class="cell-main">' + r.title + '</div><div class="cell-sub">' + r.src + "</div></td>" +
+        '<td><span class="tag ' + PRI_CLS[r.pri] + '">' + r.pri + "</span></td>" +
+        '<td><span class="tag ' + ST_CLS[r.status] + '">' + r.status + "</span></td>" +
+        '<td class="mono">' + r.items + '</td><td class="mono">' + (r.cases ? '<a href="tool-case-management.html">' + r.cases + "</a>" : 0) + "</td>" +
+        '<td class="mono">' + (r.perf ? '<a href="tool-performance-testing.html">' + r.perf + "</a>" : 0) + "</td>" +
+        '<td class="mono">' + (r.sec ? '<a href="tool-security-testing.html">' + r.sec + "</a>" : 0) + "</td>" +
+        '<td><div class="row-actions" style="opacity:1">' +
+        '<button class="btn btn-sm btn-ghost" data-view="' + r.id + '">详情</button>' +
+        (r.status === "待解析" ? '<button class="btn btn-sm btn-primary" data-parse="' + r.id + '">AI解析</button>' : "") +
+        '<button class="btn btn-sm btn-danger" data-arch="' + r.id + '">归档</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("r-table").innerHTML = html;
+    document.querySelectorAll("[data-view]").forEach(function (b) { b.addEventListener("click", function () { openView(b.dataset.view); }); });
+    document.querySelectorAll("[data-parse]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var r = reqs.find(function (x) { return x.id === b.dataset.parse; });
+        toast("AI \u6b63\u5728\u89e3\u6790\u300c" + r.title + "\u300d\u2026", "info");
+        japi("POST", "/api/requirements/" + encodeURIComponent(r.id) + "/parse", {}).then(function () { return reload(); })
+          .then(function () { toast("\u89e3\u6790\u5b8c\u6210\uff1a" + r.id + " \u5df2\u66f4\u65b0\u9700\u6c42\u6761\u76ee", "success"); })
+          .catch(function (e) { toast((e && e.message) || "network error", "error"); });
+      });
+    });
+    document.querySelectorAll("[data-arch]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var r = reqs.find(function (x) { return x.id === b.dataset.arch; });
+        confirmAction({ title: "归档需求", message: "确定归档「" + r.title + "」吗？归档后不再纳入覆盖统计，关联资产保留。", onOk: function () {
+          japi("POST", "/api/requirements/" + encodeURIComponent(r.id) + "/archive", {}).then(function () { return reload(); })
+            .then(function () { toast("\u9700\u6c42\u5df2\u5f52\u6863", "success"); })
+            .catch(function (e) { toast((e && e.message) || "network error", "error"); });
+        }});
+      });
+    });
+  }
+  document.getElementById("r-kw").addEventListener("input", debounce(renderTable, 200));
+  document.getElementById("r-status").addEventListener("change", renderTable);
+  document.getElementById("r-pri").addEventListener("change", renderTable);
+  document.getElementById("r-reset").addEventListener("click", function () {
+    document.getElementById("r-kw").value = ""; document.getElementById("r-status").value = ""; document.getElementById("r-pri").value = "";
+    renderTable(); toast("筛选已重置", "info");
+  });
+
+  /* ---------- 详情 / 派生 ---------- */
+  function openView(id) {
+    var r = reqs.find(function (x) { return x.id === id; });
+    document.getElementById("fv-title").textContent = r.id + " · " + r.title;
+    document.getElementById("fv-meta").innerHTML =
+      '<span class="tag ' + PRI_CLS[r.pri] + '">' + r.pri + '</span><span class="tag ' + ST_CLS[r.status] + '">' + r.status + '</span><span class="tag">来源 ' + r.src + "</span>";
+    document.getElementById("fv-desc").textContent = r.desc;
+    var links = [];
+    if (r.cases) links.push('<a class="tag tag-green" href="tool-case-management.html">🗂️ 测试用例 ' + r.cases + " 条 →</a>");
+    if (r.defects) links.push('<a class="tag tag-red" href="tool-defect-management.html">🐞 关联缺陷 ' + r.defects + " 个 →</a>");
+    if (r.perf) links.push('<a class="tag tag-blue" href="tool-performance-testing.html">🚀 压测场景 ' + r.perf + " 个 →</a>");
+    if (r.sec) links.push('<a class="tag tag-purple" href="tool-security-testing.html">🛡️ 安全测试项 ' + r.sec + " 条 →</a>");
+    document.getElementById("fv-links").innerHTML = links.length ? links.join(" ") : '<span class="tag">暂无关联资产，可从下方一键派生</span>';
+    document.querySelectorAll("[data-derive]").forEach(function (b) {
+      b.onclick = function () {
+        var type = b.dataset.derive, tip = { case: "tool-test-cases.html", perf: "tool-performance-testing.html", sec: "tool-security-testing.html" }[type];
+        var label = { case: "AI 生成用例", perf: "压测场景", sec: "安全测试项" }[type];
+        toast("正在为「" + r.title + "」派生" + label + "…", "info");
+        japi("POST", "/api/requirements/" + encodeURIComponent(r.id) + "/derive", { type: type }).then(function () { return reload(); })
+          .then(function () { closeModal("modal-req-view"); toast("\u6d3e\u751f\u6210\u529f\uff01\u53ef\u5728\u5bf9\u5e94\u6a21\u5757\u67e5\u770b\uff0c\u8ffd\u6eaf\u77e9\u9635\u5df2\u66f4\u65b0", "success"); })
+          .catch(function (e) { toast((e && e.message) || "network error", "error"); });
+      };
+    });
+    openModal("modal-req-view");
+  }
+
+  /* ---------- 追溯矩阵 ---------- */
+  function renderTrace() {
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>需求</th><th>用例覆盖</th><th>缺陷</th><th>压测</th><th>安全</th><th>覆盖结论</th></tr></thead><tbody>';
+    reqs.forEach(function (r) {
+      var ok = r.cases > 0;
+      html += '<tr><td><div class="cell-main">' + r.title + '</div><div class="cell-sub mono">' + r.id + "</div></td>" +
+        '<td class="mono">' + (r.cases ? '<a href="tool-case-management.html">' + r.cases + " 条</a>" : "0") + "</td>" +
+        '<td class="mono">' + (r.defects ? '<a href="tool-defect-management.html">' + r.defects + "</a>" : "0") + "</td>" +
+        '<td class="mono">' + (r.perf ? '<a href="tool-performance-testing.html">' + r.perf + "</a>" : "0") + "</td>" +
+        '<td class="mono">' + (r.sec ? '<a href="tool-security-testing.html">' + r.sec + "</a>" : "0") + "</td>" +
+        "<td>" + (ok ? '<span class="tag tag-green">✅ 已覆盖</span>' : r.status === "已归档" ? '<span class="tag">已归档</span>' : '<span class="tag tag-orange">⚠️ 覆盖遗漏</span>') + "</td></tr>";
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("trace-table").innerHTML = html;
+  }
+
+  /* ---------- AI 解析 ---------- */
+  var docs = [];
+  var drop = document.getElementById("doc-drop"), din = document.getElementById("doc-input");
+  drop.addEventListener("click", function () { din.click(); });
+  drop.addEventListener("dragover", function (e) { e.preventDefault(); });
+  drop.addEventListener("drop", function (e) { e.preventDefault(); addDocs(e.dataTransfer.files); });
+  din.addEventListener("change", function () { addDocs(din.files); });
+  function addDocs(list) {
+    for (var i = 0; i < list.length; i++) docs.push(list[i].name);
+    renderDocs(); toast("已添加 " + list.length + " 个文档", "success");
+  }
+  function renderDocs() {
+    document.getElementById("doc-list").innerHTML = docs.map(function (f, i) {
+      return '<span class="tag tag-blue" style="margin-right:6px">📄 ' + f + ' <button style="background:none;border:none;color:inherit;cursor:pointer" data-doc-rm="' + i + '">✕</button></span>';
+    }).join("");
+    document.querySelectorAll("[data-doc-rm]").forEach(function (b) {
+      b.addEventListener("click", function () { docs.splice(+b.dataset.docRm, 1); renderDocs(); });
+    });
+  }
+
+  document.getElementById("btn-parse").addEventListener("click", function () {
+    if (!docs.length) return toast("请先上传需求文档", "error");
+    var btn = this;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> AI 解析中…';
+    var model = document.getElementById("ai-model").value;
+    parseItems = [];
+    document.getElementById("parse-list").innerHTML = '<div class="msg ai" style="max-width:100%"><div class="m-avatar">🤖</div><div class="m-body"><span class="typing-dots"><span></span><span></span><span></span></span> ' + model + " 正在解析文档，提取业务需求、边界条件与异常流…</div></div>";
+    var SEED = [];
+    var i = 0;
+    japi("POST", "/api/requirements/ai-parse", { docs: docs.slice(), model: model }).then(function (res) {
+      SEED = res.items;
+      var timer = setInterval(function () {
+      if (i >= SEED.length) {
+        clearInterval(timer);
+        btn.disabled = false; btn.textContent = "✨ 开始 AI 解析";
+        toast("解析完成：提取 " + SEED.length + " 条需求条目", "success");
+        return;
+      }
+      var it = SEED[i++];
+      parseItems.push(it);
+      document.getElementById("parse-cnt").textContent = parseItems.length + " 条";
+      var box = document.getElementById("parse-list");
+      box.querySelectorAll(".msg").forEach(function (m) { m.remove(); });
+      var dimCls = { "业务需求": "tag-blue", "边界条件": "tag-orange", "异常流": "tag-purple", "性能指标": "tag-green", "安全要求": "tag-red" }[it.dim] || "tag";
+      box.innerHTML += '<div class="card" style="padding:12px 14px"><div class="flex-between"><div class="flex"><span class="mono text-faint">' + it.no + '</span><span class="tag ' + dimCls + '">' + it.dim + "</span></div>" +
+        '<div class="flex"><button class="btn btn-sm btn-ghost" onclick="toast(\'已派生测试用例并关联，见用例管理\',\'success\')">🤖 生成用例</button>' +
+        '<button class="btn btn-sm btn-ghost" onclick="toast(\'已派生压测场景并关联，见性能测试\',\'success\')">🚀 压测</button>' +
+        '<button class="btn btn-sm btn-ghost" onclick="toast(\'已派生安全测试项并关联，见安全测试\',\'success\')">🛡️ 安全</button></div></div>' +
+        '<div class="mt-8" style="font-size:13px">' + it.text + "</div></div>";
+      box.scrollTop = box.scrollHeight;
+    }, 700);
+    }).catch(function (e) { toast((e && e.message) || "network error", "error"); btn.disabled = false; btn.textContent = "\u2728 AI \u89e3\u6790"; });
+  });
+
+  /* ---------- AI 配置 ---------- */
+  document.getElementById("btn-ai-config").addEventListener("click", function () { openModal("modal-ai-config"); });
+  document.getElementById("cfg-test").addEventListener("click", function () {
+    toast("正在测试 " + document.getElementById("cfg-model").value + " 连通性…", "info");
+    japi("POST", "/api/requirements/ai-test", { model: document.getElementById("cfg-model").value }).then(function () { toast("\u8fde\u63a5\u6210\u529f\uff0c\u6a21\u578b\u53ef\u7528 \u2705", "success"); }).catch(function (e) { toast((e && e.message) || "network error", "error"); });
+  });
+
+  /* ---------- 新建需求 ---------- */
+  document.getElementById("fr-save").addEventListener("click", function () {
+    var t = document.getElementById("fr-title").value.trim();
+    if (!t) return toast("请填写需求标题", "error");
+    var no = document.getElementById("fr-no").value.trim() || "REQ-2026-" + (126 + reqs.length - 5);
+    japi("POST", "/api/requirements", { title: t, pri: gv("fr-pri"), src: gv("fr-src"), desc: gv("fr-desc"), id: gv("fr-no").trim() }).then(function () { return reload(); }).catch(function (e) { toast((e && e.message) || "network error", "error"); });
+    closeModal("modal-req");
+    document.getElementById("fr-title").value = ""; document.getElementById("fr-desc").value = ""; document.getElementById("fr-no").value = "";
+    refreshStats(); renderTable(); renderTrace(); toast("需求已创建，可上传文档进行 AI 解析", "success");
+  });
+
+  if (qs("tab")) {
+    var tb = document.querySelector('.tab[data-tab="' + qs("tab") + '"]');
+    if (tb) tb.click();
+  }
+
+  reload();
+})();
+</script>
+</body>
+</html>

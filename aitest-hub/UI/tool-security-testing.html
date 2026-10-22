@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>安全测试 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / 安全测试</div>
+    <div class="page-head">
+      <div>
+        <h1>🛡️ 安全测试</h1>
+        <div class="sub">安全基线扫描 · OWASP Top 10 检查项 · AI 修复建议与 PoC 生成 · 安全项 → 需求/缺陷双向追溯</div>
+      </div>
+      <div class="flex">
+        <a class="btn btn-ghost" href="tool-pentest-testing.html">🎯 去渗透测试</a>
+        <button class="btn btn-primary" data-open-modal="modal-scan">＋ 新建安全扫描</button>
+      </div>
+    </div>
+
+    <div class="banner banner-info">ℹ️ 安全测试项可从<a href="tool-requirement-management.html">需求管理</a>派生（SEC 条目自动关联）；AI 基于 OWASP Top 10 与 CVE 库给出修复建议，可一键生成安全缺陷单。</div>
+
+    <!-- 统计 -->
+    <div class="grid grid-4 mb-16">
+      <div class="card stat-card"><div class="s-label">高危发现</div><div class="s-value" style="color:var(--red)" id="ss-high">0</div></div>
+      <div class="card stat-card"><div class="s-label">中危发现</div><div class="s-value" style="color:var(--orange)" id="ss-mid">0</div></div>
+      <div class="card stat-card"><div class="s-label">低危发现</div><div class="s-value" style="color:var(--blue)" id="ss-low">0</div></div>
+      <div class="card stat-card"><div class="s-label">基线通过率</div><div class="s-value" style="color:var(--green)" id="ss-rate">—</div></div>
+    </div>
+
+    <div class="tabs" data-scope="sec">
+      <button class="tab active" data-tab="findings">🔍 安全发现 <span class="badge-count" id="sec-cnt">0</span></button>
+      <button class="tab" data-tab="baseline">✅ 安全基线</button>
+      <button class="tab" data-tab="ai">🤖 AI 安全助手</button>
+    </div>
+
+    <div id="sec">
+      <!-- ============ 安全发现 ============ -->
+      <div class="tab-pane active" data-pane="findings">
+        <div class="filter-bar">
+          <input class="input search" id="f-kw" placeholder="🔍 搜索漏洞 / 目标">
+          <select class="select" id="f-level"><option value="">全部等级</option><option>高危</option><option>中危</option><option>低危</option><option>提示</option></select>
+          <select class="select" id="f-status"><option value="">全部状态</option><option>待处理</option><option>修复中</option><option>已修复</option><option>已忽略</option></select>
+          <button class="btn btn-ghost btn-sm" id="f-reset">重置</button>
+        </div>
+        <div id="f-table"></div>
+      </div>
+
+      <!-- ============ 安全基线 ============ -->
+      <div class="tab-pane" data-pane="baseline">
+        <div class="banner banner-green">✅ 基于 OWASP Top 10 与等保要求的检查基线；不通过项可一键转安全发现或生成缺陷。</div>
+        <div id="bl-table"></div>
+      </div>
+
+      <!-- ============ AI 安全助手 ============ -->
+      <div class="tab-pane" data-pane="ai">
+        <div class="grid" style="grid-template-columns: 1fr 1.3fr; gap:14px">
+          <div class="card">
+            <div class="card-title">🤖 AI 安全助手 <span class="tag tag-red">AI</span></div>
+            <div class="field"><label>分析对象</label>
+              <select class="select" id="ai-target2"><option>SEC-2026-011 · 支付接口金额篡改（高危）</option><option>SEC-2026-009 · 用户枚举风险（中危）</option><option>SEC-2026-007 · 上传接口文件类型校验缺失（高危）</option></select>
+            </div>
+            <div class="field"><label>输出内容</label>
+              <div class="flex" style="gap:8px; flex-wrap:wrap">
+                <label class="checkbox"><input type="checkbox" checked value="修复建议"> 修复建议</label>
+                <label class="checkbox"><input type="checkbox" checked value="风险评级"> 风险评级</label>
+                <label class="checkbox"><input type="checkbox" value="复验用例"> 复验用例</label>
+              </div>
+            </div>
+            <div class="field"><label>补充上下文（请求报文 / 代码片段，选填）</label>
+              <textarea class="textarea mono" id="ai-ctx2" rows="4" placeholder='粘贴可疑请求报文，如：{"orderId": 1001, "amount": 0.01}'></textarea>
+            </div>
+            <button class="btn btn-primary" id="ai-run2" style="width:100%">✨ 开始 AI 分析</button>
+          </div>
+          <div class="card">
+            <div class="card-title">🧠 分析结论</div>
+            <div class="chat-box" id="ai-out2">
+              <div class="msg ai"><div class="m-avatar">🤖</div><div class="m-body">我是安全分析助手。选择安全发现后点击「开始 AI 分析」，我将输出风险评级、修复建议与复验用例，并可一键生成安全缺陷单。渗透测试请前往 <a href="tool-pentest-testing.html">渗透测试模块</a>。</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 新建扫描弹窗 -->
+<div class="modal-mask" id="modal-scan">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3>＋ 新建安全扫描</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>扫描任务名称 <span class="text-red">*</span></label><input class="input" id="fs2-name" placeholder="如：支付模块安全基线扫描"></div>
+      <div class="field"><label>扫描目标</label>
+        <select class="select" id="fs2-target"><option>支付模块 API（/v1/pay, /v1/refunds）</option><option>用户模块 API（/v1/auth, /v1/users）</option><option>Web 站点（https://shop.example.com）</option></select>
+      </div>
+      <div class="field"><label>检查策略</label>
+        <div class="flex" style="gap:8px; flex-wrap:wrap">
+          <label class="checkbox"><input type="checkbox" checked> OWASP Top 10</label>
+          <label class="checkbox"><input type="checkbox" checked> 敏感信息泄露</label>
+          <label class="checkbox"><input type="checkbox"> 依赖组件 CVE</label>
+          <label class="checkbox"><input type="checkbox"> 配置基线（CIS）</label>
+        </div>
+      </div>
+      <div class="field"><label>关联需求</label>
+        <select class="select" id="fs2-req"><option value="">不关联</option><option>REQ-2026-0125 · 订单退款功能</option><option>REQ-2026-0121 · 大促秒杀活动</option></select>
+      </div>
+      <div class="banner banner-warn" style="margin:0">⚠️ 主动扫描可能对目标产生少量脏数据，请确认目标为测试环境；生产环境请使用只读被动模式。</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="fs2-save">▶️ 创建并扫描</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  var findings = [
+    { id: "SEC-2026-011", title: "支付接口金额可被客户端篡改", target: "/v1/pay", level: "高危", owasp: "A01 失效的访问控制", status: "待处理", req: "REQ-2026-0125", time: "2026-09-22", detail: "请求体中 amount 字段由客户端传入，可构造 0.01 元支付大额订单" },
+    { id: "SEC-2026-009", title: "登录接口用户枚举风险", target: "/v1/auth/login", level: "中危", owasp: "A07 身份认证失效", status: "修复中", req: "", time: "2026-09-21", detail: "账号存在与密码错误的提示语不同，可批量枚举注册手机号" },
+    { id: "SEC-2026-007", title: "上传接口文件类型校验缺失", target: "/v1/attachments", level: "高危", owasp: "A04 不安全的设计", status: "待处理", req: "", time: "2026-09-20", detail: "仅校验 Content-Type，未校验文件魔数，可上传 webshell" },
+    { id: "SEC-2026-005", title: "退款回调未校验签名", target: "/v1/refunds/notify", level: "高危", owasp: "A08 软件与数据完整性失效", status: "已修复", req: "REQ-2026-0125", time: "2026-09-18", detail: "回调接口未验证来源签名，可伪造退款成功通知" },
+    { id: "SEC-2026-004", title: "响应头缺失安全配置", target: "全站", level: "低危", owasp: "A05 安全配置错误", status: "已修复", req: "", time: "2026-09-16", detail: "缺失 CSP / X-Frame-Options / HSTS 响应头" },
+    { id: "SEC-2026-002", title: "接口限流缺失", target: "/v1/auth/*", level: "中危", owasp: "A04 不安全的设计", status: "待处理", req: "", time: "2026-09-14", detail: "登录与验证码接口无速率限制，可被暴力破解与短信轰炸" },
+    { id: "SEC-2026-001", title: "日志中打印敏感信息", target: "user-service", level: "低危", owasp: "A09 安全日志与监控失效", status: "已忽略", req: "", time: "2026-09-12", detail: "DEBUG 日志输出完整手机号，建议脱敏" }
+  ];
+  var L_CLS = { "高危": "tag-red", "中危": "tag-orange", "低危": "tag-blue", "提示": "tag" };
+  var S_CLS = { "待处理": "tag-orange", "修复中": "tag-blue", "已修复": "tag-green", "已忽略": "tag" };
+  var baseline = [
+    { id: "A01", name: "失效的访问控制", desc: "水平/垂直越权、未授权访问", status: "通过", items: 4, pass: 3 },
+    { id: "A02", name: "失效的加密机制", desc: "明文传输、弱加密算法", status: "通过", items: 3, pass: 3 },
+    { id: "A03", name: "注入（SQL/XSS/命令）", desc: "参数化查询、输出编码", status: "不通过", items: 5, pass: 4 },
+    { id: "A04", name: "不安全的设计", desc: "限流、业务逻辑校验", status: "不通过", items: 4, pass: 2 },
+    { id: "A05", name: "安全配置错误", desc: "默认配置、响应头、报错信息", status: "通过", items: 6, pass: 5 },
+    { id: "A07", name: "身份认证失效", desc: "弱口令策略、会话管理", status: "不通过", items: 4, pass: 3 },
+    { id: "A08", name: "软件与数据完整性失效", desc: "回调签名、依赖完整性", status: "通过", items: 3, pass: 3 },
+    { id: "A09", name: "安全日志与监控失效", desc: "日志脱敏、告警接入", status: "不通过", items: 3, pass: 2 }
+  ];
+  var B_CLS = { "通过": "tag-green", "不通过": "tag-red", "未检": "tag" };
+
+  function refreshStats() {
+    document.getElementById("ss-high").textContent = findings.filter(function (f) { return f.level === "高危" && f.status !== "已忽略" && f.status !== "已修复"; }).length;
+    document.getElementById("ss-mid").textContent = findings.filter(function (f) { return f.level === "中危" && f.status !== "已忽略" && f.status !== "已修复"; }).length;
+    document.getElementById("ss-low").textContent = findings.filter(function (f) { return (f.level === "低危" || f.level === "提示") && f.status !== "已忽略" && f.status !== "已修复"; }).length;
+    var checked = baseline.filter(function (b) { return b.status !== "未检"; });
+    var all = checked.reduce(function (s, b) { return s + b.items; }, 0);
+    var pass = checked.reduce(function (s, b) { return s + b.pass; }, 0);
+    document.getElementById("ss-rate").textContent = all ? Math.round(pass / all * 100) + "%" : "—";
+    document.getElementById("sec-cnt").textContent = findings.length;
+  }
+
+  /* ---------- 发现列表 ---------- */
+  function renderFindings() {
+    var kw = document.getElementById("f-kw").value.trim().toLowerCase();
+    var lv = document.getElementById("f-level").value;
+    var st = document.getElementById("f-status").value;
+    var d = findings.filter(function (f) {
+      return (!kw || (f.title + f.target + f.id).toLowerCase().indexOf(kw) >= 0) && (!lv || f.level === lv) && (!st || f.status === st);
+    });
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>编号</th><th>安全发现</th><th>等级</th><th>OWASP</th><th>状态</th><th>需求关联</th><th style="width:230px">操作</th></tr></thead><tbody>';
+    if (!d.length) html += '<tr><td colspan="7"><div class="empty"><div class="e-icon">🛡️</div><div class="e-text">无匹配安全发现</div></div></td></tr>';
+    d.forEach(function (f) {
+      html += '<tr><td class="mono">' + f.id + "</td>" +
+        '<td><div class="cell-main">' + f.title + '</div><div class="cell-sub mono">' + f.target + " · " + f.time + "</div></td>" +
+        '<td><span class="tag ' + L_CLS[f.level] + '">' + f.level + "</span></td>" +
+        '<td style="font-size:12.5px" class="text-dim">' + f.owasp + "</td>" +
+        '<td><span class="tag ' + S_CLS[f.status] + '">' + f.status + "</span></td>" +
+        "<td>" + (f.req ? '<a href="tool-requirement-management.html" class="mono">' + f.req + "</a>" : '<span class="text-faint">—</span>') + "</td>" +
+        '<td><div class="row-actions" style="opacity:1">' +
+        '<button class="btn btn-sm btn-ghost" data-view="' + f.id + '">详情</button>' +
+        '<button class="btn btn-sm btn-primary" data-ai="' + f.id + '">🤖 AI 修复建议</button>' +
+        '<button class="btn btn-sm btn-danger" data-tobug="' + f.id + '">提缺陷</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("f-table").innerHTML = html;
+    bindFindingActions();
+  }
+  function bindFindingActions() {
+    document.querySelectorAll("[data-view]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var f = findings.find(function (x) { return x.id === b.dataset.view; });
+        toast(f.id + "：" + f.detail, "info");
+      });
+    });
+    document.querySelectorAll("[data-ai]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var f = findings.find(function (x) { return x.id === b.dataset.ai; });
+        document.getElementById("ai-target2").innerHTML = "<option selected>" + f.id + " · " + f.title + "（" + f.level + "）</option>";
+        document.querySelector('.tab[data-tab="ai"]').click();
+        toast("已切换到 AI 安全助手，分析对象已选中", "info");
+      });
+    });
+    document.querySelectorAll("[data-tobug]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var f = findings.find(function (x) { return x.id === b.dataset.tobug; });
+        confirmAction({ title: "生成安全缺陷", message: "将基于「" + f.title + "」创建缺陷单（等级：" + f.level + "）并关联安全发现，确认提交吗？", danger: false, onOk: function () {
+          toast("安全缺陷已提交至缺陷管理 🐞", "success");
+        }});
+      });
+    });
+  }
+  ["f-kw", "f-level", "f-status"].forEach(function (id, i) {
+    document.getElementById(id).addEventListener(i === 0 ? "input" : "change", debounce(renderFindings, i === 0 ? 200 : 0));
+  });
+  document.getElementById("f-reset").addEventListener("click", function () {
+    document.getElementById("f-kw").value = ""; document.getElementById("f-level").value = ""; document.getElementById("f-status").value = "";
+    renderFindings(); toast("筛选已重置", "info");
+  });
+
+  /* ---------- 基线 ---------- */
+  function renderBaseline() {
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>类别</th><th>OWASP 类目</th><th>检查说明</th><th>检查项</th><th>通过</th><th>结论</th><th style="width:210px">操作</th></tr></thead><tbody>';
+    baseline.forEach(function (b) {
+      html += '<tr><td class="mono">' + b.id + "</td>" +
+        '<td><div class="cell-main">' + b.name + "</div></td>" +
+        '<td class="text-dim" style="font-size:12.5px">' + b.desc + "</td>" +
+        '<td class="mono">' + b.items + '</td><td class="mono text-green">' + b.pass + "</td>" +
+        '<td><span class="tag ' + B_CLS[b.status] + '">' + b.status + "</span></td>" +
+        '<td><div class="row-actions" style="opacity:1">' +
+        '<button class="btn btn-sm btn-ghost" data-bdetail="' + b.id + '">检查明细</button>' +
+        (b.status === "不通过" ? '<button class="btn btn-sm btn-primary" data-bai="' + b.id + '">🤖 AI 建议</button>' : "") + "</div></td></tr>";
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("bl-table").innerHTML = html;
+    document.querySelectorAll("[data-bdetail]").forEach(function (b2) {
+      b2.addEventListener("click", function () {
+        var bl = baseline.find(function (x) { return x.id === b2.dataset.bdetail; });
+        toast(bl.id + " " + bl.name + "：通过 " + bl.pass + "/" + bl.items + " 项（演示环境明细页建设中）", "info");
+      });
+    });
+    document.querySelectorAll("[data-bai]").forEach(function (b2) {
+      b2.addEventListener("click", function () {
+        var bl = baseline.find(function (x) { return x.id === b2.dataset.bai; });
+        document.querySelector('.tab[data-tab="ai"]').click();
+        document.getElementById("ai-target2").innerHTML = "<option selected>OWASP " + bl.id + " · " + bl.name + "（基线不通过）</option>";
+        toast("已切换到 AI 安全助手", "info");
+      });
+    });
+  }
+
+  /* ---------- AI 助手 ---------- */
+  document.getElementById("ai-run2").addEventListener("click", function () {
+    var btn = this;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> AI 分析中…';
+    var out = document.getElementById("ai-out2");
+    out.innerHTML += '<div class="msg ai"><div class="m-avatar">🤖</div><div class="m-body"><span class="typing-dots"><span></span><span></span><span></span></span> 正在比对 OWASP Top 10 / CWE / CVE 知识库与目标报文…</div></div>';
+    out.scrollTop = out.scrollHeight;
+    setTimeout(function () {
+      out.querySelector(".typing-dots").closest(".m-body").innerHTML =
+        "<b>📌 风险评级</b><br>高危（CVSS 8.2）· CWE-20 输入验证缺失 / A01 失效的访问控制。攻击成本极低：仅改一个字段即可 0.01 元下单，建议 24h 内修复。<br><br>" +
+        "<b>📌 修复建议</b><br>1️⃣ 金额由服务端按 SKU 价格 × 数量重新计算，客户端金额仅作展示校验<br>2️⃣ 服务端校验订单归属（userId 与订单绑定），防水平越权<br>3️⃣ 幂等锁 + 金额一致性对账兜底<br><br>" +
+        "<b>📌 复验用例（AI 生成，已关联用例管理）</b><br>· 篡改 amount=0.01 提交 → 期望：服务端拒绝，返回 40021<br>· 篡改他人 orderId → 期望：403 无权操作<br><br>" +
+        '<button class="btn btn-sm btn-primary mt-8" onclick="toast(\'安全缺陷已提交至缺陷管理并关联发现 🐞\',\'success\')">🐞 一键生成安全缺陷单</button> ' +
+        '<button class="btn btn-sm btn-ghost mt-8" onclick="toast(\'复验用例已写入用例管理，关联需求追溯矩阵\',\'success\')">🗂️ 复验用例入用例库</button>';
+      btn.disabled = false; btn.textContent = "✨ 开始 AI 分析";
+      out.scrollTop = out.scrollHeight;
+      toast("AI 分析完成", "success");
+    }, 2000);
+  });
+
+  /* ---------- 新建扫描 ---------- */
+  document.getElementById("fs2-save").addEventListener("click", function () {
+    var n = document.getElementById("fs2-name").value.trim();
+    if (!n) return toast("请填写扫描任务名称", "error");
+    var req = document.getElementById("fs2-req").value.split(" · ")[0] || "";
+    closeModal("modal-scan");
+    document.getElementById("fs2-name").value = "";
+    toast("扫描任务已创建，正在执行基线检查…", "info");
+    setTimeout(function () {
+      var n2 = 1 + Math.floor(Math.random() * 3);
+      findings.unshift({ id: "SEC-2026-0" + (12 + (findings.length - 7)), title: n + "·新发现 " + n2 + " 项", target: document.getElementById("fs2-target").value.split("（")[0], level: ["高危", "中危", "低危"][Math.floor(Math.random() * 3)], owasp: "A05 安全配置错误", status: "待处理", req: req, time: "刚刚", detail: "自动扫描发现 " + n2 + " 项待确认问题" });
+      refreshStats(); renderFindings();
+      toast("扫描完成：新发现 " + n2 + " 项，已入发现列表", "success");
+    }, 2000);
+  });
+
+  if (qs("tab")) {
+    var tb = document.querySelector('.tab[data-tab="' + qs("tab") + '"]');
+    if (tb) tb.click();
+  }
+
+  refreshStats(); renderFindings(); renderBaseline();
+})();
+</script>
+</body>
+</html>

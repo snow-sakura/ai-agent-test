@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>接口测试 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / 接口测试</div>
+    <div class="page-head">
+      <div>
+        <h1>🔗 接口测试</h1>
+        <div class="sub">接口集合管理 · 参数化断言 · 环境变量切换 · 用例编排执行 · AI 辅助断言与 Mock</div>
+      </div>
+      <div class="flex">
+        <button class="btn btn-ghost" id="btn-env">🌍 环境变量</button>
+        <button class="btn btn-ghost" id="btn-import-api">📥 导入接口（YApi / Swagger）</button>
+        <button class="btn btn-primary" data-open-modal="modal-api">＋ 新建接口</button>
+      </div>
+    </div>
+
+    <div class="tabs" data-scope="apit">
+      <button class="tab active" data-tab="apis">🗂️ 接口集合 <span class="badge-count" id="api-cnt">0</span></button>
+      <button class="tab" data-tab="run">▶️ 用例执行</button>
+      <button class="tab" data-tab="history">📜 执行历史</button>
+    </div>
+
+    <div id="apit">
+      <!-- ============ 接口集合 ============ -->
+      <div class="tab-pane active" data-pane="apis">
+        <div class="filter-bar">
+          <input class="input search" id="api-kw" placeholder="🔍 搜索接口名称 / 路径">
+          <select class="select" id="api-method"><option value="">全部方法</option><option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option></select>
+          <select class="select" id="api-group"><option value="">全部分组</option><option>用户模块</option><option>订单模块</option><option>支付模块</option></select>
+        </div>
+        <div id="api-table"></div>
+      </div>
+
+      <!-- ============ 用例执行 ============ -->
+      <div class="tab-pane" data-pane="run">
+        <div class="grid" style="grid-template-columns: 1fr 1.4fr; gap:14px">
+          <div class="card">
+            <div class="card-title">⚙️ 执行配置</div>
+            <div class="field"><label>选择环境</label>
+              <select class="select" id="run-env"><option>DEV · https://dev-api.example.com</option><option>TEST · https://test-api.example.com</option><option>STAGING · https://staging-api.example.com</option></select>
+            </div>
+            <div class="field"><label>执行方式</label>
+              <div class="flex" style="gap:14px">
+                <label class="checkbox"><input type="radio" name="run-mode" value="serial" checked> 串行执行</label>
+                <label class="checkbox"><input type="radio" name="run-mode" value="parallel"> 并行执行</label>
+              </div>
+            </div>
+            <div class="field"><label>选择接口用例</label>
+              <div id="pick-list" style="border:1px solid var(--border); border-radius:8px; max-height:200px; overflow-y:auto; padding:8px"></div>
+              <div class="hint">已选 <span id="pick-count" class="text-green">0</span> 个接口</div>
+            </div>
+            <div class="flex">
+              <button class="btn btn-primary flex-1" id="btn-run-suite">🚀 执行选中用例</button>
+              <button class="btn btn-ghost" id="btn-stop-suite" disabled>⏹ 停止</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">📊 执行结果
+              <button class="btn btn-sm btn-ghost" id="btn-run-report" disabled>📄 导出报告</button>
+            </div>
+            <div class="grid grid-4" style="gap:8px; margin-bottom:12px">
+              <div class="card" style="padding:10px; text-align:center"><div class="text-faint" style="font-size:11.5px">总数</div><div class="mono" style="font-size:16px" id="r-total">0</div></div>
+              <div class="card" style="padding:10px; text-align:center"><div class="text-faint" style="font-size:11.5px">通过</div><div class="mono" style="font-size:16px; color:var(--green)" id="r-pass">0</div></div>
+              <div class="card" style="padding:10px; text-align:center"><div class="text-faint" style="font-size:11.5px">失败</div><div class="mono" style="font-size:16px; color:var(--red)" id="r-fail">0</div></div>
+              <div class="card" style="padding:10px; text-align:center"><div class="text-faint" style="font-size:11.5px">通过率</div><div class="mono" style="font-size:16px; color:var(--blue)" id="r-rate">—</div></div>
+            </div>
+            <div class="progress mb-16"><div class="bar bar-green" id="r-bar" style="width:0%"></div></div>
+            <div id="r-list" style="display:flex; flex-direction:column; gap:6px">
+              <div class="empty" style="padding:30px"><div class="e-icon">▶️</div><div class="e-text">选择接口后点击「执行选中用例」</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 执行历史 ============ -->
+      <div class="tab-pane" data-pane="history">
+        <div id="hist-table"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 新建/编辑接口弹窗 -->
+<div class="modal-mask" id="modal-api">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="api-modal-title">＋ 新建接口</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="grid grid-2" style="gap:12px">
+        <div class="field"><label>接口名称 <span class="text-red">*</span></label><input class="input" id="fa-name" placeholder="如：创建订单"></div>
+        <div class="field"><label>所属分组</label>
+          <select class="select" id="fa-group"><option>用户模块</option><option>订单模块</option><option>支付模块</option></select>
+        </div>
+      </div>
+      <div class="grid grid-2" style="gap:12px">
+        <div class="field"><label>请求方法</label>
+          <select class="select" id="fa-method"><option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option></select>
+        </div>
+        <div class="field"><label>路径 <span class="text-red">*</span></label><input class="input mono" id="fa-path" placeholder="/v1/orders"></div>
+      </div>
+      <div class="field"><label>请求头（JSON）</label><textarea class="textarea mono" id="fa-headers" rows="2">{"Content-Type": "application/json"}</textarea></div>
+      <div class="field"><label>请求体模板（JSON）</label><textarea class="textarea mono" id="fa-body" rows="4" placeholder='{"sku": "{{sku}}", "count": {{count}}}'></textarea></div>
+      <div class="field"><label>断言规则（每行一条）</label>
+        <textarea class="textarea mono" id="fa-assert" rows="3" placeholder="状态码 == 200&#10;$.code == 0&#10;$.data.id 非空"></textarea>
+        <div class="hint">支持 JSONPath 与比较运算符；点击右侧按钮让 AI 生成断言</div>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="fa-ai">🤖 AI 生成断言</button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="fa-save">💾 保存接口</button>
+    </div>
+  </div>
+</div>
+
+<!-- 接口详情弹窗 -->
+<div class="modal-mask" id="modal-api-view">
+  <div class="modal">
+    <div class="modal-head"><h3 id="av-title">接口详情</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="flex mb-16" id="av-meta"></div>
+      <div class="field"><label>路径</label><div class="code-block mono" id="av-path"></div></div>
+      <div class="field"><label>断言规则</label><div class="code-block" id="av-assert"></div></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" data-close-modal>关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 环境变量弹窗 -->
+<div class="modal-mask" id="modal-env">
+  <div class="modal">
+    <div class="modal-head"><h3>🌍 环境变量</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>切换环境</label>
+        <select class="select" id="env-select"><option>DEV</option><option>TEST</option><option>STAGING</option></select>
+      </div>
+      <div class="table-wrap" style="border:none">
+        <table class="table"><thead><tr><th>变量名</th><th>值</th><th style="width:60px">操作</th></tr></thead><tbody id="env-tbody"></tbody></table>
+      </div>
+      <button class="btn btn-sm btn-ghost mt-8" id="env-add">＋ 新增变量</button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="env-save">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  var apis = [
+    { id: "API-101", name: "用户登录", group: "用户模块", method: "POST", path: "/v1/auth/login", assert: 3, upd: "2026-09-21" },
+    { id: "API-102", name: "获取用户信息", group: "用户模块", method: "GET", path: "/v1/users/{id}", assert: 2, upd: "2026-09-20" },
+    { id: "API-103", name: "创建订单", group: "订单模块", method: "POST", path: "/v1/orders", assert: 4, upd: "2026-09-22" },
+    { id: "API-104", name: "查询订单列表", group: "订单模块", method: "GET", path: "/v1/orders", assert: 3, upd: "2026-09-19" },
+    { id: "API-105", name: "取消订单", group: "订单模块", method: "PUT", path: "/v1/orders/{id}/cancel", assert: 2, upd: "2026-09-18" },
+    { id: "API-106", name: "发起支付", group: "支付模块", method: "POST", path: "/v1/pay", assert: 5, upd: "2026-09-22" },
+    { id: "API-107", name: "退款申请", group: "支付模块", method: "POST", path: "/v1/refunds", assert: 4, upd: "2026-09-17" },
+    { id: "API-108", name: "删除收货地址", group: "用户模块", method: "DELETE", path: "/v1/addresses/{id}", assert: 1, upd: "2026-09-15" }
+  ];
+  var envs = { DEV: [{ k: "BASE_URL", v: "https://dev-api.example.com" }, { k: "TOKEN", v: "dev-xxx" }], TEST: [{ k: "BASE_URL", v: "https://test-api.example.com" }, { k: "TOKEN", v: "test-xxx" }], STAGING: [{ k: "BASE_URL", v: "https://staging-api.example.com" }, { k: "TOKEN", v: "staging-xxx" }] };
+  var hist = [
+    { id: "HR-310", env: "TEST", count: 8, pass: 7, fail: 1, time: "2026-09-22 09:12", mode: "串行" },
+    { id: "HR-309", env: "DEV", count: 5, pass: 5, fail: 0, time: "2026-09-21 16:40", mode: "并行" },
+    { id: "HR-308", env: "STAGING", count: 6, pass: 4, fail: 2, time: "2026-09-20 11:05", mode: "串行" }
+  ];
+  var picked = {};
+
+  var M_CLS = { GET: "tag-blue", POST: "tag-green", PUT: "tag-orange", DELETE: "tag-red" };
+
+  /* ---------- 接口表 ---------- */
+  function renderApis() {
+    var kw = document.getElementById("api-kw").value.trim().toLowerCase();
+    var md = document.getElementById("api-method").value;
+    var gp = document.getElementById("api-group").value;
+    var d = apis.filter(function (a) {
+      return (!kw || (a.name + a.path).toLowerCase().indexOf(kw) >= 0) && (!md || a.method === md) && (!gp || a.group === gp);
+    });
+    document.getElementById("api-cnt").textContent = apis.length;
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>编号</th><th>接口</th><th>分组</th><th>方法</th><th>路径</th><th>断言</th><th>更新</th><th style="width:150px">操作</th></tr></thead><tbody>';
+    if (!d.length) html += '<tr><td colspan="8"><div class="empty"><div class="e-icon">🔗</div><div class="e-text">无匹配接口</div></div></td></tr>';
+    d.forEach(function (a) {
+      html += '<tr><td class="mono">' + a.id + "</td>" +
+        '<td><div class="cell-main">' + a.name + "</div></td>" +
+        "<td><span class=\"tag\">" + a.group + "</span></td>" +
+        '<td><span class="tag ' + M_CLS[a.method] + '">' + a.method + "</span></td>" +
+        '<td class="mono" style="font-size:12px">' + a.path + "</td>" +
+        '<td class="mono">' + a.assert + " 条</td>" +
+        '<td class="mono" style="font-size:12px">' + a.upd + "</td>" +
+        '<td><div class="row-actions" style="opacity:1">' +
+        '<button class="btn btn-sm btn-ghost" data-view="' + a.id + '">详情</button>' +
+        '<button class="btn btn-sm btn-ghost" data-edit="' + a.id + '">编辑</button>' +
+        '<button class="btn btn-sm btn-danger" data-del="' + a.id + '">删除</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("api-table").innerHTML = html;
+    document.querySelectorAll("#api-table [data-view]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var a = apis.find(function (x) { return x.id === b.dataset.view; });
+        document.getElementById("av-title").textContent = a.id + " · " + a.name;
+        document.getElementById("av-meta").innerHTML = '<span class="tag ' + M_CLS[a.method] + '">' + a.method + '</span><span class="tag">' + a.group + "</span><span class=\"tag\">" + a.assert + " 条断言</span>";
+        document.getElementById("av-path").textContent = a.path;
+        document.getElementById("av-assert").textContent = "状态码 == 200\n$.code == 0\n$.data.id 非空";
+        openModal("modal-api-view");
+      });
+    });
+    document.querySelectorAll("#api-table [data-edit]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var a = apis.find(function (x) { return x.id === b.dataset.edit; });
+        document.getElementById("api-modal-title").textContent = "编辑接口 · " + a.id;
+        document.getElementById("fa-name").value = a.name;
+        document.getElementById("fa-path").value = a.path;
+        openModal("modal-api");
+      });
+    });
+    document.querySelectorAll("#api-table [data-del]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var a = apis.find(function (x) { return x.id === b.dataset.del; });
+        confirmAction({ title: "删除接口", message: "确定删除接口「" + a.name + "」吗？其执行历史将保留。", onOk: function () {
+          apis = apis.filter(function (x) { return x.id !== a.id; });
+          renderApis(); renderPickList(); toast("接口已删除", "success");
+        }});
+      });
+    });
+  }
+  document.getElementById("api-kw").addEventListener("input", debounce(renderApis, 200));
+  document.getElementById("api-method").addEventListener("change", renderApis);
+  document.getElementById("api-group").addEventListener("change", renderApis);
+
+  /* ---------- 新建/保存接口 ---------- */
+  document.getElementById("fa-save").addEventListener("click", function () {
+    var name = document.getElementById("fa-name").value.trim();
+    var path = document.getElementById("fa-path").value.trim();
+    if (!name) return toast("请填写接口名称", "error");
+    if (!path.startsWith("/")) return toast("路径需以 / 开头", "error");
+    apis.unshift({ id: "API-" + (109 + apis.length - 8), name: name, group: document.getElementById("fa-group").value, method: document.getElementById("fa-method").value, path: path, assert: (document.getElementById("fa-assert").value.match(/\n/g) || []).length + 1, upd: "2026-09-22" });
+    closeModal("modal-api");
+    document.getElementById("fa-name").value = ""; document.getElementById("fa-path").value = "";
+    renderApis(); renderPickList(); toast("接口已保存", "success");
+  });
+  document.getElementById("fa-ai").addEventListener("click", function () {
+    toast("AI 正在分析接口生成断言…", "info");
+    setTimeout(function () {
+      document.getElementById("fa-assert").value = "状态码 == 200\n$.code == 0\n$.data.id 非空\n$.data.createdAt 符合 ISO8601";
+      toast("AI 已生成 4 条断言，请确认后保存", "success");
+    }, 1100);
+  });
+  document.getElementById("btn-import-api").addEventListener("click", function () {
+    toast("演示环境：YApi / Swagger 导入通道已就绪", "info");
+  });
+
+  /* ---------- 环境变量 ---------- */
+  document.getElementById("btn-env").addEventListener("click", function () { renderEnv(); openModal("modal-env"); });
+  function renderEnv() {
+    var cur = document.getElementById("env-select").value;
+    var tb = document.getElementById("env-tbody");
+    tb.innerHTML = (envs[cur] || []).map(function (v, i) {
+      return '<tr><td><input class="input mono" value="' + v.k + '" data-ek="' + i + '"></td><td><input class="input mono" value="' + v.v + '" data-ev="' + i + '"></td><td><button class="btn btn-sm btn-danger" data-ed="' + i + '">删</button></td></tr>';
+    }).join("");
+    tb.querySelectorAll("[data-ed]").forEach(function (b) { b.addEventListener("click", function () { envs[cur].splice(+b.dataset.ed, 1); renderEnv(); }); });
+  }
+  document.getElementById("env-select").addEventListener("change", renderEnv);
+  document.getElementById("env-add").addEventListener("click", function () {
+    envs[document.getElementById("env-select").value].push({ k: "NEW_VAR", v: "" }); renderEnv();
+  });
+  document.getElementById("env-save").addEventListener("click", function () {
+    var cur = document.getElementById("env-select").value;
+    document.querySelectorAll("[data-ek]").forEach(function (inp) { envs[cur][+inp.dataset.ek].k = inp.value; });
+    document.querySelectorAll("[data-ev]").forEach(function (inp) { envs[cur][+inp.dataset.ev].v = inp.value; });
+    closeModal("modal-env"); toast("环境变量已保存（" + cur + "）", "success");
+  });
+
+  /* ---------- 用例执行 ---------- */
+  function renderPickList() {
+    var box = document.getElementById("pick-list");
+    box.innerHTML = apis.map(function (a) {
+      return '<label class="checkbox" style="display:flex; padding:4px 6px"><input type="checkbox" data-pick="' + a.id + '"' + (picked[a.id] ? " checked" : "") + "> <span class=\"tag " + M_CLS[a.method] + '" style="margin-right:6px">' + a.method + '</span> <span style="font-size:12.5px">' + a.name + '</span></label>';
+    }).join("");
+    box.querySelectorAll("[data-pick]").forEach(function (c) {
+      c.addEventListener("change", function () { picked[c.dataset.pick] = c.checked; refreshPickCount(); });
+    });
+    refreshPickCount();
+  }
+  function refreshPickCount() {
+    document.getElementById("pick-count").textContent = Object.keys(picked).filter(function (k) { return picked[k]; }).length;
+  }
+
+  var runTimer = null;
+  document.getElementById("btn-run-suite").addEventListener("click", function () {
+    var ids = Object.keys(picked).filter(function (k) { return picked[k]; });
+    if (!ids.length) return toast("请先勾选要执行的接口", "warn");
+    var mode = document.querySelector('input[name="run-mode"]:checked').value;
+    var envName = document.getElementById("run-env").value.split(" · ")[0];
+    var list = document.getElementById("r-list");
+    list.innerHTML = "";
+    var pass = 0, fail = 0, done = 0;
+    document.getElementById("btn-run-suite").disabled = true;
+    document.getElementById("btn-stop-suite").disabled = false;
+    document.getElementById("btn-run-report").disabled = true;
+    toast("开始" + (mode === "serial" ? "串行" : "并行") + "执行 " + ids.length + " 个接口（" + envName + "）", "info");
+
+    runTimer = setInterval(function () {
+      if (done >= ids.length) {
+        clearInterval(runTimer); runTimer = null;
+        document.getElementById("btn-run-suite").disabled = false;
+        document.getElementById("btn-stop-suite").disabled = true;
+        document.getElementById("btn-run-report").disabled = false;
+        hist.unshift({ id: "HR-" + (311 + hist.length - 3), env: envName, count: ids.length, pass: pass, fail: fail, time: "刚刚", mode: mode === "serial" ? "串行" : "并行" });
+        renderHist();
+        toast("执行完成：通过 " + pass + " / 失败 " + fail, fail ? "warn" : "success");
+        return;
+      }
+      var a = apis.find(function (x) { return x.id === ids[done]; });
+      var ok = Math.random() > 0.2;
+      if (ok) pass++; else fail++;
+      done++;
+      list.innerHTML += '<div class="flex-between" style="padding:8px 10px; border:1px solid var(--border); border-radius:8px; font-size:12.5px">' +
+        '<div class="flex"><span class="tag ' + M_CLS[a.method] + '">' + a.method + '</span><span class="mono text-faint">' + a.path + "</span></div>" +
+        '<div class="flex"><span class="mono">' + Math.round(40 + Math.random() * 200) + 'ms</span>' +
+        (ok ? '<span class="tag tag-green">✅ 通过</span>' : '<span class="tag tag-red">❌ 断言失败</span>') + "</div></div>";
+      document.getElementById("r-total").textContent = done;
+      document.getElementById("r-pass").textContent = pass;
+      document.getElementById("r-fail").textContent = fail;
+      document.getElementById("r-rate").textContent = Math.round(pass / done * 100) + "%";
+      document.getElementById("r-bar").style.width = Math.round(done / ids.length * 100) + "%";
+    }, 500);
+  });
+  document.getElementById("btn-stop-suite").addEventListener("click", function () {
+    if (runTimer) { clearInterval(runTimer); runTimer = null; }
+    document.getElementById("btn-run-suite").disabled = false;
+    this.disabled = true;
+    toast("执行已停止", "warn");
+  });
+  document.getElementById("btn-run-report").addEventListener("click", function () {
+    toast("api-test-report.html 导出成功（演示）", "success");
+  });
+
+  /* ---------- 执行历史 ---------- */
+  function renderHist() {
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>记录</th><th>环境</th><th>方式</th><th>用例数</th><th>通过</th><th>失败</th><th>时间</th><th>操作</th></tr></thead><tbody>';
+    hist.forEach(function (h) {
+      html += '<tr><td class="mono">' + h.id + "</td><td><span class=\"tag tag-blue\">" + h.env + "</span></td><td>" + h.mode + "</td>" +
+        '<td class="mono">' + h.count + '</td><td class="mono text-green">' + h.pass + '</td><td class="mono text-red">' + h.fail + "</td>" +
+        '<td class="mono" style="font-size:12px">' + h.time + "</td>" +
+        '<td><div class="row-actions" style="opacity:1"><button class="btn btn-sm btn-ghost" onclick="toast(\'演示环境：报告详情页建设中\',\'info\')">查看报告</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("hist-table").innerHTML = html;
+  }
+
+  if (qs("tab")) {
+    var tb = document.querySelector('.tab[data-tab="' + qs("tab") + '"]');
+    if (tb) tb.click();
+  }
+
+  renderApis(); renderPickList(); renderHist();
+})();
+</script>
+</body>
+</html>

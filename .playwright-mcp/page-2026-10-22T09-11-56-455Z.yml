@@ -1,0 +1,114 @@
+- generic [ref=f4e3]:
+  - banner [ref=f4e4]:
+    - link "AT AITest Hub" [ref=f4e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f4e6]: AT
+      - text: AITest Hub
+    - generic [ref=f4e7]:
+      - generic [ref=f4e8]:
+        - link "🗂️ 卡片列表" [ref=f4e9] [cursor=pointer]:
+          - /url: /app
+          - generic [ref=f4e10]: 🗂️
+          - text: 卡片列表
+        - link "🌐 官网首页" [ref=f4e11] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f4e12]: 🌐
+          - text: 官网首页
+        - button "⚙️ 个人设置" [ref=f4e13] [cursor=pointer]:
+          - generic [ref=f4e14]: ⚙️
+          - text: 个人设置
+        - button "🚪 退出登录" [ref=f4e15] [cursor=pointer]:
+          - generic [ref=f4e16]: 🚪
+          - text: 退出登录
+      - generic [ref=f4e17]:
+        - generic [ref=f4e18]: S
+        - generic [ref=f4e19]: snow-sakura · 测试工程师
+  - generic [ref=f4e20]:
+    - generic [ref=f4e21]:
+      - generic [ref=f4e22]:
+        - heading "☀️ Solar Grove · AITest 工具台" [level=1] [ref=f4e23]
+        - generic [ref=f4e24]: 按 TAB 分类浏览功能模块，点击任意卡片进入对应工作台。
+      - generic [ref=f4e25]:
+        - link "🏠 返回官网首页" [ref=f4e26] [cursor=pointer]:
+          - /url: /
+        - link "✨ 打开 AI 测试用例" [ref=f4e27] [cursor=pointer]:
+          - /url: /t/tool-test-cases
+    - generic [ref=f4e28]:
+      - generic [ref=f4e29]:
+        - generic [ref=f4e30]: 可用工具入口
+        - generic [ref=f4e31]: "27"
+        - generic [ref=f4e32]: 覆盖需求到缺陷全链路与平台治理
+      - generic [ref=f4e33]:
+        - generic [ref=f4e34]: 本月生成用例
+        - generic [ref=f4e35]: "248"
+        - generic [ref=f4e36]: ↑ 18% 环比上月
+      - generic [ref=f4e37]:
+        - generic [ref=f4e38]: 执行成功率
+        - generic [ref=f4e39]: 94.6%
+        - generic [ref=f4e40]: UI / App / 接口近 30 天
+      - generic [ref=f4e41]:
+        - generic [ref=f4e42]: AI 助手调用
+        - generic [ref=f4e43]: 1,204
+        - generic [ref=f4e44]: 解析 / 生成 / 修复建议合计
+    - generic [ref=f4e45]:
+      - button "📐 测试管理6" [ref=f4e46] [cursor=pointer]
+      - button "⚡ 测试执行7" [ref=f4e47] [cursor=pointer]
+      - button "🤖 AI 中心9" [ref=f4e48] [cursor=pointer]
+      - button "🧰 平台与数据6" [ref=f4e49] [cursor=pointer]
+      - generic [ref=f4e50]: 点击卡片进入工作台 →
+    - generic [ref=f4e52]:
+      - button "📋 需求管理 AI 需求解析（PDF / Word / TXT）→ 需求条目化 → 一键派生用例 / 压测场景 / 安全测试项，需求到资产全链路追溯 AI 解析 追溯矩阵 打开 →" [ref=f4e53] [cursor=pointer]:
+        - generic [ref=f4e54]: 📋
+        - heading "需求管理" [level=3] [ref=f4e55]
+        - paragraph [ref=f4e56]: AI 需求解析（PDF / Word / TXT）→ 需求条目化 → 一键派生用例 / 压测场景 / 安全测试项，需求到资产全链路追溯
+        - generic [ref=f4e57]:
+          - generic [ref=f4e58]: AI 解析
+          - generic [ref=f4e59]: 追溯矩阵
+        - link "打开 →" [ref=f4e61]:
+          - /url: /t/tool-requirement-management
+      - button "🤖 AI 用例工作台 粘贴需求 → AI 生成结构化用例 → 会话精修 → 导出 Excel / Markdown AI 生成 会话精修 打开 →" [ref=f4e62] [cursor=pointer]:
+        - generic [ref=f4e63]: 🤖
+        - heading "AI 用例工作台" [level=3] [ref=f4e64]
+        - paragraph [ref=f4e65]: 粘贴需求 → AI 生成结构化用例 → 会话精修 → 导出 Excel / Markdown
+        - generic [ref=f4e66]:
+          - generic [ref=f4e67]: AI 生成
+          - generic [ref=f4e68]: 会话精修
+        - link "打开 →" [ref=f4e70]:
+          - /url: /t/tool-test-cases
+      - button "🗂️ 用例管理 模块树 + 用例库双视图 · 评审流程 · 批次执行与结果统计 · 与 AI 生成 / 缺陷管理双向关联 模块树 评审 打开 →" [ref=f4e71] [cursor=pointer]:
+        - generic [ref=f4e72]: 🗂️
+        - heading "用例管理" [level=3] [ref=f4e73]
+        - paragraph [ref=f4e74]: 模块树 + 用例库双视图 · 评审流程 · 批次执行与结果统计 · 与 AI 生成 / 缺陷管理双向关联
+        - generic [ref=f4e75]:
+          - generic [ref=f4e76]: 模块树
+          - generic [ref=f4e77]: 评审
+        - link "打开 →" [ref=f4e79]:
+          - /url: /t/tool-case-management
+      - button "🐞 缺陷管理 缺陷全生命周期流转 · 严重等级矩阵 · AI 重复缺陷检测 · 关联用例与执行记录 状态流转 AI 查重 打开 →" [ref=f4e80] [cursor=pointer]:
+        - generic [ref=f4e81]: 🐞
+        - heading "缺陷管理" [level=3] [ref=f4e82]
+        - paragraph [ref=f4e83]: 缺陷全生命周期流转 · 严重等级矩阵 · AI 重复缺陷检测 · 关联用例与执行记录
+        - generic [ref=f4e84]:
+          - generic [ref=f4e85]: 状态流转
+          - generic [ref=f4e86]: AI 查重
+        - link "打开 →" [ref=f4e88]:
+          - /url: /t/tool-defect-management
+      - button "📚 提示词库 集中存放可复用提示词，按场景分类、搜索与一键复制到 Cursor / Agent。 分类 一键复制 打开 →" [ref=f4e89] [cursor=pointer]:
+        - generic [ref=f4e90]: 📚
+        - heading "提示词库" [level=3] [ref=f4e91]
+        - paragraph [ref=f4e92]: 集中存放可复用提示词，按场景分类、搜索与一键复制到 Cursor / Agent。
+        - generic [ref=f4e93]:
+          - generic [ref=f4e94]: 分类
+          - generic [ref=f4e95]: 一键复制
+        - link "打开 →" [ref=f4e97]:
+          - /url: /prompts
+      - button "NEW 📚 知识库 测试模式沉淀 + Bug 经验库 + AI 智能检索：RAG 引用源头，回答与用例生成可引用知识条目 RAG 经验沉淀 打开 →" [ref=f4e98] [cursor=pointer]:
+        - generic [ref=f4e99]: NEW
+        - generic [ref=f4e100]: 📚
+        - heading "知识库" [level=3] [ref=f4e101]
+        - paragraph [ref=f4e102]: 测试模式沉淀 + Bug 经验库 + AI 智能检索：RAG 引用源头，回答与用例生成可引用知识条目
+        - generic [ref=f4e103]:
+          - generic [ref=f4e104]: RAG
+          - generic [ref=f4e105]: 经验沉淀
+        - link "打开 →" [ref=f4e107]:
+          - /url: /t/tool-knowledge-base

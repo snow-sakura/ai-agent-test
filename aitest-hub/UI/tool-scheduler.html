@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>定时任务 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / 定时任务</div>
+    <div class="page-head">
+      <div>
+        <h1>⏰ 定时任务</h1>
+        <div class="sub">统一调度接口测试 / UI 自动化 / App 自动化的定时执行：Cron 表达式 · 固定间隔 · 单次执行，结果邮件 / Webhook 通知</div>
+      </div>
+      <div class="flex">
+        <a class="btn btn-ghost" href="tool-data-factory.html?tab=crontab">🏭 Crontab 工具</a>
+        <button class="btn btn-primary" data-open-modal="modal-task">＋ 新建定时任务</button>
+      </div>
+    </div>
+
+    <div class="banner banner-info">ℹ️ 参考 TestHub 定时任务：任务类型可选接口测试套件或 UI 自动化套件，按 Cron / 固定间隔 / 单次三种方式调度；执行完成自动推送邮件与 Webhook 机器人，全部执行留痕可查日志。</div>
+
+    <!-- 统计 -->
+    <div class="grid grid-4 mb-16">
+      <div class="card stat-card"><div class="s-label">任务总数</div><div class="s-value" id="st-total">0</div></div>
+      <div class="card stat-card"><div class="s-label">启用中</div><div class="s-value" style="color:var(--green)" id="st-on">0</div></div>
+      <div class="card stat-card"><div class="s-label">今日触发</div><div class="s-value" style="color:var(--blue)" id="st-today">0</div></div>
+      <div class="card stat-card"><div class="s-label">最近失败</div><div class="s-value" style="color:var(--red)" id="st-fail">0</div></div>
+    </div>
+
+    <div class="tabs" data-scope="sc">
+      <button class="tab active" data-tab="tasks">📅 任务列表 <span class="badge-count" id="sc-cnt">0</span></button>
+      <button class="tab" data-tab="logs">📜 执行日志</button>
+    </div>
+
+    <div id="sc">
+      <!-- ============ 任务列表 ============ -->
+      <div class="tab-pane active" data-pane="tasks">
+        <div class="filter-bar">
+          <input class="input search" id="t-kw" placeholder="🔍 搜索任务名称">
+          <select class="select" id="t-type"><option value="">全部类型</option><option>接口测试</option><option>UI 自动化</option><option>App 自动化</option><option>安全扫描</option></select>
+          <select class="select" id="t-status"><option value="">全部状态</option><option>启用</option><option>停用</option></select>
+          <button class="btn btn-ghost btn-sm" id="t-reset">重置</button>
+        </div>
+        <div id="t-table"></div>
+      </div>
+
+      <!-- ============ 执行日志 ============ -->
+      <div class="tab-pane" data-pane="logs">
+        <div class="filter-bar">
+          <select class="select" id="l-result"><option value="">全部结果</option><option>成功</option><option>失败</option></select>
+          <input class="input" id="l-date" type="date" value="2026-09-22" style="width:160px">
+        </div>
+        <div id="l-table"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 新建/编辑任务弹窗 -->
+<div class="modal-mask" id="modal-task">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="tk-modal-title">＋ 新建定时任务</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="grid grid-2" style="gap:12px">
+        <div class="field"><label>任务名称 <span class="text-red">*</span></label><input class="input" id="ft2-name" placeholder="如：每夜接口回归"></div>
+        <div class="field"><label>任务类型</label>
+          <select class="select" id="ft2-type"><option>接口测试</option><option>UI 自动化</option><option>App 自动化</option><option>安全扫描</option></select>
+        </div>
+      </div>
+      <div class="field"><label>执行目标</label>
+        <select class="select" id="ft2-target"><option>接口套件：支付核心链路回归（12 条）</option><option>UI 套件：主站冒烟（5 个场景）</option><option>App 流水线：核心冒烟-小米12</option><option>安全扫描：支付模块基线</option></select>
+      </div>
+      <div class="field"><label>调度方式</label>
+        <div class="flex" style="gap:14px; flex-wrap:wrap">
+          <label class="checkbox"><input type="radio" name="ft2-mode" value="cron" checked onchange="scMode('cron')"> Cron 表达式</label>
+          <label class="checkbox"><input type="radio" name="ft2-mode" value="interval" onchange="scMode('interval')"> 固定间隔</label>
+          <label class="checkbox"><input type="radio" name="ft2-mode" value="once" onchange="scMode('once')"> 单次执行</label>
+        </div>
+      </div>
+      <div class="field" id="mode-cron"><label>Cron 表达式</label>
+        <div class="input-group">
+          <input class="input mono" id="ft2-cron" value="0 2 * * *" placeholder="分 时 日 月 周">
+          <button class="btn btn-ghost" type="button" onclick="toast('解析：每天凌晨 2:00（演示）','info')">解析</button>
+        </div>
+        <div class="hint">可在<a href="tool-data-factory.html?tab=crontab" target="_blank">数据工厂 Crontab 工具</a>生成与验证</div>
+      </div>
+      <div class="field hidden" id="mode-interval"><label>间隔（分钟）</label><input class="input mono" type="number" value="60" min="5"></div>
+      <div class="field hidden" id="mode-once"><label>执行时间</label><input class="input" id="ft2-once" type="datetime-local" value="2026-09-23T02:00"></div>
+      <div class="field"><label>通知设置</label>
+        <div class="flex" style="gap:8px; flex-wrap:wrap">
+          <label class="checkbox"><input type="checkbox" checked> 📧 邮件</label>
+          <label class="checkbox"><input type="checkbox" checked> 💬 企业微信</label>
+          <label class="checkbox"><input type="checkbox"> 🤖 钉钉</label>
+          <label class="checkbox"><input type="checkbox"> ✈️ 飞书</label>
+        </div>
+        <div class="hint">通知渠道在<a href="tool-config-center.html?tab=notify" target="_blank">配置中心</a>维护；仅失败时通知可勾选「仅失败提醒」</div>
+      </div>
+      <label class="checkbox"><input type="checkbox" id="ft2-onlyfail"> 仅失败时通知</label>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="ft2-save">💾 保存任务</button>
+    </div>
+  </div>
+</div>
+
+<!-- 执行日志详情弹窗 -->
+<div class="modal-mask" id="modal-log">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="lg-title">执行日志</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="flex mb-16" id="lg-meta"></div>
+      <div class="code-block" id="lg-body" style="max-height:300px; overflow-y:auto"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" data-close-modal>关闭</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  var tasks = [
+    { id: "ST-21", name: "每夜接口回归", type: "接口测试", target: "支付核心链路回归（12 条）", mode: "cron", cron: "0 2 * * *", notify: "邮件 + 企业微信", status: "启用", last: "2026-09-22 02:00 成功", next: "2026-09-23 02:00", onlyFail: false },
+    { id: "ST-20", name: "主站 UI 冒烟·每 4 小时", type: "UI 自动化", target: "主站冒烟（5 个场景）", mode: "interval", cron: "每 240 分钟", notify: "邮件", status: "启用", last: "2026-09-22 16:00 成功", next: "2026-09-22 20:00", onlyFail: false },
+    { id: "ST-19", name: "App 核心冒烟·每夜", type: "App 自动化", target: "核心冒烟-小米12", mode: "cron", cron: "0 3 * * *", notify: "企业微信（仅失败）", status: "启用", last: "2026-09-22 03:00 失败", next: "2026-09-23 03:00", onlyFail: true },
+    { id: "ST-18", name: "支付模块安全基线·每周", type: "安全扫描", target: "支付模块基线", mode: "cron", cron: "0 4 * * 1", notify: "邮件", status: "停用", last: "2026-09-15 04:00 成功", next: "—", onlyFail: false },
+    { id: "ST-17", name: "大促前全量回归·单次", type: "接口测试", target: "全量回归套件（86 条）", mode: "once", cron: "2026-09-30 01:00", notify: "邮件 + 企业微信", status: "启用", last: "尚未触发", next: "2026-09-30 01:00", onlyFail: false }
+  ];
+  var logs = [
+    { id: "EX-908", task: "ST-21 每夜接口回归", time: "2026-09-22 02:00", dur: "3m42s", result: "成功", detail: "12/12 通过 · 通知已发送（邮件+企微）" },
+    { id: "EX-907", task: "ST-20 主站 UI 冒烟", time: "2026-09-22 16:00", dur: "2m08s", result: "成功", detail: "5/5 场景通过" },
+    { id: "EX-906", task: "ST-19 App 核心冒烟", time: "2026-09-22 03:00", dur: "6m51s", result: "失败", detail: "步骤 4 元素未找到 · 已通知企微（仅失败）" },
+    { id: "EX-905", task: "ST-20 主站 UI 冒烟", time: "2026-09-22 12:00", dur: "1m59s", result: "成功", detail: "5/5 场景通过" },
+    { id: "EX-904", task: "ST-18 安全基线", time: "2026-09-15 04:00", dur: "8m30s", result: "成功", detail: "基线通过率 92%，新发现 1 项" }
+  ];
+  var T_CLS = { "接口测试": "tag-blue", "UI 自动化": "tag-purple", "App 自动化": "tag-orange", "安全扫描": "tag-red" };
+
+  function refreshStats() {
+    document.getElementById("st-total").textContent = tasks.length;
+    document.getElementById("st-on").textContent = tasks.filter(function (t) { return t.status === "启用"; }).length;
+    document.getElementById("st-today").textContent = logs.filter(function (l) { return l.time.indexOf("2026-09-22") === 0; }).length;
+    document.getElementById("st-fail").textContent = logs.filter(function (l) { return l.result === "失败"; }).length;
+    document.getElementById("sc-cnt").textContent = tasks.length;
+  }
+
+  /* ---------- 任务列表 ---------- */
+  function renderTasks() {
+    var kw = document.getElementById("t-kw").value.trim().toLowerCase();
+    var tp = document.getElementById("t-type").value;
+    var st = document.getElementById("t-status").value;
+    var d = tasks.filter(function (t) {
+      return (!kw || t.name.toLowerCase().indexOf(kw) >= 0) && (!tp || t.type === tp) && (!st || t.status === st);
+    });
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>任务</th><th>类型</th><th>调度</th><th>通知</th><th>最近执行</th><th>下次执行</th><th>状态</th><th style="width:250px">操作</th></tr></thead><tbody>';
+    if (!d.length) html += '<tr><td colspan="8"><div class="empty"><div class="e-icon">⏰</div><div class="e-text">无匹配任务</div></div></td></tr>';
+    d.forEach(function (t) {
+      html += '<tr><td><div class="cell-main">' + t.name + '</div><div class="cell-sub mono">' + t.id + " · " + t.target + "</div></td>" +
+        '<td><span class="tag ' + T_CLS[t.type] + '">' + t.type + "</span></td>" +
+        '<td class="mono" style="font-size:12px">' + t.cron + (t.onlyFail ? ' <span class="tag" style="font-size:10.5px">仅失败通知</span>' : "") + "</td>" +
+        '<td class="cell-sub" style="font-size:12px">' + t.notify + "</td>" +
+        '<td class="cell-sub" style="font-size:12px">' + t.last + "</td>" +
+        '<td class="mono" style="font-size:12px">' + t.next + "</td>" +
+        "<td>" + (t.status === "启用" ? '<span class="tag tag-green">启用</span>' : '<span class="tag">停用</span>') + "</td>" +
+        '<td><div class="row-actions" style="opacity:1">' +
+        '<button class="btn btn-sm btn-success" data-run="' + t.id + '">▶ 立即执行</button>' +
+        '<button class="btn btn-sm btn-ghost" data-toggle="' + t.id + '">' + (t.status === "启用" ? "停用" : "启用") + "</button>" +
+        '<button class="btn btn-sm btn-ghost" data-edit="' + t.id + '">编辑</button>' +
+        '<button class="btn btn-sm btn-danger" data-del="' + t.id + '">删除</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("t-table").innerHTML = html;
+    bindTaskActions();
+  }
+  function bindTaskActions() {
+    document.querySelectorAll("[data-run]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var t = tasks.find(function (x) { return x.id === b.dataset.run; });
+        if (t.status !== "启用") return toast("任务已停用，请先启用", "warn");
+        toast("任务「" + t.name + "」已触发立即执行…", "info");
+        setTimeout(function () {
+          var ok = Math.random() > 0.25;
+          t.last = "刚刚 " + (ok ? "成功" : "失败");
+          logs.unshift({ id: "EX-" + (909 + logs.length - 5), task: t.id + " " + t.name, time: "刚刚", dur: (1 + Math.random() * 6).toFixed(1) + "m", result: ok ? "成功" : "失败", detail: ok ? "全部通过" : "执行失败，已按通知策略推送" });
+          refreshStats(); renderLogs();
+          toast(ok ? "执行成功 ✅" : "执行失败 ❌ 已按通知策略推送", ok ? "success" : "error");
+        }, 2000);
+      });
+    });
+    document.querySelectorAll("[data-toggle]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var t = tasks.find(function (x) { return x.id === b.dataset.toggle; });
+        t.status = t.status === "启用" ? "停用" : "启用";
+        renderTasks(); toast("任务已" + t.status, "success");
+      });
+    });
+    document.querySelectorAll("[data-edit]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var t = tasks.find(function (x) { return x.id === b.dataset.edit; });
+        document.getElementById("tk-modal-title").textContent = "编辑任务 · " + t.id;
+        document.getElementById("ft2-name").value = t.name;
+        openModal("modal-task");
+      });
+    });
+    document.querySelectorAll("[data-del]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var t = tasks.find(function (x) { return x.id === b.dataset.del; });
+        confirmAction({ title: "删除定时任务", message: "确定删除「" + t.name + "」吗？其历史执行日志将保留。", onOk: function () {
+          tasks = tasks.filter(function (x) { return x.id !== t.id; });
+          refreshStats(); renderTasks(); toast("任务已删除", "success");
+        }});
+      });
+    });
+  }
+  ["t-kw", "t-type", "t-status"].forEach(function (id, i) {
+    document.getElementById(id).addEventListener(i === 0 ? "input" : "change", debounce(renderTasks, i === 0 ? 200 : 0));
+  });
+  document.getElementById("t-reset").addEventListener("click", function () {
+    document.getElementById("t-kw").value = ""; document.getElementById("t-type").value = ""; document.getElementById("t-status").value = "";
+    renderTasks(); toast("筛选已重置", "info");
+  });
+
+  /* ---------- 执行日志 ---------- */
+  function renderLogs() {
+    var rs = document.getElementById("l-result").value;
+    var d = logs.filter(function (l) { return !rs || l.result === rs; });
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>记录</th><th>任务</th><th>执行时间</th><th>耗时</th><th>结果</th><th>摘要</th><th style="width:110px">操作</th></tr></thead><tbody>';
+    if (!d.length) html += '<tr><td colspan="7"><div class="empty"><div class="e-icon">📜</div><div class="e-text">暂无执行日志</div></div></td></tr>';
+    d.forEach(function (l) {
+      html += '<tr><td class="mono">' + l.id + "</td>" +
+        '<td><div class="cell-main">' + l.task + "</div></td>" +
+        '<td class="mono" style="font-size:12px">' + l.time + '</td><td class="mono">' + l.dur + "</td>" +
+        "<td>" + (l.result === "成功" ? '<span class="tag tag-green">成功</span>' : '<span class="tag tag-red">失败</span>') + "</td>" +
+        '<td class="cell-sub" style="font-size:12px">' + l.detail + "</td>" +
+        '<td><div class="row-actions" style="opacity:1"><button class="btn btn-sm btn-ghost" data-lg="' + l.id + '">日志</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("l-table").innerHTML = html;
+    document.querySelectorAll("[data-lg]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var l = logs.find(function (x) { return x.id === b.dataset.lg; });
+        document.getElementById("lg-title").textContent = "执行日志 · " + l.id;
+        document.getElementById("lg-meta").innerHTML =
+          '<span class="tag tag-blue">' + l.task + '</span><span class="tag">' + l.time + '</span><span class="tag">⏱ ' + l.dur + "</span>" +
+          (l.result === "成功" ? '<span class="tag tag-green">成功</span>' : '<span class="tag tag-red">失败</span>');
+        document.getElementById("lg-body").textContent =
+          "[INFO] 调度器触发任务：" + l.task + "\n[INFO] 加载执行目标与上下文配置…\n[INFO] 开始执行（" + l.time + "）\n" +
+          (l.result === "成功"
+            ? "[INFO] 步骤全部完成 ✓\n[INFO] 汇总：" + l.detail + "\n[INFO] 通知推送完成\n[INFO] 任务结束"
+            : "[WARN] 步骤 4 执行异常：元素未找到（重试 2 次仍失败）\n[INFO] 已截图 failure-step4.png\n[INFO] 汇总：" + l.detail + "\n[INFO] 通知推送完成\n[INFO] 任务结束");
+        openModal("modal-log");
+      });
+    });
+  }
+  document.getElementById("l-result").addEventListener("change", renderLogs);
+
+  /* ---------- 调度方式切换 ---------- */
+  window.scMode = function (m) {
+    document.getElementById("mode-cron").classList.toggle("hidden", m !== "cron");
+    document.getElementById("mode-interval").classList.toggle("hidden", m !== "interval");
+    document.getElementById("mode-once").classList.toggle("hidden", m !== "once");
+  };
+
+  /* ---------- 保存任务 ---------- */
+  document.getElementById("ft2-save").addEventListener("click", function () {
+    var n = document.getElementById("ft2-name").value.trim();
+    if (!n) return toast("请填写任务名称", "error");
+    var m = document.querySelector('input[name="ft2-mode"]:checked').value;
+    var cron = m === "cron" ? document.getElementById("ft2-cron").value : m === "interval" ? "每 " + document.getElementById("mode-interval input") + "" : "";
+    if (m === "cron" && !/^[\d\*\/\,\-\s]+$/.test(document.getElementById("ft2-cron").value.trim())) return toast("Cron 表达式格式不正确", "error");
+    var cronText = m === "cron" ? document.getElementById("ft2-cron").value : m === "interval" ? "每 " + (document.querySelector("#mode-interval input") || {}).value + " 分钟" : document.getElementById("ft2-once").value.replace("T", " ");
+    tasks.unshift({ id: "ST-" + (22 + tasks.length - 5), name: n, type: document.getElementById("ft2-type").value, target: document.getElementById("ft2-target").value.split("：")[1] || "—", mode: m, cron: cronText, notify: "邮件", status: "启用", last: "尚未触发", next: m === "once" ? cronText : "按调度计算", onlyFail: document.getElementById("ft2-onlyfail").checked });
+    closeModal("modal-task");
+    document.getElementById("ft2-name").value = "";
+    refreshStats(); renderTasks(); toast("定时任务已创建并启用", "success");
+  });
+
+  if (qs("tab")) {
+    var tb = document.querySelector('.tab[data-tab="' + qs("tab") + '"]');
+    if (tb) tb.click();
+  }
+
+  refreshStats(); renderTasks(); renderLogs();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,20 @@
+/* 全局 reset、body、链接、选区、滚动条 */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body {
+  font-family: var(--font);
+  background:
+    radial-gradient(circle at 8% 4%, rgba(224,104,90,.06), transparent 30%),
+    radial-gradient(circle at 92% 10%, rgba(138,111,192,.06), transparent 30%),
+    var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--primary); text-decoration: none; }
+a:hover { text-decoration: underline; }
+::selection { background: rgba(224,104,90,.25); }
+::-webkit-scrollbar { width: 9px; height: 9px; }
+::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 5px; }
+::-webkit-scrollbar-track { background: transparent; }

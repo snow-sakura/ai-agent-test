@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>知识库 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / 知识库</div>
+    <div class="page-head">
+      <div>
+        <h1>📚 知识库</h1>
+        <div class="sub">测试模式沉淀 + Bug 经验库 + AI 智能检索：RAG 引用源头，回答与用例生成可引用知识条目</div>
+      </div>
+      <div class="flex">
+        <a class="btn btn-ghost" href="tool-ai-assistant.html">💬 去 AI 问答验证引用</a>
+        <button class="btn btn-primary" data-open-modal="modal-entry">＋ 新建知识条目</button>
+      </div>
+    </div>
+
+    <div class="banner banner-info">ℹ️ 对应平台 KnowledgeBase 模块：三类资产——<strong>测试模式</strong>（可复用测试套路）、<strong>Bug 知识</strong>（根因 + 解决方案）、<strong>知识条目</strong>（通用文档）；AI 问答助手开启 RAG 时将检索本库并在回答中标注引用来源。</div>
+
+    <!-- AI 智能检索 -->
+    <div class="card mb-16">
+      <div class="card-title">🧠 AI 智能检索 <span class="tag tag-red">RAG</span></div>
+      <div class="input-group">
+        <input class="input" id="kb-ai-q" placeholder="输入问题，如：如何测试登录功能 / 支付金额校验出过哪些 Bug">
+        <button class="btn btn-primary" id="kb-ai-go">🔍 智能检索</button>
+        <button class="btn btn-ghost" id="kb-ai-clear">清除</button>
+      </div>
+      <div id="kb-ai-out" class="hidden" style="margin-top:12px"></div>
+    </div>
+
+    <div class="tabs" data-scope="kb">
+      <button class="tab active" data-tab="patterns">🧪 测试模式 <span class="badge-count" id="pt-cnt">0</span></button>
+      <button class="tab" data-tab="bugs">🐞 Bug 知识 <span class="badge-count" id="bg-cnt">0</span></button>
+      <button class="tab" data-tab="entries">📄 知识条目 <span class="badge-count" id="en-cnt">0</span></button>
+    </div>
+
+    <div id="kb">
+      <!-- ============ 测试模式 ============ -->
+      <div class="tab-pane active" data-pane="patterns">
+        <div class="filter-bar">
+          <input class="input search" id="pt-kw" placeholder="🔍 搜索模式名称 / 描述">
+          <select class="select" id="pt-cat"><option value="">全部类型</option><option>登录</option><option>支付</option><option>表单</option><option>列表</option><option>文件上传</option></select>
+        </div>
+        <div id="pt-grid" class="grid grid-3"></div>
+      </div>
+
+      <!-- ============ Bug 知识 ============ -->
+      <div class="tab-pane" data-pane="bugs">
+        <div class="filter-bar">
+          <input class="input search" id="bg-kw" placeholder="🔍 搜索 Bug 标题 / 根因">
+          <select class="select" id="bg-cat"><option value="">全部类型</option><option>逻辑缺陷</option><option>边界缺陷</option><option>并发缺陷</option><option>安全缺陷</option><option>兼容缺陷</option></select>
+        </div>
+        <div id="bg-table"></div>
+      </div>
+
+      <!-- ============ 知识条目 ============ -->
+      <div class="tab-pane" data-pane="entries">
+        <div class="filter-bar">
+          <input class="input search" id="en-kw" placeholder="🔍 搜索条目标题 / 内容">
+          <select class="select" id="en-cat"><option value="">全部分类</option><option>测试规范</option><option>环境手册</option><option>工具指南</option><option>流程说明</option></select>
+        </div>
+        <div id="en-table"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 新建/编辑条目弹窗 -->
+<div class="modal-mask" id="modal-entry">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="en-modal-title">＋ 新建知识条目</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="grid grid-2" style="gap:12px">
+        <div class="field"><label>标题 <span class="text-red">*</span></label><input class="input" id="ef-title" placeholder="知识条目标题"></div>
+        <div class="field"><label>分类</label>
+          <select class="select" id="ef-cat"><option>测试规范</option><option>环境手册</option><option>工具指南</option><option>流程说明</option></select>
+        </div>
+      </div>
+      <div class="field"><label>内容（Markdown） <span class="text-red">*</span></label>
+        <textarea class="textarea mono" id="ef-body" rows="6" placeholder="支持 Markdown 语法…"></textarea>
+      </div>
+      <div class="field"><label>标签</label><input class="input" id="ef-tags" placeholder="逗号分隔，如：登录,安全,P0"></div>
+      <button class="btn btn-ghost btn-sm" id="ef-ai">🤖 AI 辅助扩写</button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="ef-save">💾 保存条目</button>
+    </div>
+  </div>
+</div>
+
+<!-- 模式详情 / 使用弹窗 -->
+<div class="modal-mask" id="modal-pt">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="pt-modal-title">测试模式</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body" id="pt-modal-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>关闭</button>
+      <a class="btn btn-primary" href="tool-test-cases.html" id="pt-use-link">✨ 去用例工作台套用 →</a>
+    </div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  /* ================= 数据 ================= */
+  var patterns = [
+    { id: "PT-12", name: "登录认证测试模式", cat: "登录", uses: 86, tags: ["安全", "P0"], desc: "正常登录 / 错误密码 / 账号锁定 / 验证码 / 会话保持全覆盖", detail: "1. 正常登录：合法账密 → 认证成功跳转\n2. 错误密码：连续 5 次失败 → 锁定 15min\n3. 验证码：过期 / 错误 / 刷新后旧码失效\n4. 会话：token 过期自动跳登录页\n5. 安全：密码不明文回显、错误提示不泄露具体字段" },
+    { id: "PT-11", name: "支付金额边界模式", cat: "支付", uses: 64, tags: ["边界", "P0"], desc: "0 元 / 负数 / 超限 / 精度 / 退款金额大于支付", detail: "1. 0 元支付拦截\n2. 金额上限（单笔 / 单日）\n3. 两位小数精度：0.1+0.2 ≠ 0.3 场景\n4. 退款金额 ≤ 支付金额\n5. 并发支付幂等" },
+    { id: "PT-10", name: "表单校验模式", cat: "表单", uses: 102, tags: ["常用"], desc: "必填 / 长度 / 格式 / 唯一性 / XSS 转义", detail: "1. 必填逐项置空提交\n2. 边界长度 min-1 / min / max / max+1\n3. 格式：手机 / 邮箱 / 身份证非法值\n4. 唯一性：重复提交\n5. 特殊字符 <script> 转义" },
+    { id: "PT-09", name: "列表分页筛选模式", cat: "列表", uses: 77, tags: ["常用"], desc: "空态 / 翻页保持 / 组合筛选 / 排序稳定性", detail: "1. 空数据态展示\n2. 筛选后翻页条件保持\n3. 清空筛选恢复全量\n4. 排序翻转稳定性\n5. 删除末页唯一条目后页码回退" },
+    { id: "PT-08", name: "文件上传模式", cat: "文件上传", uses: 45, tags: ["安全"], desc: "类型 / 大小 / 重名 / 断点 / 恶意文件", detail: "1. 非法扩展名拦截\n2. 超大小限制提示\n3. 同名覆盖策略\n4. 上传中断重试\n5. 双扩展名 .jpg.exe 拦截" },
+    { id: "PT-07", name: "订单状态机模式", cat: "支付", uses: 39, tags: ["状态流转"], desc: "全状态迁移矩阵 + 非法迁移拒绝", detail: "1. 合法链路：待支付→已支付→已完成\n2. 非法迁移：已取消→已支付 拒绝\n3. 超时未支付自动取消\n4. 退款后状态回写" }
+  ];
+  var bugs = [
+    { id: "BK-23", title: "重复提交订单产生双扣款", cat: "并发缺陷", cause: "支付按钮未防重，前端未禁用 + 后端无幂等键", solution: "后端按 clientOrderId 幂等去重；前端提交后禁用按钮", tags: ["支付", "P0"] },
+    { id: "BK-22", title: "分页筛选条件丢失跳回第一页", cat: "逻辑缺陷", cause: "翻页组件未携带筛选参数", solution: "将筛选条件并入分页请求 query；切筛选重置页码", tags: ["列表"] },
+    { id: "BK-21", title: "金额计算出现 0.30000000000000004", cat: "边界缺陷", cause: "浮点直接运算", solution: "金额统一用分为单位整数运算，展示层再格式化", tags: ["支付", "精度"] },
+    { id: "BK-20", title: "XSS：昵称注入脚本可执行", cat: "安全缺陷", cause: "昵称渲染未转义", solution: "统一 v-text / 转义渲染；输入侧过滤 <script>", tags: ["安全"] },
+    { id: "BK-19", title: "iOS 低电量模式上传图片失败无提示", cat: "兼容缺陷", cause: "低电量下网络策略变化未捕获异常", solution: "捕获上传异常并给出弱网提示与重试入口", tags: ["APP"] },
+    { id: "BK-18", title: "优惠券叠加后金额为负", cat: "逻辑缺陷", cause: "优惠叠加未做下限校验", solution: "优惠后金额下限 0.01 元；叠加规则服务端重算", tags: ["支付", "营销"] }
+  ];
+  var entries = [
+    { id: "KB-31", title: "接口测试环境变量规范", cat: "测试规范", tags: ["接口", "规范"], created: "2026-09-20", body: "环境变量命名：{{env.域名}}、{{df.测试数据}}、{{mcp.服务返回}}；禁止硬编码密码，敏感值走配置中心。" },
+    { id: "KB-30", title: "测试环境部署手册 v3", cat: "环境手册", tags: ["环境", "部署"], created: "2026-09-14", body: "前端 :3000 / 后端 :8000 / Redis :6379；数据库初始化与种子数据脚本见 docs/deploy.md。" },
+    { id: "KB-29", title: "Playwright 常用定位速查", cat: "工具指南", tags: ["UI 自动化"], created: "2026-09-08", body: "优先级：getByTestId > getByRole > getByText > css；避免绝对 XPath。" },
+    { id: "KB-28", title: "缺陷提交流程与模板", cat: "流程说明", tags: ["缺陷", "流程"], created: "2026-08-30", body: "标题：[模块] 现象一句话；正文：前置条件 / 复现步骤 / 预期 vs 实际 / 截图日志；P0 级 15 分钟内同步企微。" },
+    { id: "KB-27", title: "AI 用例生成提示词编写规范", cat: "测试规范", tags: ["AI", "提示词"], created: "2026-08-22", body: "结构：角色 → 输入上下文 → 输出格式（表格列名固定）→ 约束（覆盖正常/边界/异常）；配合去 AI 味策略使用。" }
+  ];
+
+  /* ================= AI 智能检索 ================= */
+  document.getElementById("kb-ai-go").addEventListener("click", function () {
+    var q = document.getElementById("kb-ai-q").value.trim();
+    if (!q) return toast("请输入问题", "warn");
+    var out = document.getElementById("kb-ai-out");
+    out.classList.remove("hidden");
+    out.innerHTML = '<div class="text-dim" style="font-size:13px">🔍 正在检索知识库…</div>';
+    var btn = this;
+    btn.disabled = true;
+    setTimeout(function () {
+      var ql = q.toLowerCase();
+      var hits = [];
+      patterns.forEach(function (p) { if (ql.indexOf(p.cat.toLowerCase()) >= 0 || (p.name + p.desc).toLowerCase().split("").some(function (c) { return false; }) || p.tags.some(function (t) { return ql.indexOf(t.toLowerCase()) >= 0; })) hits.push({ type: "测试模式", obj: p }); });
+      bugs.forEach(function (b) { if ((b.title + b.cause + b.tags.join()).toLowerCase().split(/[\s,，]/).some(function (w) { return w && ql.indexOf(w.toLowerCase()) >= 0; })) hits.push({ type: "Bug 知识", obj: b }); });
+      entries.forEach(function (e) { if ((e.title + e.tags.join()).toLowerCase().split(/[\s,，]/).some(function (w) { return w && ql.indexOf(w.toLowerCase()) >= 0; }) || ql.indexOf("规范") >= 0 && e.cat === "测试规范") hits.push({ type: "知识条目", obj: e }); });
+      if (!hits.length) hits.push({ type: "测试模式", obj: patterns[0] }, { type: "知识条目", obj: entries[0] });
+      out.innerHTML = '<div class="card-title" style="font-size:13.5px">🎯 命中 ' + hits.length + ' 条知识（按相关度排序）</div>' +
+        hits.slice(0, 5).map(function (h) {
+          var o = h.obj;
+          var sub = h.type === "测试模式" ? o.desc : h.type === "Bug 知识" ? "根因：" + o.cause : (o.body || "").slice(0, 60) + "…";
+          return '<div class="flex-between" style="padding:9px 12px; border:1px solid var(--border); border-radius:8px; margin-top:8px">' +
+            '<div style="min-width:0"><div style="font-size:13px; font-weight:600">' + o.title + ' <span class="tag" style="font-size:10.5px">' + h.type + '</span></div>' +
+            '<div class="text-dim" style="font-size:12px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap">' + sub + "</div></div>" +
+            '<span class="tag tag-green" style="flex-shrink:0">相关 ' + (68 + Math.floor(Math.random() * 30)) + "%</span></div>";
+        }).join("") +
+        '<div class="text-faint mt-8" style="font-size:11.5px">💡 以上引用已同步至 AI 问答助手 RAG 上下文；如需追问可前往<a href="tool-ai-assistant.html">AI 问答助手</a></div>';
+      btn.disabled = false;
+      toast("检索完成，命中 " + hits.length + " 条", "success");
+    }, 1300);
+  });
+  document.getElementById("kb-ai-clear").addEventListener("click", function () {
+    document.getElementById("kb-ai-q").value = "";
+    document.getElementById("kb-ai-out").classList.add("hidden");
+  });
+
+  /* ================= 测试模式 ================= */
+  function renderPatterns() {
+    document.getElementById("pt-cnt").textContent = patterns.length;
+    var kw = document.getElementById("pt-kw").value.trim().toLowerCase();
+    var cat = document.getElementById("pt-cat").value;
+    var d = patterns.filter(function (p) {
+      return (!kw || (p.name + p.desc).toLowerCase().indexOf(kw) >= 0) && (!cat || p.cat === cat);
+    });
+    var grid = document.getElementById("pt-grid");
+    grid.innerHTML = d.length ? d.map(function (p) {
+      return '<div class="card card-hover">' +
+        '<div class="flex-between"><span class="tag tag-blue">' + p.cat + '</span><span class="text-faint" style="font-size:11.5px">📊 ' + p.uses + " 次</span></div>" +
+        '<h3 style="font-size:15px; margin:10px 0 6px">' + p.name + "</h3>" +
+        '<p class="text-dim" style="font-size:12.5px">' + p.desc + "</p>" +
+        '<div class="mt-8">' + p.tags.map(function (t) { return '<span class="tag tag-orange" style="margin-right:4px">#' + t + "</span>"; }).join("") + "</div>" +
+        '<div class="flex-between mt-16"><span class="text-faint mono" style="font-size:11px">' + p.id + "</span>" +
+        '<div class="flex"><button class="btn btn-sm btn-ghost" data-pt-v="' + p.id + '">查看</button>' +
+        '<button class="btn btn-sm btn-primary" data-pt-u="' + p.id + '">使用</button></div></div></div>';
+    }).join("") : '<div class="card" style="grid-column:1/-1"><div class="empty"><div class="e-icon">🧪</div><div class="e-text">无匹配测试模式</div></div></div>';
+    grid.querySelectorAll("[data-pt-v]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = patterns.find(function (x) { return x.id === b.dataset.ptV; });
+        document.getElementById("pt-modal-title").textContent = p.name;
+        document.getElementById("pt-modal-body").innerHTML =
+          '<div class="flex mb-8"><span class="tag tag-blue">' + p.cat + '</span><span class="tag">' + p.id + '</span><span class="tag tag-green">使用 ' + p.uses + " 次</span></div>" +
+          '<div class="text-dim" style="font-size:13px; margin-bottom:12px">' + p.desc + "</div>" +
+          '<div class="field"><label>模式要点（测试点清单）</label><div class="code-block">' + p.detail.replace(/\n/g, "<br>") + "</div></div>";
+        document.getElementById("pt-use-link").href = "tool-test-cases.html";
+        openModal("modal-pt");
+      });
+    });
+    grid.querySelectorAll("[data-pt-u]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = patterns.find(function (x) { return x.id === b.dataset.ptU; });
+        p.uses++;
+        renderPatterns();
+        toast("已套用「" + p.name + "」→ 正在跳转 AI 用例工作台…", "success");
+        setTimeout(function () { location.href = "tool-test-cases.html?pattern=" + encodeURIComponent(p.name); }, 900);
+      });
+    });
+  }
+  ["pt-kw", "pt-cat"].forEach(function (id, i) {
+    document.getElementById(id).addEventListener(i === 0 ? "input" : "change", debounce(renderPatterns, i === 0 ? 200 : 0));
+  });
+
+  /* ================= Bug 知识 ================= */
+  function renderBugs() {
+    document.getElementById("bg-cnt").textContent = bugs.length;
+    var kw = document.getElementById("bg-kw").value.trim().toLowerCase();
+    var cat = document.getElementById("bg-cat").value;
+    var d = bugs.filter(function (b) {
+      return (!kw || (b.title + b.cause).toLowerCase().indexOf(kw) >= 0) && (!cat || b.cat === cat);
+    });
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>ID</th><th>Bug 标题</th><th>类型</th><th>根因</th><th>解决方案</th><th>标签</th><th style="width:80px">操作</th></tr></thead><tbody>';
+    if (!d.length) html += '<tr><td colspan="7"><div class="empty"><div class="e-icon">🐞</div><div class="e-text">无匹配 Bug 知识</div></div></td></tr>';
+    d.forEach(function (b) {
+      html += '<tr><td class="mono">' + b.id + "</td>" +
+        '<td><div class="cell-main" style="font-size:12.5px">' + b.title + "</div></td>" +
+        '<td><span class="tag ' + (b.cat === "安全缺陷" ? "tag-red" : b.cat === "并发缺陷" ? "tag-purple" : "tag-orange") + '">' + b.cat + "</span></td>" +
+        '<td class="cell-sub" style="font-size:12px; max-width:200px">' + b.cause + "</td>" +
+        '<td class="cell-sub" style="font-size:12px; max-width:220px">' + b.solution + "</td>" +
+        "<td>" + b.tags.map(function (t) { return '<span class="tag" style="margin-right:3px">#' + t + "</span>"; }).join("") + "</td>" +
+        '<td><div class="row-actions" style="opacity:1"><button class="btn btn-sm btn-ghost" data-bg-d="' + b.id + '">详情</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("bg-table").innerHTML = html;
+    document.querySelectorAll("[data-bg-d]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var b = bugs.find(function (x) { return x.id === btn.dataset.bgD; });
+        document.getElementById("pt-modal-title").textContent = b.title;
+        document.getElementById("pt-modal-body").innerHTML =
+          '<div class="flex mb-8"><span class="tag tag-orange">' + b.cat + '</span><span class="tag">' + b.id + "</span></div>" +
+          '<div class="kv"><span>根因</span><b style="font-weight:500">' + b.cause + "</b></div>" +
+          '<div class="kv"><span>解决方案</span><b style="font-weight:500">' + b.solution + "</b></div>" +
+          '<div class="kv"><span>标签</span><b>' + b.tags.map(function (t) { return "#" + t; }).join(" ") + "</b></div>";
+        document.getElementById("pt-use-link").href = "tool-defect-management.html";
+        openModal("modal-pt");
+      });
+    });
+  }
+  ["bg-kw", "bg-cat"].forEach(function (id, i) {
+    document.getElementById(id).addEventListener(i === 0 ? "input" : "change", debounce(renderBugs, i === 0 ? 200 : 0));
+  });
+
+  /* ================= 知识条目 ================= */
+  function renderEntries() {
+    document.getElementById("en-cnt").textContent = entries.length;
+    var kw = document.getElementById("en-kw").value.trim().toLowerCase();
+    var cat = document.getElementById("en-cat").value;
+    var d = entries.filter(function (e) {
+      return (!kw || (e.title + e.body).toLowerCase().indexOf(kw) >= 0) && (!cat || e.cat === cat);
+    });
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>ID</th><th>标题</th><th>分类</th><th>标签</th><th>创建时间</th><th style="width:140px">操作</th></tr></thead><tbody>';
+    if (!d.length) html += '<tr><td colspan="6"><div class="empty"><div class="e-icon">📄</div><div class="e-text">无匹配条目</div></div></td></tr>';
+    d.forEach(function (e) {
+      html += '<tr><td class="mono">' + e.id + "</td>" +
+        '<td><div class="cell-main" style="font-size:12.5px">' + e.title + "</div></td>" +
+        '<td><span class="tag tag-blue">' + e.cat + "</span></td>" +
+        "<td>" + e.tags.map(function (t) { return '<span class="tag" style="margin-right:3px">#' + t + "</span>"; }).join("") + "</td>" +
+        '<td class="mono" style="font-size:12px">' + e.created + "</td>" +
+        '<td><div class="row-actions" style="opacity:1"><button class="btn btn-sm btn-ghost" data-en-v="' + e.id + '">查看</button>' +
+        '<button class="btn btn-sm btn-danger" data-en-d="' + e.id + '">删除</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("en-table").innerHTML = html;
+    document.querySelectorAll("[data-en-v]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var e = entries.find(function (x) { return x.id === btn.dataset.enV; });
+        document.getElementById("pt-modal-title").textContent = e.title;
+        document.getElementById("pt-modal-body").innerHTML =
+          '<div class="flex mb-8"><span class="tag tag-blue">' + e.cat + '</span><span class="tag">' + e.id + '</span><span class="tag mono" style="font-size:11px">' + e.created + "</span></div>" +
+          '<div class="code-block">' + e.body.replace(/</g, "&lt;") + "</div>";
+        document.getElementById("pt-use-link").href = "tool-ai-assistant.html";
+        openModal("modal-pt");
+      });
+    });
+    document.querySelectorAll("[data-en-d]").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var e = entries.find(function (x) { return x.id === btn.dataset.enD; });
+        confirmAction({ title: "删除知识条目", message: "确定删除「" + e.title + "」吗？已被 AI 回答引用的记录不受影响。", onOk: function () {
+          entries = entries.filter(function (x) { return x.id !== e.id; });
+          renderEntries(); toast("条目已删除", "success");
+        }});
+      });
+    });
+  }
+  ["en-kw", "en-cat"].forEach(function (id, i) {
+    document.getElementById(id).addEventListener(i === 0 ? "input" : "change", debounce(renderEntries, i === 0 ? 200 : 0));
+  });
+
+  /* ================= 新建条目 ================= */
+  document.getElementById("ef-ai").addEventListener("click", function () {
+    toast("AI 正在按规范扩写内容…", "info");
+    setTimeout(function () {
+      var t = document.getElementById("ef-title").value || "新条目";
+      document.getElementById("ef-body").value = "# " + t + "\n\n## 适用场景\n（AI 扩写：描述何时使用本条知识）\n\n## 步骤 / 规范\n1. …\n2. …\n\n## 注意事项\n- …";
+      toast("AI 扩写完成，请核对后保存", "success");
+    }, 1200);
+  });
+  document.getElementById("ef-save").addEventListener("click", function () {
+    var t = document.getElementById("ef-title").value.trim();
+    if (!t) return toast("请填写标题", "error");
+    if (!document.getElementById("ef-body").value.trim()) return toast("请填写内容", "error");
+    entries.unshift({ id: "KB-" + (32 + entries.length - 5), title: t, cat: document.getElementById("ef-cat").value, tags: (document.getElementById("ef-tags").value || "").split(/[,，]/).filter(Boolean), created: "刚刚", body: document.getElementById("ef-body").value });
+    closeModal("modal-entry");
+    document.getElementById("ef-title").value = ""; document.getElementById("ef-tags").value = ""; document.getElementById("ef-body").value = "";
+    renderEntries(); toast("知识条目已保存，可被 AI 检索引用", "success");
+  });
+
+  if (qs("tab")) {
+    var tb = document.querySelector('.tab[data-tab="' + qs("tab") + '"]');
+    if (tb) tb.click();
+  }
+
+  renderPatterns(); renderBugs(); renderEntries();
+})();
+</script>
+</body>
+</html>

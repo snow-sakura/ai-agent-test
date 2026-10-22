@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>App 自动化 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / App 自动化</div>
+    <div class="page-head">
+      <div>
+        <h1>📱 App 自动化</h1>
+        <div class="sub">Android · ADB/Appium 设备管理 · 应用包管理 · 自动化脚本与执行流水线 · 边缘设备接入与定时任务</div>
+      </div>
+      <div class="flex">
+        <button class="btn btn-ghost" data-open-modal="modal-apk">📦 上传应用包</button>
+        <button class="btn btn-primary" data-open-modal="modal-script">＋ 新建自动化脚本</button>
+      </div>
+    </div>
+
+    <div class="tabs" data-scope="aa">
+      <button class="tab active" data-tab="devices">📱 设备管理 <span class="badge-count" id="dev-cnt">0</span></button>
+      <button class="tab" data-tab="apps">📦 应用包 <span class="badge-count" id="apk-cnt">0</span></button>
+      <button class="tab" data-tab="scripts">📜 自动化脚本</button>
+      <button class="tab" data-tab="jobs">▶️ 执行流水线</button>
+      <button class="tab" data-tab="timer">⏰ 定时任务</button>
+    </div>
+
+    <div id="aa">
+      <!-- ============ 设备管理 ============ -->
+      <div class="tab-pane active" data-pane="devices">
+        <div class="filter-bar">
+          <input class="input search" id="dev-kw" placeholder="🔍 搜索设备名称 / UDID">
+          <select class="select" id="dev-status"><option value="">全部状态</option><option>在线</option><option>离线</option><option>执行中</option></select>
+          <button class="btn btn-ghost btn-sm" id="btn-adb-scan">🔄 ADB 扫描设备</button>
+        </div>
+        <div id="dev-table"></div>
+      </div>
+
+      <!-- ============ 应用包 ============ -->
+      <div class="tab-pane" data-pane="apps">
+        <div id="apk-table"></div>
+      </div>
+
+      <!-- ============ 自动化脚本 ============ -->
+      <div class="tab-pane" data-pane="scripts">
+        <div class="filter-bar">
+          <input class="input search" id="sc-kw2" placeholder="🔍 搜索脚本名称">
+          <select class="select" id="sc-fw"><option value="">全部框架</option><option>Appium</option><option>ADB 原生</option><option>Python 脚本</option></select>
+        </div>
+        <div id="script-table"></div>
+      </div>
+
+      <!-- ============ 执行流水线 ============ -->
+      <div class="tab-pane" data-pane="jobs">
+        <div class="banner banner-info">ℹ️ 流水线 = 选择脚本 × 选择设备 × 依次执行；执行完成后可查看日志、截图与运行结果。</div>
+        <div class="flex mb-16" style="justify-content:flex-end">
+          <button class="btn btn-primary" data-open-modal="modal-pipeline">＋ 新建流水线</button>
+        </div>
+        <div id="job-table"></div>
+      </div>
+
+      <!-- ============ 定时任务 ============ -->
+      <div class="tab-pane" data-pane="timer">
+        <div class="flex mb-16" style="justify-content:flex-end">
+          <button class="btn btn-primary" data-open-modal="modal-timer">＋ 新建定时任务</button>
+        </div>
+        <div id="timer-table"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 上传应用包弹窗 -->
+<div class="modal-mask" id="modal-apk">
+  <div class="modal">
+    <div class="modal-head"><h3>📦 上传应用包</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="card" style="border-style:dashed; text-align:center; padding:26px; cursor:pointer" id="apk-drop">
+        <div style="font-size:28px">📦</div>
+        <div class="text-dim mt-8" style="font-size:12.5px">点击选择或拖拽 APK / AAB 文件</div>
+        <div class="text-faint" style="font-size:11.5px">≤ 500MB，上传后自动解析包名与版本</div>
+      </div>
+      <input type="file" id="apk-input" class="hidden" accept=".apk,.aab">
+      <div id="apk-file-info" class="mt-8"></div>
+      <div class="field mt-16"><label>备注（选填）</label><input class="input" id="apk-note" placeholder="如：大促预发布版本"></div>
+      <div id="apk-parse" class="hidden">
+        <div class="banner banner-green" style="margin:0">✅ 解析成功：<span class="mono" id="apk-pkg">com.example.shop</span> · v<span id="apk-ver">3.2.1</span></div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="apk-save" disabled>💾 保存应用包</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新建脚本弹窗 -->
+<div class="modal-mask" id="modal-script">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3>＋ 新建自动化脚本</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="grid grid-2" style="gap:12px">
+        <div class="field"><label>脚本名称 <span class="text-red">*</span></label><input class="input" id="fs-name" placeholder="如：登录-浏览-下单冒烟"></div>
+        <div class="field"><label>自动化框架</label>
+          <select class="select" id="fs-fw"><option>Appium</option><option>ADB 原生</option><option>Python 脚本</option></select>
+        </div>
+      </div>
+      <div class="field"><label>目标应用包</label>
+        <select class="select" id="fs-pkg"><option>com.example.shop（v3.2.1）</option><option>com.example.shop（v3.1.0）</option></select>
+      </div>
+      <div class="field"><label>脚本步骤（每行一步，支持 AI 生成）</label>
+        <textarea class="textarea mono" id="fs-steps" rows="6" placeholder="启动应用&#10;点击 #login_btn&#10;输入 username=admin&#10;断言页面包含「首页」"></textarea>
+      </div>
+      <button class="btn btn-ghost btn-sm" id="fs-ai">🤖 AI 生成脚本步骤</button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="fs-save">💾 保存脚本</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新建流水线弹窗 -->
+<div class="modal-mask" id="modal-pipeline">
+  <div class="modal">
+    <div class="modal-head"><h3>＋ 新建执行流水线</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>流水线名称 <span class="text-red">*</span></label><input class="input" id="fp-name" placeholder="如：核心冒烟-小米12"></div>
+      <div class="field"><label>选择脚本（可多选）</label>
+        <div id="fp-scripts" style="border:1px solid var(--border); border-radius:8px; padding:8px; max-height:130px; overflow-y:auto"></div>
+      </div>
+      <div class="field"><label>执行设备</label>
+        <select class="select" id="fp-device"><option>Xiaomi 12（在线）</option><option>Pixel 7（在线）</option><option>HUAWEI P40（离线，不可选）</option></select>
+      </div>
+      <div class="field"><label>失败策略</label>
+        <div class="flex" style="gap:14px">
+          <label class="checkbox"><input type="radio" name="fp-fail" checked> 失败即中止</label>
+          <label class="checkbox"><input type="radio" name="fp-fail"> 失败继续</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="fp-save">▶️ 创建并执行</button>
+    </div>
+  </div>
+</div>
+
+<!-- 执行详情弹窗 -->
+<div class="modal-mask" id="modal-job">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="fj-title">执行详情</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="flex mb-16" id="fj-meta"></div>
+      <div class="grid grid-2" style="gap:12px">
+        <div>
+          <div class="card-title" style="font-size:13.5px">📱 运行截图</div>
+          <div class="grid grid-2" style="gap:8px" id="fj-shots"></div>
+        </div>
+        <div>
+          <div class="card-title" style="font-size:13.5px">📜 执行日志</div>
+          <div class="code-block" id="fj-log" style="height:210px; overflow-y:auto"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="fj-retry">🔄 重新执行</button>
+      <button class="btn btn-primary" data-close-modal>关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新建定时任务弹窗 -->
+<div class="modal-mask" id="modal-timer">
+  <div class="modal">
+    <div class="modal-head"><h3>＋ 新建定时任务</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>任务名称 <span class="text-red">*</span></label><input class="input" id="ft-name" placeholder="如：每夜回归冒烟"></div>
+      <div class="field"><label>触发规则（Cron）</label><input class="input mono" id="ft-cron" placeholder="0 2 * * *（每日凌晨 2 点）"></div>
+      <div class="field"><label>关联流水线</label><select class="select" id="ft-pipeline"><option>核心冒烟-小米12</option><option>全量回归-Pixel7</option></select></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="ft-save">💾 创建任务</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  /* ================= 数据 ================= */
+  var devices = [
+    { udid: "emulator-5554", name: "Xiaomi 12", os: "Android 13", res: "2400×1080", status: "在线", ver: "" },
+    { udid: "TP1A221", name: "Pixel 7", os: "Android 14", res: "2400×1080", status: "执行中", ver: "运行「登录冒烟」" },
+    { udid: "8XV7N18", name: "HUAWEI P40", os: "Android 12", res: "2340×1080", status: "离线", ver: "" },
+    { udid: "edge-node-01", name: "边缘设备·实验室A", os: "Android 11", res: "1920×1080", status: "在线", ver: "Agent v1.4" }
+  ];
+  var apks = [
+    { pkg: "com.example.shop", ver: "3.2.1", size: "48.2MB", note: "大促预发布版本", time: "2026-09-21", by: "wxh" },
+    { pkg: "com.example.shop", ver: "3.1.0", size: "47.6MB", note: "线上稳定版（基线）", time: "2026-09-10", by: "李雷" },
+    { pkg: "com.example.vendor", ver: "1.8.0", size: "12.4MB", note: "商家端", time: "2026-09-05", by: "韩梅" }
+  ];
+  var scripts = [
+    { id: "AS-21", name: "登录-浏览-下单冒烟", fw: "Appium", pkg: "com.example.shop", steps: 8, last: "成功", upd: "2026-09-22" },
+    { id: "AS-20", name: "优惠券领取验证", fw: "Appium", pkg: "com.example.shop", steps: 5, last: "失败", upd: "2026-09-19" },
+    { id: "AS-19", name: "首页启动性能采集", fw: "ADB 原生", pkg: "com.example.shop", steps: 3, last: "成功", upd: "2026-09-15" },
+    { id: "AS-18", name: "商家端登录回归", fw: "Python 脚本", pkg: "com.example.vendor", steps: 6, last: "成功", upd: "2026-09-12" }
+  ];
+  var jobs = [
+    { id: "PJ-88", name: "核心冒烟-小米12", scripts: "登录冒烟 ×2", device: "Xiaomi 12", status: "运行中", cur: 1, total: 2, time: "刚刚", by: "wxh" },
+    { id: "PJ-87", name: "全量回归-Pixel7", scripts: "登录冒烟 ×3", device: "Pixel 7", status: "成功", cur: 3, total: 3, time: "2026-09-21 20:15", by: "wxh" },
+    { id: "PJ-86", name: "优惠券专项", scripts: "优惠券验证", device: "Pixel 7", status: "失败", cur: 1, total: 1, time: "2026-09-19 15:40", by: "韩梅" }
+  ];
+  var timers = [
+    { id: "TM-5", name: "每夜回归冒烟", cron: "0 2 * * *", pipeline: "全量回归-Pixel7", last: "2026-09-22 02:00 成功", status: "启用" },
+    { id: "TM-4", name: "每周全量兼容", cron: "0 3 * * 1", pipeline: "核心冒烟-小米12", last: "2026-09-15 03:00 成功", status: "启用" }
+  ];
+  var pickedScripts = {};
+
+  var ST_CLS = { "在线": "tag-green", "离线": "tag", "执行中": "tag-orange", "运行中": "tag-orange", "成功": "tag-green", "失败": "tag-red", "排队中": "tag-blue", "启用": "tag-green", "停用": "tag" };
+
+  /* ================= 设备 ================= */
+  function renderDevices() {
+    var kw = document.getElementById("dev-kw").value.trim().toLowerCase();
+    var st = document.getElementById("dev-status").value;
+    var d = devices.filter(function (x) {
+      return (!kw || (x.name + x.udid).toLowerCase().indexOf(kw) >= 0) && (!st || x.status === st);
+    });
+    document.getElementById("dev-cnt").textContent = devices.length;
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>设备</th><th>UDID</th><th>系统</th><th>分辨率</th><th>状态</th><th style="width:220px">操作</th></tr></thead><tbody>';
+    if (!d.length) html += '<tr><td colspan="6"><div class="empty"><div class="e-icon">📱</div><div class="e-text">无匹配设备</div></div></td></tr>';
+    d.forEach(function (x) {
+      html += '<tr><td><div class="cell-main">' + x.name + '</div>' + (x.ver ? '<div class="cell-sub">' + x.ver + "</div>" : "") + "</td>" +
+        '<td class="mono" style="font-size:12px">' + x.udid + "</td><td>" + x.os + "</td>" +
+        '<td class="mono" style="font-size:12px">' + x.res + "</td>" +
+        '<td><span class="tag ' + ST_CLS[x.status] + '">' + x.status + "</span></td>" +
+        '<td><div class="row-actions" style="opacity:1">' +
+        '<button class="btn btn-sm btn-ghost" data-dinfo="' + x.udid + '">详情</button>' +
+        '<button class="btn btn-sm btn-ghost" data-dshell="' + x.udid + '" ' + (x.status === "离线" ? "disabled" : "") + '>Shell</button>' +
+        '<button class="btn btn-sm btn-ghost" data-dlog="' + x.udid + '" ' + (x.status === "离线" ? "disabled" : "") + '>Logcat</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("dev-table").innerHTML = html;
+    document.querySelectorAll("[data-dinfo]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var x = devices.find(function (v) { return v.udid === b.dataset.dinfo; });
+        toast("设备 " + x.name + "：SDK " + x.os + " · " + x.res + " · " + x.status, "info");
+      });
+    });
+    document.querySelectorAll("[data-dshell]").forEach(function (b) {
+      b.addEventListener("click", function () { toast("已打开 ADB Shell 会话（演示）", "success"); });
+    });
+    document.querySelectorAll("[data-dlog]").forEach(function (b) {
+      b.addEventListener("click", function () { toast("Logcat 流已接入（演示）", "success"); });
+    });
+  }
+  document.getElementById("dev-kw").addEventListener("input", debounce(renderDevices, 200));
+  document.getElementById("dev-status").addEventListener("change", renderDevices);
+  document.getElementById("btn-adb-scan").addEventListener("click", function () {
+    toast("正在执行 ADB devices 扫描…", "info");
+    setTimeout(function () {
+      var n = devices.filter(function (x) { return x.status !== "离线"; }).length;
+      toast("扫描完成：发现 " + n + " 台在线设备", "success");
+      renderDevices();
+    }, 1200);
+  });
+
+  /* ================= 应用包 ================= */
+  var apkFile = null;
+  function renderApks() {
+    document.getElementById("apk-cnt").textContent = apks.length;
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>包名</th><th>版本</th><th>大小</th><th>备注</th><th>上传</th><th style="width:170px">操作</th></tr></thead><tbody>';
+    apks.forEach(function (a) {
+      html += '<tr><td class="mono">' + a.pkg + "</td>" +
+        '<td><span class="tag tag-blue">v' + a.ver + "</span></td>" +
+        '<td class="mono">' + a.size + "</td>" +
+        '<td>' + a.note + '</td><td class="cell-sub">' + a.by + " · " + a.time + "</td>" +
+        '<td><div class="row-actions" style="opacity:1">' +
+        '<button class="btn btn-sm btn-ghost" onclick="toast(\'演示环境：已安装到默认设备\',\'success\')">安装</button>' +
+        '<button class="btn btn-sm btn-danger" data-apkdel="' + a.pkg + "@" + a.ver + '">删除</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("apk-table").innerHTML = html;
+    document.querySelectorAll("[data-apkdel]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var kv = b.dataset.apkdel.split("@");
+        confirmAction({ title: "删除应用包", message: "确定删除 " + kv[0] + " v" + kv[1] + " 吗？关联脚本将失去默认包。", onOk: function () {
+          apks = apks.filter(function (a) { return !(a.pkg === kv[0] && a.ver === kv[1]); });
+          renderApks(); toast("应用包已删除", "success");
+        }});
+      });
+    });
+  }
+  document.getElementById("apk-drop").addEventListener("click", function () { document.getElementById("apk-input").click(); });
+  document.getElementById("apk-input").addEventListener("change", function () {
+    var f = this.files[0];
+    if (!f) return;
+    if (!/\.(apk|aab)$/i.test(f.name)) return toast("仅支持 APK / AAB 文件", "error");
+    apkFile = f;
+    document.getElementById("apk-file-info").innerHTML = '<span class="tag tag-blue">📦 ' + f.name + "（" + (f.size / 1024 / 1024).toFixed(1) + 'MB）</span>';
+    toast("解析中…", "info");
+    setTimeout(function () {
+      document.getElementById("apk-parse").classList.remove("hidden");
+      document.getElementById("apk-save").disabled = false;
+      toast("包解析完成", "success");
+    }, 1000);
+  });
+  document.getElementById("apk-save").addEventListener("click", function () {
+    apks.unshift({ pkg: document.getElementById("apk-pkg").textContent, ver: document.getElementById("apk-ver").textContent, size: (apkFile.size / 1024 / 1024).toFixed(1) + "MB", note: document.getElementById("apk-note").value || "—", time: "刚刚", by: "wxh" });
+    closeModal("modal-apk");
+    document.getElementById("apk-parse").classList.add("hidden");
+    document.getElementById("apk-file-info").innerHTML = ""; document.getElementById("apk-note").value = "";
+    this.disabled = true;
+    renderApks(); toast("应用包已保存", "success");
+  });
+
+  /* ================= 脚本 ================= */
+  function renderScripts() {
+    var kw = document.getElementById("sc-kw2").value.trim().toLowerCase();
+    var fw = document.getElementById("sc-fw").value;
+    var d = scripts.filter(function (x) { return (!kw || x.name.toLowerCase().indexOf(kw) >= 0) && (!fw || x.fw === fw); });
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>编号</th><th>脚本</th><th>框架</th><th>目标包</th><th>步骤</th><th>最近结果</th><th>更新</th><th style="width:190px">操作</th></tr></thead><tbody>';
+    if (!d.length) html += '<tr><td colspan="8"><div class="empty"><div class="e-icon">📜</div><div class="e-text">无匹配脚本</div></div></td></tr>';
+    d.forEach(function (s) {
+      html += '<tr><td class="mono">' + s.id + "</td>" +
+        '<td><div class="cell-main">' + s.name + "</div></td>" +
+        "<td><span class=\"tag\">" + s.fw + "</span></td>" +
+        '<td class="mono" style="font-size:12px">' + s.pkg + "</td>" +
+        '<td class="mono">' + s.steps + "</td>" +
+        "<td>" + (s.last === "成功" ? '<span class="tag tag-green">成功</span>' : '<span class="tag tag-red">失败</span>') + "</td>" +
+        '<td class="mono" style="font-size:12px">' + s.upd + "</td>" +
+        '<td><div class="row-actions" style="opacity:1">' +
+        '<button class="btn btn-sm btn-success" data-srun="' + s.id + '">▶ 执行</button>' +
+        '<button class="btn btn-sm btn-ghost" data-sedit="' + s.id + '">编辑</button>' +
+        '<button class="btn btn-sm btn-danger" data-sdel="' + s.id + '">删除</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("script-table").innerHTML = html;
+    document.querySelectorAll("[data-srun]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var s = scripts.find(function (x) { return x.id === b.dataset.srun; });
+        var online = devices.find(function (x) { return x.status === "在线"; });
+        if (!online) return toast("无在线设备，请先接入设备", "error");
+        toast("脚本「" + s.name + "」已下发至 " + online.name + " 执行…", "info");
+        setTimeout(function () {
+          var ok = Math.random() > 0.3;
+          s.last = ok ? "成功" : "失败"; s.upd = "刚刚";
+          renderScripts();
+          jobs.unshift({ id: "PJ-" + (89 + jobs.length - 3), name: s.name + "·单脚本", scripts: s.name, device: online.name, status: ok ? "成功" : "失败", cur: 1, total: 1, time: "刚刚", by: "wxh" });
+          renderJobs();
+          toast(ok ? "脚本执行成功 🎉" : "脚本执行失败：步骤 4 元素未找到", ok ? "success" : "error");
+        }, 2000);
+      });
+    });
+    document.querySelectorAll("[data-sedit]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var s = scripts.find(function (x) { return x.id === b.dataset.sedit; });
+        document.getElementById("fs-name").value = s.name;
+        document.getElementById("fs-fw").value = s.fw;
+        openModal("modal-script");
+      });
+    });
+    document.querySelectorAll("[data-sdel]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var s = scripts.find(function (x) { return x.id === b.dataset.sdel; });
+        confirmAction({ title: "删除脚本", message: "确定删除脚本「" + s.name + "」吗？", onOk: function () {
+          scripts = scripts.filter(function (x) { return x.id !== s.id; });
+          renderScripts(); renderFpScripts(); toast("脚本已删除", "success");
+        }});
+      });
+    });
+  }
+  document.getElementById("sc-kw2").addEventListener("input", debounce(renderScripts, 200));
+  document.getElementById("sc-fw").addEventListener("change", renderScripts);
+  document.getElementById("fs-ai").addEventListener("click", function () {
+    toast("AI 正在根据目标应用生成步骤…", "info");
+    setTimeout(function () {
+      document.getElementById("fs-steps").value = "启动应用\n等待 2 秒\n点击 #login_btn\n输入 username={{USER}}\n输入 password={{PASS}}\n点击「登录」\n等待 3 秒\n断言页面包含「首页」";
+      toast("AI 已生成 8 步脚本，请确认后保存", "success");
+    }, 1100);
+  });
+  document.getElementById("fs-save").addEventListener("click", function () {
+    var n = document.getElementById("fs-name").value.trim();
+    if (!n) return toast("请填写脚本名称", "error");
+    scripts.unshift({ id: "AS-" + (22 + scripts.length - 4), name: n, fw: document.getElementById("fs-fw").value, pkg: "com.example.shop", steps: (document.getElementById("fs-steps").value.match(/\n/g) || []).length + 1, last: "成功", upd: "刚刚" });
+    closeModal("modal-script");
+    document.getElementById("fs-name").value = ""; document.getElementById("fs-steps").value = "";
+    renderScripts(); renderFpScripts(); toast("脚本已保存", "success");
+  });
+
+  /* ================= 流水线 ================= */
+  function renderFpScripts() {
+    var box = document.getElementById("fp-scripts");
+    box.innerHTML = scripts.map(function (s) {
+      return '<label class="checkbox" style="display:flex; padding:4px 6px"><input type="checkbox" data-fps="' + s.id + '"' + (pickedScripts[s.id] ? " checked" : "") + '> <span style="font-size:12.5px">' + s.name + ' <span class="text-faint mono">(' + s.fw + ")</span></span></label>";
+    }).join("");
+    box.querySelectorAll("[data-fps]").forEach(function (c) {
+      c.addEventListener("change", function () { pickedScripts[c.dataset.fps] = c.checked; });
+    });
+  }
+  function renderJobs() {
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>流水线</th><th>脚本</th><th>设备</th><th>进度</th><th>状态</th><th>发起</th><th style="width:190px">操作</th></tr></thead><tbody>';
+    jobs.forEach(function (j) {
+      var pct = Math.round(j.cur / j.total * 100);
+      html += '<tr><td><div class="cell-main">' + j.name + '</div><div class="cell-sub">' + j.id + " · " + j.time + "</div></td>" +
+        "<td>" + j.scripts + "</td><td>" + j.device + "</td>" +
+        '<td><div class="flex"><div class="progress" style="width:80px"><div class="bar" style="width:' + pct + '%"></div></div><span class="mono" style="font-size:11.5px">' + j.cur + "/" + j.total + "</span></div></td>" +
+        '<td><span class="tag ' + ST_CLS[j.status] + '">' + j.status + "</span></td>" +
+        "<td>" + j.by + "</td>" +
+        '<td><div class="row-actions" style="opacity:1">' +
+        '<button class="btn btn-sm btn-ghost" data-jview="' + j.id + '">详情</button>' +
+        (j.status === "运行中" ? '<button class="btn btn-sm btn-danger" data-jcancel="' + j.id + '">取消</button>' : "") + "</div></td></tr>";
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("job-table").innerHTML = html;
+    document.querySelectorAll("[data-jview]").forEach(function (b) { b.addEventListener("click", function () { openJob(b.dataset.jview); }); });
+    document.querySelectorAll("[data-jcancel]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var j = jobs.find(function (x) { return x.id === b.dataset.jcancel; });
+        confirmAction({ title: "取消流水线", message: "确定取消执行中的流水线「" + j.name + "」吗？", onOk: function () {
+          j.status = "失败"; renderJobs(); toast("流水线已取消", "warn");
+        }});
+      });
+    });
+  }
+  function openJob(id) {
+    var j = jobs.find(function (x) { return x.id === id; });
+    document.getElementById("fj-title").textContent = "执行详情 · " + j.id;
+    document.getElementById("fj-meta").innerHTML =
+      '<span class="tag tag-blue">' + j.name + '</span><span class="tag">设备 ' + j.device + '</span><span class="tag">' + j.time + "</span>" +
+      '<span class="tag ' + ST_CLS[j.status] + '">' + j.status + "</span>";
+    document.getElementById("fj-shots").innerHTML = ["01-启动", "02-登录页", "03-首页", "04-结果"].map(function (n) {
+      return '<div class="card" style="padding:0; text-align:center; overflow:hidden"><div style="aspect-ratio:9/14; max-height:110px; display:grid; place-items:center; background:linear-gradient(135deg,#f3e8d8,#efe2cf); font-size:20px">📱</div><div style="font-size:11px; padding:5px" class="text-faint">' + n + ".png</div></div>";
+    }).join("");
+    var fail = j.status === "失败";
+    document.getElementById("fj-log").textContent =
+      "[INFO] 设备连接成功：" + j.device + "\n[INFO] 安装应用包 com.example.shop v3.2.1\n[INFO] 启动 Appium 会话…\n[INFO] 步骤 1/8：启动应用 ✓\n[INFO] 步骤 2/8：等待 2 秒 ✓\n[INFO] 步骤 3/8：点击 #login_btn ✓\n" +
+      (fail
+        ? "[ERROR] 步骤 4/8：元素 #coupon_entry 未找到（超时 10s）\n[WARN] 已截图 failure-step4.png\n[INFO] 流水线按「失败即中止」策略结束"
+        : "[INFO] 步骤 4/8：登录成功 ✓\n…\n[INFO] 全部 8 步执行完成 ✓\n[INFO] 流水线执行成功");
+    document.getElementById("fj-retry").onclick = function () {
+      j.status = "运行中"; j.cur = 0; renderJobs(); closeModal("modal-job");
+      toast("流水线已重新执行", "info");
+      setTimeout(function () {
+        var ok = Math.random() > 0.3;
+        j.status = ok ? "成功" : "失败"; j.cur = j.total;
+        renderJobs();
+        toast(ok ? "重新执行成功 🎉" : "重新执行仍失败", ok ? "success" : "error");
+      }, 2500);
+    };
+    openModal("modal-job");
+  }
+  document.getElementById("fp-save").addEventListener("click", function () {
+    var n = document.getElementById("fp-name").value.trim();
+    var ids = Object.keys(pickedScripts).filter(function (k) { return pickedScripts[k]; });
+    if (!n) return toast("请填写流水线名称", "error");
+    if (!ids.length) return toast("请至少选择一个脚本", "warn");
+    var dev = document.getElementById("fp-device").value;
+    if (dev.indexOf("离线") >= 0) return toast("该设备离线，请选择在线设备", "error");
+    jobs.unshift({ id: "PJ-" + (89 + jobs.length - 3), name: n, scripts: ids.length + " 个脚本", device: dev.split("（")[0], status: "运行中", cur: 0, total: ids.length, time: "刚刚", by: "wxh" });
+    closeModal("modal-pipeline");
+    document.getElementById("fp-name").value = ""; pickedScripts = {}; renderFpScripts();
+    renderJobs(); toast("流水线已创建并开始执行", "success");
+    var job = jobs[0];
+    var t = setInterval(function () {
+      job.cur++;
+      if (job.cur >= job.total) {
+        clearInterval(t);
+        job.status = Math.random() > 0.25 ? "成功" : "失败";
+        renderJobs();
+        toast("流水线执行" + (job.status === "成功" ? "成功 🎉" : "失败"), job.status === "成功" ? "success" : "error");
+      } else renderJobs();
+    }, 1800);
+  });
+
+  /* ================= 定时任务 ================= */
+  function renderTimers() {
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>任务</th><th>Cron</th><th>关联流水线</th><th>最近触发</th><th>状态</th><th style="width:180px">操作</th></tr></thead><tbody>';
+    timers.forEach(function (t) {
+      html += '<tr><td><div class="cell-main">' + t.name + '</div><div class="cell-sub">' + t.id + "</div></td>" +
+        '<td class="mono">' + t.cron + "</td><td>" + t.pipeline + "</td>" +
+        '<td class="cell-sub">' + t.last + "</td>" +
+        '<td><span class="tag ' + ST_CLS[t.status] + '">' + t.status + "</span></td>" +
+        '<td><div class="row-actions" style="opacity:1">' +
+        '<button class="btn btn-sm btn-ghost" data-tt="' + t.id + '">' + (t.status === "启用" ? "停用" : "启用") + "</button>" +
+        '<button class="btn btn-sm btn-danger" data-tdel="' + t.id + '">删除</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("timer-table").innerHTML = html;
+    document.querySelectorAll("[data-tt]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var t = timers.find(function (x) { return x.id === b.dataset.tt; });
+        t.status = t.status === "启用" ? "停用" : "启用";
+        renderTimers(); toast("任务已" + t.status, "success");
+      });
+    });
+    document.querySelectorAll("[data-tdel]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var t = timers.find(function (x) { return x.id === b.dataset.tdel; });
+        confirmAction({ title: "删除定时任务", message: "确定删除定时任务「" + t.name + "」吗？", onOk: function () {
+          timers = timers.filter(function (x) { return x.id !== t.id; });
+          renderTimers(); toast("定时任务已删除", "success");
+        }});
+      });
+    });
+  }
+  document.getElementById("ft-save").addEventListener("click", function () {
+    var n = document.getElementById("ft-name").value.trim();
+    var cron = document.getElementById("ft-cron").value.trim();
+    if (!n) return toast("请填写任务名称", "error");
+    if (!/^[\d\*\/\,\-\s]+$/.test(cron)) return toast("Cron 表达式格式不正确", "error");
+    timers.unshift({ id: "TM-" + (6 + timers.length - 2), name: n, cron: cron, pipeline: document.getElementById("ft-pipeline").value, last: "尚未触发", status: "启用" });
+    closeModal("modal-timer");
+    document.getElementById("ft-name").value = ""; document.getElementById("ft-cron").value = "";
+    renderTimers(); toast("定时任务已创建", "success");
+  });
+
+  /* ================= Tab 参数 ================= */
+  if (qs("tab")) {
+    var tb = document.querySelector('.tab[data-tab="' + qs("tab") + '"]');
+    if (tb) tb.click();
+  }
+
+  renderDevices(); renderApks(); renderScripts(); renderFpScripts(); renderJobs(); renderTimers();
+})();
+</script>
+</body>
+</html>

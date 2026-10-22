@@ -1,0 +1,147 @@
+- generic [ref=f4e3]:
+  - banner [ref=f4e4]:
+    - link "AT AITest Hub" [ref=f4e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f4e6]: AT
+      - text: AITest Hub
+    - generic [ref=f4e7]:
+      - generic [ref=f4e8]:
+        - link "🗂️ 卡片列表" [ref=f4e9] [cursor=pointer]:
+          - /url: /app
+          - generic [ref=f4e10]: 🗂️
+          - text: 卡片列表
+        - link "🌐 官网首页" [ref=f4e11] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f4e12]: 🌐
+          - text: 官网首页
+        - button "⚙️ 个人设置" [ref=f4e13] [cursor=pointer]:
+          - generic [ref=f4e14]: ⚙️
+          - text: 个人设置
+        - button "🚪 退出登录" [ref=f4e15] [cursor=pointer]:
+          - generic [ref=f4e16]: 🚪
+          - text: 退出登录
+      - generic [ref=f4e17]:
+        - generic [ref=f4e18]: S
+        - generic [ref=f4e19]: snow-sakura · 测试工程师
+  - generic [ref=f4e20]:
+    - complementary [ref=f4e21]:
+      - generic [ref=f4e22]:
+        - link "← 返回卡片列表" [ref=f4e23] [cursor=pointer]:
+          - /url: /app
+        - generic [ref=f4e24]:
+          - generic [ref=f4e25]: ⚙️
+          - text: 配置中心
+      - navigation [ref=f4e26]:
+        - link "🤖 AI 模型" [ref=f4e27] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=f4e28]: 🤖
+          - generic [ref=f4e29]: AI 模型
+        - link "👥 按角色配置" [ref=f4e30] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=f4e31]: 👥
+          - generic [ref=f4e32]: 按角色配置
+        - link "🖥 ️ UI 自动化环境" [ref=f4e33] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=f4e34]: 🖥
+          - generic [ref=f4e35]: ️ UI 自动化环境
+        - link "💬 Dify 助手" [ref=f4e36] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=f4e37]: 💬
+          - generic [ref=f4e38]: Dify 助手
+        - link "📨 通知渠道" [ref=f4e39] [cursor=pointer]:
+          - /url: "#"
+          - generic [ref=f4e40]: 📨
+          - generic [ref=f4e41]: 通知渠道
+    - main [ref=f4e42]:
+      - generic [ref=f4e43]:
+        - link "工具台" [ref=f4e44] [cursor=pointer]:
+          - /url: /app
+        - text: / 配置中心
+      - generic [ref=f4e45]:
+        - generic [ref=f4e46]:
+          - heading "⚙️ 配置中心" [level=1] [ref=f4e47]
+          - generic [ref=f4e48]: 统一管理 AI 模型（多提供商 / 按角色配置）、UI 自动化环境、Dify 助手与通知渠道，支持连接测试
+        - button "💾 保存全部配置" [ref=f4e50] [cursor=pointer]
+      - generic [ref=f4e51]: ℹ️ 参考 TestHub 统一配置中心：AI 模型支持按角色配置（用例编写 / 用例评审 / 智能模式），API Key 仅本地存储；环境检测可一键安装浏览器驱动。
+      - generic [ref=f4e52]:
+        - generic [ref=f4e53]:
+          - generic [ref=f4e54]:
+            - text: 📝 文本模型
+            - generic [ref=f4e55]: 已连接
+          - generic [ref=f4e56]:
+            - generic [ref=f4e57]: 提供商
+            - combobox [ref=f4e58] [cursor=pointer]:
+              - option "DeepSeek"
+              - option "通义千问"
+              - option "硅基流动"
+              - option "OpenAI"
+              - option "Anthropic"
+              - option "Google Gemini"
+          - generic [ref=f4e59]:
+            - generic [ref=f4e60]: API Base URL
+            - textbox [ref=f4e61]: https://developer.amd.com.cn/radeon/api/v1
+          - generic [ref=f4e62]:
+            - generic [ref=f4e63]: API Key
+            - textbox "sk-…" [ref=f4e64]: [REDACTED_API_KEY]
+          - generic [ref=f4e65]:
+            - generic [ref=f4e66]:
+              - generic [ref=f4e67]: 模型
+              - textbox [ref=f4e68]: DeepSeek-V4-Flash
+            - generic [ref=f4e69]:
+              - generic [ref=f4e70]: Temperature
+              - spinbutton [ref=f4e71]: "0.7"
+          - generic [ref=f4e72]:
+            - generic [ref=f4e73]: 计费档位（决定序列生成并发策略）
+            - combobox [ref=f4e74] [cursor=pointer]:
+              - option "🆓 免费模型 · 单任务序列（并发 1，串行保护额度）" [selected]
+              - option "💎 付费模型 · 并行序列（多任务同时跑，默认 3 路）"
+            - generic [ref=f4e75]: 序列生成时：免费模型任务排队串行执行，避免免费额度被限流打断； 付费模型自动开启多路并行，吞吐随并发数提升。
+          - button "🔌 测试连接" [ref=f4e76] [cursor=pointer]
+        - generic [ref=f4e77]:
+          - generic [ref=f4e78]:
+            - text: 🖼️ 视觉模型（附件解析）
+            - generic [ref=f4e79]: 未配置
+          - generic [ref=f4e80]:
+            - generic [ref=f4e81]: API Base URL
+            - textbox "https://…" [ref=f4e82]
+          - generic [ref=f4e83]:
+            - generic [ref=f4e84]: 视觉 API Key
+            - textbox "sk-…" [ref=f4e85]
+          - generic [ref=f4e86]:
+            - generic [ref=f4e87]: 视觉模型
+            - textbox "如：qwen-vl-max" [ref=f4e88]
+          - generic [ref=f4e89]: 用于需求文档图片解析、AI 用例附件上下文
+          - button "🔌 测试连接" [ref=f4e90] [cursor=pointer]
+      - generic [ref=f4e91]:
+        - generic [ref=f4e92]:
+          - generic [ref=f4e93]: 🖱️ Cursor Agent（WebUI 自动化）
+          - generic [ref=f4e94]:
+            - generic [ref=f4e95]: Cursor API Key
+            - textbox "从 Cursor → Access Tokens 获取" [ref=f4e96]
+          - generic [ref=f4e97]: 用于 WebUI 自动化 Agent 执行；Agent 模型仅国内可用
+          - button "🔌 测试连接" [ref=f4e98] [cursor=pointer]
+        - generic [ref=f4e99]:
+          - generic [ref=f4e100]:
+            - text: 🔑 使用额度
+            - generic [ref=f4e101]: 按日重置
+          - table [ref=f4e103]:
+            - rowgroup [ref=f4e104]:
+              - row [ref=f4e105]:
+                - columnheader "能力" [ref=f4e106]
+                - columnheader "今日已用" [ref=f4e107]
+                - columnheader "每日上限" [ref=f4e108]
+            - rowgroup [ref=f4e109]:
+              - row [ref=f4e110]:
+                - cell "文本 AI" [ref=f4e111]
+                - cell "128" [ref=f4e112]
+                - cell "200" [ref=f4e113]
+              - row [ref=f4e114]:
+                - cell "视觉 AI" [ref=f4e115]
+                - cell "6" [ref=f4e116]
+                - cell "50" [ref=f4e117]
+              - row [ref=f4e118]:
+                - cell "Cursor Agent" [ref=f4e119]
+                - cell "3" [ref=f4e120]
+                - cell "20" [ref=f4e121]
+          - link "🪙 查看 Tokens 消费明细 →" [ref=f4e122] [cursor=pointer]:
+            - /url: /t/tool-token-usage

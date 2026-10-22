@@ -1,0 +1,242 @@
+/* ===== Module sidebar (sub-function menu) v2 ===== */
+.sidebar { padding: 14px 10px 18px; }
+.mod-head { padding: 2px 4px 12px; margin-bottom: 10px; border-bottom: 1px dashed var(--border); }
+.mod-back { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; color: var(--primary); text-decoration: none; padding: 2px 0; }
+.mod-back:hover { text-decoration: underline; }
+.mod-title { display: flex; align-items: center; gap: 7px; margin-top: 10px; font-size: 13.5px; font-weight: 800; letter-spacing: .2px; }
+.mod-title .mt-ico { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 7px; background: var(--primary-soft); font-size: 13px; flex: none; }
+.side-nav { display: flex; flex-direction: column; gap: 3px; }
+.side-nav .side-item {
+  position: relative; display: flex; align-items: center; gap: 9px;
+  height: 36px; padding: 0 10px 0 12px; border-radius: 9px;
+  color: var(--text-dim); font-size: 12.5px; font-weight: 500;
+  transition: background .15s, color .15s, transform .15s; overflow: hidden;
+}
+.side-nav .side-item:hover { background: var(--panel); color: var(--text); text-decoration: none; transform: translateX(1px); }
+.side-nav .side-item.active { background: var(--primary-soft); color: var(--primary); font-weight: 700; }
+.side-nav .side-item.active::before {
+  content: ""; position: absolute; left: 0; top: 7px; bottom: 7px; width: 3px;
+  border-radius: 0 3px 3px 0; background: linear-gradient(180deg, #e0685a, #d98e2b);
+}
+.side-nav .si-ico { flex: none; width: 18px; text-align: center; font-size: 14px; }
+.side-nav .si-txt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar .side-item .badge-count { margin-left: auto; background: var(--bg-soft); border: 1px solid var(--border); border-radius: 999px; padding: 0 6px; font-size: 10.5px; font-weight: 700; color: var(--text-faint); }
+.sidebar .side-item.active .badge-count { background: #fff; color: var(--primary); }
+
+/* ===== v3 布局打磨：侧栏宽度/间距、顶栏右侧操作区、一屏 section ===== */
+/* 侧栏：加宽到 236px，菜单项 40px 高、8px 间距，呼吸感更好 */
+.workspace { grid-template-columns: 236px 1fr; }
+.sidebar { padding: 18px 12px 20px; }
+.side-nav { gap: 5px; }
+.side-nav .side-item { height: 40px; padding: 0 12px 0 14px; border-radius: 10px; font-size: 13px; gap: 10px; }
+.side-nav .si-ico { width: 20px; font-size: 15px; }
+.mod-head { padding: 4px 6px 14px; margin-bottom: 12px; }
+.mod-back { font-size: 12px; height: 28px; padding: 4px 8px; border-radius: 8px; background: var(--panel); border: 1px solid var(--border); box-shadow: var(--shadow-sm); }
+.mod-back:hover { color: var(--primary); border-color: var(--primary); text-decoration: none; }
+.mod-title { font-size: 14px; margin-top: 12px; }
+.mod-title .mt-ico { width: 26px; height: 26px; font-size: 14px; }
+
+/* 主区：左右留白加大，滚动条贴边 */
+.main-area { padding: 22px 28px 26px; }
+
+/* 顶栏右侧操作区（全部平铺、无下拉）：胶囊按钮组 */
+.topbar { padding: 0 24px; }
+.tb-actions { gap: 8px; }
+.tb-act { height: 32px; padding: 0 13px; font-size: 12.5px; }
+.tb-act.active { color: var(--primary); border-color: var(--primary); background: var(--primary-soft); }
+.topbar-right .user-chip { margin-left: 6px; }
+
+/* 分页条：左信息右按钮，间距与圆角统一 */
+.pagination { gap: 7px; }
+.pagination .page-btn { border-radius: 8px; }
+
+/* 一屏适配：主区内部滚动，页面级不出滚动条 */
+html.has-detail-shell, html.has-detail-shell body { height: 100%; overflow: hidden; }
+.detail-shell { display: flex; flex-direction: column; height: 100%; min-height: 0; }
+.detail-shell .ds-body { flex: 1; min-height: 0; overflow: hidden; display: flex; }
+.detail-shell .ds-main { flex: 1; min-width: 0; overflow-y: auto; }
+.ds-section { display: none; }
+.ds-section.active { display: block; animation: fadeIn .2s ease; }
+
+/* 侧栏菜单徽标计数 */
+.side-nav .side-item .si-badge {
+  margin-left: auto; flex: none; min-width: 20px; height: 18px;
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 0 6px; border-radius: 999px; font-size: 10.5px; font-weight: 700;
+  background: var(--panel); border: 1px solid var(--border); color: var(--text-faint);
+}
+.side-nav .side-item.active .si-badge { background: #fff; color: var(--primary); border-color: rgba(224,104,90,.3); }
+
+/* 卡片列表页 TAB 切换组（app.html） */
+.hub-tabs { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+.hub-tab {
+  padding: 8px 16px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--panel);
+  color: var(--text-dim); font-size: 13px; font-weight: 600; font-family: inherit;
+  box-shadow: var(--shadow-sm); transition: all .15s;
+}
+.hub-tab:hover { color: var(--primary); border-color: var(--primary); }
+.hub-tab.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+.hub-tab .ht-count { opacity: .75; font-size: 11.5px; margin-left: 4px; }
+
+/* ============================================================
+   v4 一屏收纳：内容封顶 + 「更多内容」弹窗 + 底部间距
+   ============================================================ */
+/* 超出视口的内容区自动封顶（不再整页向下溢出），尾部渐隐提示可展开 */
+.cap-box {
+  max-height: var(--cap-h, 240px) !important;
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  position: relative;
+  -webkit-mask-image: linear-gradient(180deg, #000 calc(100% - 44px), rgba(0,0,0,.25) calc(100% - 14px), transparent);
+  mask-image: linear-gradient(180deg, #000 calc(100% - 44px), rgba(0,0,0,.25) calc(100% - 14px), transparent);
+}
+.cap-box.cap-open { max-height: none !important; -webkit-mask-image: none; mask-image: none; }
+.cap-more-row { display: flex; justify-content: center; gap: 10px; margin: 10px 0 24px; }
+.cap-more-row .btn-more {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 18px; border-radius: 999px; font-size: 12.5px; font-weight: 600;
+}
+
+/* 「更多内容」弹窗：更宽，列表默认每页 10 条 */
+.modal-xl { width: 880px; }
+#modal-more .modal-body { max-height: 64vh; }
+#modal-more .pagination { justify-content: center; margin-top: 14px; }
+#modal-more .code-block { max-height: none; overflow: visible; }
+#modal-more .cap-box { max-height: none !important; overflow: visible !important; -webkit-mask-image: none; mask-image: none; }
+
+/* 内容区与视口底部保留呼吸间距
+   padding-bottom 保证末行卡片+分页在滚到底后仍完整露出；
+   不做 scrollbar-gutter 占位 —— 与 UI 设计稿一致（overlay 滚动条不占布局宽，
+   内容区右缘对齐 1412 = 1440-28，见 UI/assets/style.css .main-area） */
+.main-area {
+  padding: 22px 28px 72px;
+}
+.detail-shell .ds-main { padding-bottom: 44px; }
+
+/* ===== v5 左中右布局等高对齐：网格行内所有列拉伸到同高，嵌入区域高度一致 ===== */
+/* 多列网格默认等高（grid 默认 stretch，但内层卡片高度不一时会出现参差） */
+.grid-2, .grid-3, .grid-4 { align-items: stretch; }
+.grid-2 > *, .grid-3 > *, .grid-4 > * { height: 100%; }
+
+/* 左中右三栏布局（如压测编排 220px/1fr、问答助手 300px/1fr）：两列等高对齐 */
+.workspace .main-area .grid[style*="grid-template-columns"] { align-items: stretch; }
+.workspace .main-area .grid[style*="grid-template-columns"] > * { height: 100%; }
+
+/* 嵌入区域（画布/对话流/表格容器）撑满父卡并统一内滚动，不再各列高度不一 */
+.grid > .card { display: flex; flex-direction: column; }
+.grid > .card > .code-block,
+.grid > .card > .table-wrap,
+.grid > .card > .chat-box,
+.grid > .card > .canvas {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+/* 左侧栏与右侧主区的嵌入面板同底对齐：侧栏菜单容器填满 */
+.workspace { align-items: stretch; }
+.sidebar { display: flex; flex-direction: column; }
+.side-nav { flex: 1; }
+
+/* 矮屏一屏适配下同样保持等高 */
+@media (max-height: 820px) {
+  .grid-2 > *, .grid-3 > *, .grid-4 > * { height: 100%; }
+}
+
+/* ============================================================
+   v6 /prompts 分页展示：列表内滚 + 分页条钉底，永不被视口截断
+   （用户第四轮反馈：放弃"一屏滑到底"，改真分页）
+   链路：.prompts-view(100% 高 flex 列) → header 固定
+        → .prompts-panes(flex:1) → .prompts-pane(flex 列)
+           → .prompts-scroll(flex:1 内滚，只装 filter+grid)
+           → .prompts-pager(flex:none，滚动区外，白底实线)
+   注意：分页条不要放进 scroll，也不要 sticky/margin-top:auto —— 用户浏览器上会不可见
+   ============================================================ */
+.main-area:has(.prompts-view) { padding-bottom: 18px; }
+.prompts-view {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+/* 头部（面包屑/页头/ tabs）固定高度，只允许 panes 收缩 */
+.prompts-view > .breadcrumb,
+.prompts-view > .page-head,
+.prompts-view > .tabs { flex: none; }
+.prompts-panes {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+/* 覆盖 components.css 的 .tab-pane.active { display:block } */
+.prompts-panes > .tab-pane.active.prompts-pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+.prompts-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding-bottom: 4px;
+  /* 不占位滚动条（scrollbar-gutter/自定义条宽都不要）——
+     否则内容宽比设计稿窄 11px，卡片/筛选栏/分页右缘全部错位 */
+  /* 列向 flex：滚动区吃满剩余高度；行高按内容，不足时下方留白（单卡不再被拉成通高） */
+  display: flex;
+  flex-direction: column;
+}
+.prompts-scroll > .filter-bar,
+.prompts-scroll > .card,
+.prompts-scroll > .banner,
+.prompts-scroll > .flow-steps,
+.prompts-scroll > .flex { flex: 0 0 auto; }
+/* 栅格可占满剩余高度，但 align-content:start + 行 auto —— 行不被 1fr 撑开；
+   行内卡片仍 align-items:stretch 等高（见 components/shell） */
+.prompts-scroll > .grid {
+  flex: 1 0 auto;
+  grid-auto-rows: minmax(min-content, auto);
+  align-content: start;
+}
+
+/* 分页条：对齐开 DevTools 时的目标 —— 条高约 45px、上下留白更紧、通栏白底 */
+.prompts-pane > .prompts-pager {
+  flex: none;
+  width: 100%;
+  background: var(--panel);
+  border-top: 1px solid var(--border-light);
+  padding: 6px 0 7px;
+}
+.prompts-pager .pagination {
+  margin-top: 0;
+  width: 100%;
+  gap: 8px;
+  min-height: 30px;
+}
+/* 左信息靠 page-info 的 margin-right:auto 顶开；右侧「每页 + 翻页」成组 */
+.prompts-pager .page-info {
+  font-size: 12.5px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+.prompts-pager .pg-size { margin-right: 2px; flex: none; }
+.prompts-pager .page-btn {
+  min-width: 30px;
+  height: 30px;
+  font-size: 12.5px;
+}
+@media (max-width: 1100px) {
+  .flow-steps {
+    grid-template-columns: 1fr;
+  }
+  .flow-arrow {
+    transform: rotate(90deg);
+    padding: 0;
+    height: 18px;
+  }
+}
+

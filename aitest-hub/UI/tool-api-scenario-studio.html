@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>压测编排工作台 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / 压测编排工作台</div>
+    <div class="page-head">
+      <div>
+        <h1>🧪 压测编排工作台</h1>
+        <div class="sub">拖拽式编排测试计划 → 线程组 → HTTP 请求，自动生成 JMX；HTTP 批量造数一键完成</div>
+      </div>
+      <div class="flex">
+        <button class="btn btn-ghost" id="btn-import-curl">📥 curl 导入</button>
+        <button class="btn btn-ghost" id="btn-vars">🔤 公共变量</button>
+        <button class="btn btn-primary" id="btn-export-jmx">⬇️ 导出 JMX</button>
+      </div>
+    </div>
+
+    <div class="tabs" data-scope="studio">
+      <button class="tab active" data-tab="jmeter">🎛️ 压测编排</button>
+      <button class="tab" data-tab="data">🔢 HTTP 批量造数</button>
+    </div>
+
+    <div id="studio">
+      <!-- ============ Tab 1: 压测编排 ============ -->
+      <div class="tab-pane active" data-pane="jmeter">
+        <div class="grid" style="grid-template-columns: 230px 1fr 300px; gap:14px">
+          <!-- 组件面板 -->
+          <div class="card" style="padding:14px">
+            <div class="card-title" style="font-size:13.5px">🧩 组件库</div>
+            <div style="display:flex; flex-direction:column; gap:8px" id="palette">
+              <div class="node" data-add="plan" style="width:100%; cursor:pointer"><span class="n-icon" style="background:var(--primary-soft)">📋</span><div><div class="n-title">测试计划</div><div class="n-sub">Test Plan</div></div></div>
+              <div class="node" data-add="thread" style="width:100%; cursor:pointer"><span class="n-icon" style="background:var(--purple-soft)">🧵</span><div><div class="n-title">线程组</div><div class="n-sub">Thread Group</div></div></div>
+              <div class="node" data-add="http" style="width:100%; cursor:pointer"><span class="n-icon" style="background:var(--green-soft)">🌐</span><div><div class="n-title">HTTP 请求</div><div class="n-sub">HTTP Request</div></div></div>
+              <div class="node" data-add="assert" style="width:100%; cursor:pointer"><span class="n-icon" style="background:var(--orange-soft)">✅</span><div><div class="n-title">响应断言</div><div class="n-sub">Response Assertion</div></div></div>
+              <div class="node" data-add="timer" style="width:100%; cursor:pointer"><span class="n-icon" style="background:var(--red-soft)">⏱️</span><div><div class="n-title">定时器</div><div class="n-sub">Constant Timer</div></div></div>
+            </div>
+            <div class="hint text-faint mt-8" style="font-size:12px">点击组件添加到链路</div>
+          </div>
+
+          <!-- 编排画布 -->
+          <div class="card" style="padding:14px">
+            <div class="flex-between mb-8">
+              <div class="card-title" style="margin:0">🔗 压测编排链 <span class="tag tag-green" id="chain-live"><span class="dot dot-green"></span>live</span></div>
+              <div class="flex">
+                <button class="btn btn-sm btn-ghost" id="btn-yaml">YAML 模式</button>
+                <button class="btn btn-sm btn-danger" id="btn-clear-chain">清空</button>
+              </div>
+            </div>
+            <div class="canvas" id="chain-canvas">
+              <div class="empty" id="chain-empty"><div class="e-icon">🧩</div><div class="e-text">从左侧点击组件开始编排<br>计划 → 线程 → HTTP → 断言</div></div>
+            </div>
+            <div class="flex mt-16">
+              <select class="select" id="run-target" style="width:200px">
+                <option>执行机：本机 (local)</option>
+                <option>执行机：perf-node-01</option>
+                <option>执行机：perf-node-02 × 4</option>
+              </select>
+              <button class="btn btn-success" id="btn-run" style="flex:1">▶️ 开始压测</button>
+            </div>
+          </div>
+
+          <!-- 属性面板 -->
+          <div class="card" style="padding:14px">
+            <div class="card-title" style="font-size:13.5px">⚙️ 属性配置 <span class="tag" id="prop-target">未选中</span></div>
+            <div id="prop-empty" class="empty" style="padding:26px 10px"><div class="e-icon">👆</div><div class="e-text">选中链路中的节点<br>在此编辑属性</div></div>
+            <div id="prop-form" class="hidden">
+              <div class="field"><label>节点名称</label><input class="input" id="prop-name"></div>
+              <div class="field" id="prop-extra"></div>
+              <button class="btn btn-primary btn-sm" id="prop-save" style="width:100%">💾 保存属性</button>
+            </div>
+
+            <hr style="border:none; border-top:1px solid var(--border); margin:16px 0">
+            <div class="card-title" style="font-size:13.5px">📈 实时指标 <span class="tag tag-blue">Grafana</span></div>
+            <div class="grid grid-2" style="gap:8px">
+              <div class="card" style="padding:10px; text-align:center"><div class="text-faint" style="font-size:11.5px">QPS</div><div class="mono" style="font-size:17px; color:var(--green)" id="m-qps">0</div></div>
+              <div class="card" style="padding:10px; text-align:center"><div class="text-faint" style="font-size:11.5px">平均 RT</div><div class="mono" style="font-size:17px; color:var(--primary)" id="m-rt">0ms</div></div>
+              <div class="card" style="padding:10px; text-align:center"><div class="text-faint" style="font-size:11.5px">错误率</div><div class="mono" style="font-size:17px; color:var(--orange)" id="m-err">0%</div></div>
+              <div class="card" style="padding:10px; text-align:center"><div class="text-faint" style="font-size:11.5px">并发数</div><div class="mono" style="font-size:17px" id="m-threads">0</div></div>
+            </div>
+            <div class="mt-16">
+              <div class="flex-between mb-8" style="font-size:12px"><span class="text-faint">压测进度</span><span class="mono" id="run-pct">0%</span></div>
+              <div class="progress"><div class="bar" id="run-bar" style="width:0%"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ Tab 2: HTTP 批量造数 ============ -->
+      <div class="tab-pane" data-pane="data">
+        <div class="banner banner-info">ℹ️ 配置目标接口与造数规则，系统将循环调用 HTTP 接口批量写入数据；完成后可下载造数结果 CSV。</div>
+        <div class="grid" style="grid-template-columns: 1fr 1.4fr; gap:14px">
+          <div class="card">
+            <div class="card-title">🔧 造数配置</div>
+            <div class="field">
+              <label>接口 URL <span class="text-red">*</span></label>
+              <input class="input" id="data-url" placeholder="https://api.example.com/v1/orders">
+              <div class="hint">支持变量占位符 {{name}}、{{phone}}、{{index}}</div>
+            </div>
+            <div class="field">
+              <label>请求方法</label>
+              <select class="select" id="data-method"><option>POST</option><option>PUT</option><option>PATCH</option><option>GET</option><option>DELETE</option></select>
+            </div>
+            <div class="field">
+              <label>请求体模板（JSON）</label>
+              <textarea class="textarea mono" id="data-body" rows="5">{"name": "{{name}}", "phone": "{{phone}}", "seq": {{index}}}</textarea>
+            </div>
+            <div class="grid grid-2" style="gap:10px">
+              <div class="field"><label>造数条数</label><input class="input" id="data-count" type="number" value="100" min="1" max="100000"></div>
+              <div class="field"><label>并发数</label><input class="input" id="data-conc" type="number" value="5" min="1" max="50"></div>
+            </div>
+            <div class="flex">
+              <button class="btn btn-primary flex-1" id="data-start">🚀 开始造数</button>
+              <button class="btn btn-ghost" id="data-stop" disabled>⏹ 停止</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">📊 执行状态
+              <div class="flex">
+                <button class="btn btn-sm btn-ghost" id="data-export" disabled>⬇️ 导出 CSV</button>
+                <button class="btn btn-sm btn-ghost" id="data-log-clear">清空日志</button>
+              </div>
+            </div>
+            <div class="grid grid-3" style="gap:8px; margin-bottom:12px">
+              <div class="card" style="padding:10px; text-align:center"><div class="text-faint" style="font-size:11.5px">成功</div><div class="mono" style="font-size:16px; color:var(--green)" id="data-ok">0</div></div>
+              <div class="card" style="padding:10px; text-align:center"><div class="text-faint" style="font-size:11.5px">失败</div><div class="mono" style="font-size:16px; color:var(--red)" id="data-fail">0</div></div>
+              <div class="card" style="padding:10px; text-align:center"><div class="text-faint" style="font-size:11.5px">剩余</div><div class="mono" style="font-size:16px" id="data-left">0</div></div>
+            </div>
+            <div class="progress mb-16"><div class="bar bar-green" id="data-bar" style="width:0%"></div></div>
+            <div class="code-block" id="data-log" style="height:200px; overflow-y:auto"><span class="c">// 造数日志将在此输出…</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 节点属性弹窗（YAML） -->
+<div class="modal-mask" id="modal-yaml">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3>YAML 高级模式</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="banner banner-warn">⚠️ YAML 模式下修改将覆盖画布编排，保存前请确认</div>
+      <textarea class="textarea mono" id="yaml-editor" rows="14">testPlan:
+  name: 交易核心链路-大促预演
+threadGroup:
+  threads: 200
+  rampUp: 30s
+  loops: -1
+requests:
+  - name: 下单接口
+    method: POST
+    url: https://api.example.com/v1/orders
+    assertion: contains "code":0
+  - name: 支付接口
+    method: POST
+    url: https://api.example.com/v1/pay</textarea>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="yaml-save">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- curl 导入弹窗 -->
+<div class="modal-mask" id="modal-curl">
+  <div class="modal">
+    <div class="modal-head"><h3>📥 curl 命令导入</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="field">
+        <label>粘贴 curl 命令</label>
+        <textarea class="textarea mono" id="curl-input" rows="6" placeholder='curl -X POST "https://api.example.com/v1/orders" -H "Content-Type: application/json" -d "{\"name\":\"test\"}"'></textarea>
+      </div>
+      <div id="curl-preview" class="code-block hidden"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="curl-parse">解析并预览</button>
+      <button class="btn btn-success hidden" id="curl-add">＋ 添加到链路</button>
+    </div>
+  </div>
+</div>
+
+<!-- 公共变量弹窗 -->
+<div class="modal-mask" id="modal-vars">
+  <div class="modal">
+    <div class="modal-head"><h3>🔤 公共变量</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="table-wrap" style="border:none">
+        <table class="table">
+          <thead><tr><th>变量名</th><th>值</th><th style="width:60px">操作</th></tr></thead>
+          <tbody id="vars-tbody"></tbody>
+        </table>
+      </div>
+      <button class="btn btn-sm btn-ghost mt-8" id="var-add">＋ 新增变量</button>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="vars-save">💾 保存变量</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  /* ================= 编排链 ================= */
+  var chain = [];
+  var selected = -1;
+  var NODE_META = {
+    plan:   { icon: "📋", bg: "var(--primary-soft)", title: "测试计划",  extra: '<div class="field"><label>计划名称</label><input class="input" value="交易核心链路-大促预演"></div>' },
+    thread: { icon: "🧵", bg: "var(--purple-soft)",  title: "线程组",    extra: '<div class="grid grid-2" style="gap:8px"><div class="field"><label>并发线程数</label><input class="input" type="number" value="200"></div><div class="field"><label>Ramp-Up (秒)</label><input class="input" type="number" value="30"></div></div>' },
+    http:   { icon: "🌐", bg: "var(--green-soft)",   title: "HTTP 请求", extra: '<div class="field"><label>URL</label><input class="input" value="https://api.example.com/v1/orders"></div><div class="field"><label>方法</label><select class="select"><option>POST</option><option>GET</option><option>PUT</option><option>DELETE</option></select></div>' },
+    assert: { icon: "✅", bg: "var(--orange-soft)",  title: "响应断言",  extra: '<div class="field"><label>断言规则</label><input class="input" value="包含 &quot;code&quot;:0"></div>' },
+    timer:  { icon: "⏱️", bg: "var(--red-soft)",     title: "定时器",    extra: '<div class="field"><label>等待时间 (ms)</label><input class="input" type="number" value="100"></div>' }
+  };
+
+  function renderChain() {
+    var canvas = document.getElementById("chain-canvas");
+    if (!chain.length) {
+      canvas.innerHTML = '<div class="empty" id="chain-empty"><div class="e-icon">🧩</div><div class="e-text">从左侧点击组件开始编排<br>计划 → 线程 → HTTP → 断言</div></div>';
+      return;
+    }
+    var html = "";
+    chain.forEach(function (n, i) {
+      if (i > 0) html += '<div class="connector">↓</div>';
+      html += '<div class="node' + (i === selected ? " selected" : "") + '" data-idx="' + i + '">' +
+        '<span class="n-icon" style="background:' + NODE_META[n.type].bg + '">' + NODE_META[n.type].icon + "</span>" +
+        '<div><div class="n-title">' + n.name + '</div><div class="n-sub">' + NODE_META[n.type].title + " · " + n.id + "</div></div>" +
+        '<button class="btn btn-sm btn-ghost" style="margin-left:auto" data-del="' + i + '" title="删除">🗑</button></div>';
+    });
+    canvas.innerHTML = html;
+    canvas.querySelectorAll(".node[data-idx]").forEach(function (el) {
+      el.addEventListener("click", function (e) {
+        if (e.target.closest("[data-del]")) return;
+        selected = +el.dataset.idx;
+        renderChain(); renderProp();
+      });
+    });
+    canvas.querySelectorAll("[data-del]").forEach(function (b) {
+      b.addEventListener("click", function (e) {
+        e.stopPropagation();
+        var i = +b.dataset.del;
+        confirmAction({ title: "删除节点", message: "确定删除「" + chain[i].name + "」节点吗？", onOk: function () {
+          chain.splice(i, 1); selected = -1; renderChain(); renderProp(); toast("节点已删除", "success");
+        }});
+      });
+    });
+  }
+
+  function renderProp() {
+    var empty = document.getElementById("prop-empty"), form = document.getElementById("prop-form"), extra = document.getElementById("prop-extra");
+    if (selected < 0 || !chain[selected]) { empty.classList.remove("hidden"); form.classList.add("hidden"); document.getElementById("prop-target").textContent = "未选中"; return; }
+    var n = chain[selected];
+    empty.classList.add("hidden"); form.classList.remove("hidden");
+    document.getElementById("prop-target").textContent = NODE_META[n.type].title;
+    document.getElementById("prop-name").value = n.name;
+    extra.innerHTML = NODE_META[n.type].extra;
+  }
+
+  document.getElementById("palette").addEventListener("click", function (e) {
+    var el = e.target.closest("[data-add]");
+    if (!el) return;
+    var type = el.dataset.add, meta = NODE_META[type];
+    chain.push({ type: type, name: meta.title, id: "n" + (chain.length + 1) + "-" + Math.random().toString(36).slice(2, 5) });
+    selected = chain.length - 1;
+    renderChain(); renderProp();
+    toast("已添加「" + meta.title + "」到链路", "success");
+  });
+
+  document.getElementById("prop-save").addEventListener("click", function () {
+    if (selected < 0) return;
+    chain[selected].name = document.getElementById("prop-name").value || chain[selected].name;
+    renderChain(); toast("属性已保存", "success");
+  });
+
+  document.getElementById("btn-clear-chain").addEventListener("click", function () {
+    if (!chain.length) return toast("链路已为空", "info");
+    confirmAction({ title: "清空链路", message: "确定清空全部 " + chain.length + " 个节点吗？", onOk: function () {
+      chain = []; selected = -1; renderChain(); renderProp(); toast("链路已清空", "success");
+    }});
+  });
+
+  document.getElementById("btn-yaml").addEventListener("click", function () { openModal("modal-yaml"); });
+  document.getElementById("yaml-save").addEventListener("click", function () { closeModal("modal-yaml"); toast("YAML 已保存并同步到画布", "success"); });
+  document.getElementById("btn-export-jmx").addEventListener("click", function () {
+    if (!chain.length) return toast("请先编排至少一个节点", "warn");
+    toast("JMX 文件生成中…", "info");
+    setTimeout(function () { toast("plan-trade-core.jmx 导出成功（演示）", "success"); }, 900);
+  });
+  document.getElementById("btn-import-curl").addEventListener("click", function () { openModal("modal-curl"); });
+  document.getElementById("curl-parse").addEventListener("click", function () {
+    var v = document.getElementById("curl-input").value.trim();
+    if (!v) return toast("请粘贴 curl 命令", "warn");
+    var url = (v.match(/https?:\/\/[^"'\s]+/) || ["https://api.example.com/v1/orders"])[0];
+    document.getElementById("curl-preview").classList.remove("hidden");
+    document.getElementById("curl-preview").textContent = "解析结果:\n方法: " + ((v.match(/-X (\w+)/) || [,"POST"])[1]) + "\nURL: " + url;
+    document.getElementById("curl-add").classList.remove("hidden");
+  });
+  document.getElementById("curl-add").addEventListener("click", function () {
+    chain.push({ type: "http", name: "curl 导入请求", id: "n" + (chain.length + 1) + "-curl" });
+    selected = chain.length - 1;
+    renderChain(); renderProp(); closeModal("modal-curl");
+    toast("已添加到压测链路", "success");
+  });
+
+  /* ---------- 公共变量 ---------- */
+  var vars = [{ k: "BASE_URL", v: "https://api.example.com" }, { k: "TOKEN", v: "Bearer eyJhbGci…" }];
+  function renderVars() {
+    var tb = document.getElementById("vars-tbody");
+    tb.innerHTML = vars.map(function (v, i) {
+      return "<tr><td><input class=\"input mono\" value=\"" + v.k + '" data-vk="' + i + '"></td>' +
+        '<td><input class="input mono" value="' + v.v + '" data-vv="' + i + '"></td>' +
+        '<td><button class="btn btn-sm btn-danger" data-vd="' + i + '">删</button></td></tr>';
+    }).join("") || '<tr><td colspan="3" class="empty" style="padding:18px">暂无变量</td></tr>';
+    tb.querySelectorAll("[data-vd]").forEach(function (b) {
+      b.addEventListener("click", function () { vars.splice(+b.dataset.vd, 1); renderVars(); });
+    });
+  }
+  document.getElementById("btn-vars").addEventListener("click", function () { renderVars(); openModal("modal-vars"); });
+  document.getElementById("var-add").addEventListener("click", function () { vars.push({ k: "NEW_VAR", v: "" }); renderVars(); });
+  document.getElementById("vars-save").addEventListener("click", function () {
+    document.querySelectorAll("[data-vk]").forEach(function (inp) { vars[+inp.dataset.vk].k = inp.value; });
+    document.querySelectorAll("[data-vv]").forEach(function (inp) { vars[+inp.dataset.vv].v = inp.value; });
+    closeModal("modal-vars"); toast("公共变量已保存", "success");
+  });
+
+  /* ---------- 开始压测 ---------- */
+  var runTimer = null;
+  document.getElementById("btn-run").addEventListener("click", function () {
+    if (!chain.length) return toast("请先编排压测链路", "warn");
+    if (runTimer) { // 停止
+      clearInterval(runTimer); runTimer = null;
+      this.textContent = "▶️ 开始压测"; this.classList.remove("btn-danger"); this.classList.add("btn-success");
+      toast("压测已停止", "warn"); return;
+    }
+    var pct = 0, qps = 0;
+    this.textContent = "⏹ 停止压测"; this.classList.remove("btn-success"); this.classList.add("btn-danger");
+    document.getElementById("chain-live").innerHTML = '<span class="dot dot-green"></span>running';
+    toast("压测已启动：" + document.getElementById("run-target").value, "success");
+    runTimer = setInterval(function () {
+      pct = Math.min(100, pct + 2);
+      qps = Math.round(1950 + Math.random() * 60);
+      document.getElementById("run-pct").textContent = pct + "%";
+      document.getElementById("run-bar").style.width = pct + "%";
+      document.getElementById("m-qps").textContent = qps.toLocaleString();
+      document.getElementById("m-rt").textContent = Math.round(38 + Math.random() * 18) + "ms";
+      document.getElementById("m-err").textContent = (Math.random() * 0.5).toFixed(2) + "%";
+      document.getElementById("m-threads").textContent = Math.round(200 * pct / 100);
+      if (pct >= 100) {
+        clearInterval(runTimer); runTimer = null;
+        var btn = document.getElementById("btn-run");
+        btn.textContent = "▶️ 开始压测"; btn.classList.remove("btn-danger"); btn.classList.add("btn-success");
+        document.getElementById("chain-live").innerHTML = '<span class="dot dot-green"></span>done';
+        toast("压测完成，报告已生成", "success");
+      }
+    }, 400);
+  });
+
+  /* ================= HTTP 批量造数 ================= */
+  var dataTimer = null, dataState = { ok: 0, fail: 0, left: 0, total: 0, rows: [] };
+  var NAMES = ["张伟", "王芳", "李娜", "刘洋", "陈静", "杨帆", "赵磊"];
+  function logLine(msg, cls) {
+    var log = document.getElementById("data-log");
+    if (log.querySelector(".c") && dataState.ok + dataState.fail === 0) log.textContent = "";
+    log.innerHTML += "\n" + (cls ? '<span class="' + cls + '">' : "<span>") + msg + "</span>";
+    log.scrollTop = log.scrollHeight;
+  }
+  function refreshData() {
+    document.getElementById("data-ok").textContent = dataState.ok;
+    document.getElementById("data-fail").textContent = dataState.fail;
+    document.getElementById("data-left").textContent = dataState.left;
+    var pct = dataState.total ? Math.round((dataState.ok + dataState.fail) / dataState.total * 100) : 0;
+    document.getElementById("data-bar").style.width = pct + "%";
+  }
+  document.getElementById("data-start").addEventListener("click", function () {
+    var url = document.getElementById("data-url").value.trim();
+    var count = +document.getElementById("data-count").value || 0;
+    if (!/^https?:\/\//.test(url)) return toast("请输入合法的接口 URL", "error");
+    if (count < 1) return toast("造数条数需 ≥ 1", "error");
+    dataState = { ok: 0, fail: 0, left: count, total: count, rows: [] };
+    refreshData();
+    document.getElementById("data-start").disabled = true;
+    document.getElementById("data-stop").disabled = false;
+    document.getElementById("data-export").disabled = true;
+    logLine("▶️ 开始造数：" + document.getElementById("data-method").value + " " + url + " · 共 " + count + " 条", "s");
+    dataTimer = setInterval(function () {
+      var batch = Math.min(+document.getElementById("data-conc").value || 5, dataState.left);
+      for (var i = 0; i < batch; i++) {
+        var fail = Math.random() < 0.04;
+        var name = NAMES[Math.floor(Math.random() * NAMES.length)];
+        if (fail) { dataState.fail++; logLine("✖ [" + (dataState.ok + dataState.fail) + "] HTTP 500 · name=" + name, "n"); }
+        else { dataState.ok++; dataState.rows.push({ seq: dataState.ok, name: name, status: "OK" }); if (dataState.ok % 10 === 0) logLine("✔ 已写入 " + dataState.ok + " 条 · 最新 name=" + name, "s"); }
+        dataState.left--;
+      }
+      refreshData();
+      if (dataState.left <= 0) {
+        clearInterval(dataTimer); dataTimer = null;
+        document.getElementById("data-start").disabled = false;
+        document.getElementById("data-stop").disabled = true;
+        document.getElementById("data-export").disabled = false;
+        logLine("🏁 造数完成：成功 " + dataState.ok + " 条，失败 " + dataState.fail + " 条", "s");
+        toast("造数完成：成功 " + dataState.ok + " / 失败 " + dataState.fail, dataState.fail ? "warn" : "success");
+      }
+    }, 350);
+  });
+  document.getElementById("data-stop").addEventListener("click", function () {
+    clearInterval(dataTimer); dataTimer = null;
+    document.getElementById("data-start").disabled = false;
+    this.disabled = true;
+    logLine("⏹ 已手动停止", "n");
+    toast("造数已停止", "warn");
+  });
+  document.getElementById("data-log-clear").addEventListener("click", function () {
+    document.getElementById("data-log").innerHTML = '<span class="c">// 造数日志将在此输出…</span>';
+  });
+  document.getElementById("data-export").addEventListener("click", function () {
+    toast("data-result.csv 导出成功（演示，" + dataState.ok + " 条）", "success");
+  });
+
+  /* ================= URL Tab 参数 ================= */
+  if (qs("tab")) {
+    var t = qs("tab");
+    var tabBtn = document.querySelector('.tab[data-tab="' + t + '"]');
+    if (tabBtn) tabBtn.click();
+  }
+
+  renderChain();
+})();
+</script>
+</body>
+</html>

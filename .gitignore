@@ -1,0 +1,42 @@
+# Python / backend
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Node / frontend dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+coverage/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+
+# Local data and caches
+*.db
+*.sqlite3
+*.sqlite
+backend/app/uploads/
+
+# Playwright / browser artifacts
+.playwright-mcp/*.log
+.playwright-mcp/features-verify*.json
+.playwright-mcp/features-manifest.json
+.playwright-mcp/link-scan-report.json
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo

@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>用例管理 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / 用例管理</div>
+    <div class="page-head">
+      <div>
+        <h1>🗂️ 用例管理</h1>
+        <div class="sub">模块树 + 用例库双视图 · 评审流程 · 批次执行与结果统计 · 与 AI 生成 / 缺陷管理双向关联</div>
+      </div>
+      <div class="flex">
+        <a class="btn btn-ghost" href="tool-test-cases.html">🤖 去AI生成</a>
+        <a class="btn btn-ghost" href="tool-defect-management.html">🐞 关联缺陷</a>
+        <button class="btn btn-primary" data-open-modal="modal-case">＋ 新建用例</button>
+      </div>
+    </div>
+
+    <div class="tabs" data-scope="cm">
+      <button class="tab active" data-tab="lib">📚 用例库 <span class="badge-count" id="cm-cnt">0</span></button>
+      <button class="tab" data-tab="review">👀 评审 <span class="badge-count" id="rv-cnt">0</span></button>
+      <button class="tab" data-tab="batches">🧾 执行批次</button>
+    </div>
+
+    <div id="cm">
+      <!-- ============ 用例库 ============ -->
+      <div class="tab-pane active" data-pane="lib">
+        <div class="grid" style="grid-template-columns: 240px 1fr; gap:14px">
+          <!-- 模块树 -->
+          <div class="card" style="padding:14px">
+            <div class="card-title" style="font-size:13.5px">🌳 模块树 <button class="btn btn-sm btn-ghost" data-open-modal="modal-module">＋</button></div>
+            <div id="module-tree" style="display:flex; flex-direction:column; gap:2px; font-size:13px"></div>
+          </div>
+          <!-- 用例表 -->
+          <div>
+            <div class="filter-bar">
+              <input class="input search" id="c-kw" placeholder="🔍 搜索标题 / 编号">
+              <select class="select" id="c-pri"><option value="">全部优先级</option><option>P0</option><option>P1</option><option>P2</option></select>
+              <select class="select" id="c-status"><option value="">全部状态</option><option>待评审</option><option>已评审</option><option>已废弃</option></select>
+            </div>
+            <div id="c-table"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 评审 ============ -->
+      <div class="tab-pane" data-pane="review">
+        <div class="banner banner-info">ℹ️ 待评审用例需由评审人给出「通过 / 驳回」结论；驳回需填写原因，用例将退回编写人修改。</div>
+        <div id="rv-table"></div>
+      </div>
+
+      <!-- ============ 执行批次 ============ -->
+      <div class="tab-pane" data-pane="batches">
+        <div class="flex mb-16" style="justify-content:flex-end">
+          <button class="btn btn-primary" data-open-modal="modal-batch">＋ 新建执行批次</button>
+        </div>
+        <div id="batch-table"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 新建/编辑用例弹窗 -->
+<div class="modal-mask" id="modal-case">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="cm-modal-title">＋ 新建用例</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="grid grid-2" style="gap:12px">
+        <div class="field"><label>用例标题 <span class="text-red">*</span></label><input class="input" id="fc-title" placeholder="如：正常提交退款申请"></div>
+        <div class="field"><label>所属模块</label><select class="select" id="fc-module"><option>订单模块</option><option>支付模块</option><option>用户模块</option><option>库存模块</option></select></div>
+      </div>
+      <div class="grid grid-2" style="gap:12px">
+        <div class="field"><label>优先级</label><select class="select" id="fc-pri"><option>P0</option><option>P1</option><option>P2</option></select></div>
+        <div class="field"><label>用例类型</label><select class="select" id="fc-type"><option>功能</option><option>边界</option><option>异常流</option><option>接口</option></select></div>
+      </div>
+      <div class="field"><label>前置条件</label><input class="input" id="fc-pre" placeholder="用户已登录…"></div>
+      <div class="field"><label>操作步骤</label><textarea class="textarea" id="fc-steps" rows="4" placeholder="1. …&#10;2. …"></textarea></div>
+      <div class="field"><label>预期结果</label><textarea class="textarea" id="fc-exp" rows="2"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="fc-save">💾 保存用例</button>
+    </div>
+  </div>
+</div>
+
+<!-- 用例详情弹窗 -->
+<div class="modal-mask" id="modal-case-view">
+  <div class="modal">
+    <div class="modal-head"><h3 id="cv-title">用例详情</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="flex mb-16" id="cv-meta"></div>
+      <div class="field"><label>前置条件</label><div class="code-block" id="cv-pre"></div></div>
+      <div class="field"><label>操作步骤</label><div class="code-block" id="cv-steps"></div></div>
+      <div class="field"><label>预期结果</label><div class="code-block" id="cv-exp"></div></div>
+      <div class="flex" id="cv-links"></div>
+    </div>
+    <div class="modal-foot">
+      <a class="btn btn-ghost" href="tool-defect-management.html" id="cv-defect-link">🐞 查看关联缺陷</a>
+      <button class="btn btn-primary" data-close-modal>关闭</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新建模块弹窗 -->
+<div class="modal-mask" id="modal-module">
+  <div class="modal modal-sm">
+    <div class="modal-head"><h3>＋ 新建模块</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>模块名称 <span class="text-red">*</span></label><input class="input" id="fm-name" placeholder="如：优惠券模块"></div>
+      <div class="field"><label>上级模块</label><select class="select" id="fm-parent"><option>无（顶级）</option><option>订单模块</option><option>支付模块</option><option>用户模块</option></select></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="fm-save">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 新建执行批次弹窗 -->
+<div class="modal-mask" id="modal-batch">
+  <div class="modal">
+    <div class="modal-head"><h3>＋ 新建执行批次</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>批次名称 <span class="text-red">*</span></label><input class="input" id="fb-name" placeholder="如：9月第4周回归"></div>
+      <div class="field"><label>包含用例</label>
+        <select class="select" id="fb-scope"><option>全部已评审用例</option><option>按模块选择</option><option>仅 P0 用例</option></select>
+      </div>
+      <div class="field"><label>执行人</label><select class="select"><option>wxh（我）</option><option>李雷</option><option>韩梅</option></select></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="fb-save">💾 创建批次</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  var modules = [];
+  var curModule = "";
+  var editingCaseId = null;
+  function japi(method, path, payload) {
+    var opts = { method: method };
+    if (payload !== undefined) opts.json = payload;
+    return Auth.api(path, opts).then(function (r) {
+      return r.text().then(function (txt) {
+        var data = null;
+        if (txt) { try { data = JSON.parse(txt); } catch (e) {} }
+        if (!r.ok) { var d = data && data.detail; throw new Error(typeof d === "string" ? d : ("请求失败(" + r.status + ")")); }
+        return data;
+      });
+    });
+  }
+  function gv(i) { return document.getElementById(i).value; }
+  function renderAll() { renderTree(); renderCases(); renderReview(); renderBatches(); }
+  function reload() {
+    return Promise.all([Auth.api("/api/case-modules"), Auth.api("/api/cases"), Auth.api("/api/case-batches")])
+      .then(function (rs) { return Promise.all(rs.map(function (r) { return r.json(); })); })
+      .then(function (d) { modules = d[0] || []; cases = d[1] || []; batches = d[2] || []; renderAll(); })
+      .catch(function () { toast("数据加载失败，请重新登录", "error"); });
+  }
+  function openNewCaseModal() {
+    editingCaseId = null;
+    var t = document.getElementById("cm-modal-title"); if (t) t.textContent = "＋ 新建用例";
+    ["fc-title", "fc-pre", "fc-steps", "fc-exp"].forEach(function (id) { var el = document.getElementById(id); if (el) el.value = ""; });
+  }
+  var cases = [];
+  var batches = [];
+  var PRI_CLS = { P0: "tag-red", P1: "tag-orange", P2: "tag" };
+
+  /* ---------- 模块树 ---------- */
+  function renderTree() {
+    var el = document.getElementById("module-tree");
+    var html = '<a href="#" data-mod="" class="side-item' + (curModule === "" ? " active" : "") + '">📁 全部用例 (' + cases.length + ")</a>";
+    modules.forEach(function (m) {
+      var n = cases.filter(function (c) { return c.module === m; }).length;
+      html += '<a href="#" data-mod="' + m + '" class="side-item' + (curModule === m ? " active" : "") + '">📂 ' + m + " (" + n + ")</a>";
+    });
+    el.innerHTML = html;
+    el.querySelectorAll("[data-mod]").forEach(function (a) {
+      a.addEventListener("click", function (e) { e.preventDefault(); curModule = a.dataset.mod; renderTree(); renderCases(); });
+    });
+  }
+
+  /* ---------- 用例表 ---------- */
+  function filtered() {
+    var kw = document.getElementById("c-kw").value.trim().toLowerCase();
+    var pri = document.getElementById("c-pri").value;
+    var st = document.getElementById("c-status").value;
+    return cases.filter(function (c) {
+      return (!curModule || c.module === curModule) && (!kw || (c.title + c.id).toLowerCase().indexOf(kw) >= 0) && (!pri || c.pri === pri) && (!st || c.status === st);
+    });
+  }
+  function renderCases() {
+    document.getElementById("cm-cnt").textContent = cases.length;
+    document.getElementById("rv-cnt").textContent = cases.filter(function (c) { return c.status === "待评审"; }).length;
+    var d = filtered();
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>编号</th><th>标题</th><th>模块</th><th>优先级</th><th>类型</th><th>状态</th><th>执行</th><th style="width:190px">操作</th></tr></thead><tbody>';
+    if (!d.length) html += '<tr><td colspan="8"><div class="empty"><div class="e-icon">📚</div><div class="e-text">无匹配用例<br><a href="tool-test-cases.html">去 AI 生成 →</a></div></div></td></tr>';
+    d.forEach(function (c) {
+      html += '<tr><td class="mono">' + c.id + "</td>" +
+        '<td><div class="cell-main">' + c.title + '</div><div class="cell-sub">' + c.owner + "</div></td>" +
+        "<td><span class=\"tag\">" + c.module + "</span></td>" +
+        '<td><span class="tag ' + PRI_CLS[c.pri] + '">' + c.pri + "</span></td>" +
+        "<td>" + c.type + "</td>" +
+        "<td>" + (c.status === "已评审" ? '<span class="tag tag-green">已评审</span>' : c.status === "待评审" ? '<span class="tag tag-orange">待评审</span>' : '<span class="tag">已废弃</span>') + "</td>" +
+        '<td class="mono" style="font-size:12px">' + c.pass + "/" + c.run + (c.defect ? ' <a href="tool-defect-management.html" title="关联缺陷">🐞' + c.defect + "</a>" : "") + "</td>" +
+        '<td><div class="row-actions" style="opacity:1">' +
+        '<button class="btn btn-sm btn-ghost" data-view="' + c.id + '">详情</button>' +
+        '<button class="btn btn-sm btn-ghost" data-edit="' + c.id + '">编辑</button>' +
+        '<button class="btn btn-sm btn-danger" data-drop="' + c.id + '">废弃</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("c-table").innerHTML = html;
+    bindCaseActions();
+  }
+  function bindCaseActions() {
+    document.querySelectorAll("#c-table [data-view]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var c = cases.find(function (x) { return x.id === b.dataset.view; });
+        document.getElementById("cv-title").textContent = c.id + " · " + c.title;
+        document.getElementById("cv-meta").innerHTML = '<span class="tag ' + PRI_CLS[c.pri] + '">' + c.pri + '</span><span class="tag">' + c.module + '</span><span class="tag">' + c.type + '</span>' + (c.status === "已评审" ? '<span class="tag tag-green">已评审</span>' : '<span class="tag tag-orange">待评审</span>');
+        document.getElementById("cv-pre").textContent = c.pre;
+        document.getElementById("cv-steps").textContent = c.steps;
+        document.getElementById("cv-exp").textContent = c.exp;
+        document.getElementById("cv-links").innerHTML = c.defect
+          ? '<span class="tag tag-red">🐞 关联缺陷 ' + c.defect + " 个</span><a href=\"tool-defect-management.html\" style=\"font-size:12.5px\">前往缺陷管理 →</a>"
+          : '<span class="tag">暂无关联缺陷</span>';
+        document.getElementById("cv-defect-link").style.display = c.defect ? "" : "none";
+        openModal("modal-case-view");
+      });
+    });
+    document.querySelectorAll("#c-table [data-edit]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var c = cases.find(function (x) { return x.id === b.dataset.edit; });
+        document.getElementById("cm-modal-title").textContent = "编辑用例 · " + c.id;
+        document.getElementById("fc-title").value = c.title;
+        document.getElementById("fc-pre").value = c.pre;
+        document.getElementById("fc-steps").value = c.steps;
+        document.getElementById("fc-exp").value = c.exp;
+        editingCaseId = c.id;
+        openModal("modal-case");
+      });
+    });
+    document.querySelectorAll("#c-table [data-drop]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var c = cases.find(function (x) { return x.id === b.dataset.drop; });
+        confirmAction({ title: "废弃用例", message: "确定废弃用例「" + c.title + "」吗？废弃后不再纳入执行统计。", onOk: function () {
+          japi("POST", "/api/cases/" + c.id + "/drop").then(reload).catch(function (e) { toast("废弃失败：" + (e.message || e), "error"); });
+        }});
+      });
+    });
+  }
+  document.getElementById("c-kw").addEventListener("input", debounce(renderCases, 200));
+  document.getElementById("c-pri").addEventListener("change", renderCases);
+  document.getElementById("c-status").addEventListener("change", renderCases);
+
+  /* ---------- 保存用例 ---------- */
+  document.getElementById("fc-save").addEventListener("click", function () {
+    var t = document.getElementById("fc-title").value.trim();
+    if (!t) return toast("请填写用例标题", "error");
+    var p = { title: t, module: gv("fc-module"), pri: gv("fc-pri"), type: gv("fc-type"), pre: gv("fc-pre") || "-", steps: gv("fc-steps") || "-", exp: gv("fc-exp") || "-" };
+    var u = editingCaseId ? "/api/cases/" + editingCaseId : "/api/cases";
+    japi(editingCaseId ? "PUT" : "POST", u, p).then(function () { closeModal("modal-case"); ["fc-title", "fc-steps", "fc-exp", "fc-pre"].forEach(function (id) { var e = document.getElementById(id); if (e) e.value = ""; }); toast(editingCaseId ? "用例已更新" : "用例已保存，进入待评审", "success"); editingCaseId = null; return reload(); }).catch(function (e) { toast("保存失败：" + (e.message || ""), "error"); });
+  });
+
+  /* ---------- 模块 ---------- */
+  document.getElementById("fm-save").addEventListener("click", function () {
+    var n = document.getElementById("fm-name").value.trim();
+    if (!n) return toast("请填写模块名称", "error");
+    japi("POST", "/api/case-modules", { name: n }).then(function () { closeModal("modal-module"); document.getElementById("fm-name").value = ""; toast("模块已创建", "success"); return reload(); }).catch(function (e) { var m = (e.message || "") + ""; toast(m.indexOf("存在") >= 0 ? "模块已存在" : ("创建失败：" + m), "warn"); });
+  });
+
+  /* ---------- 评审 ---------- */
+  function renderReview() {
+    var rv = cases.filter(function (c) { return c.status === "待评审"; });
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>编号</th><th>标题</th><th>模块</th><th>优先级</th><th>编写人</th><th style="width:220px">评审操作</th></tr></thead><tbody>';
+    if (!rv.length) html += '<tr><td colspan="6"><div class="empty"><div class="e-icon">👀</div><div class="e-text">全部用例已评审完毕 🎉</div></div></td></tr>';
+    rv.forEach(function (c) {
+      html += '<tr><td class="mono">' + c.id + "</td><td><div class=\"cell-main\">" + c.title + "</div></td>" +
+        "<td><span class=\"tag\">" + c.module + "</span></td>" +
+        '<td><span class="tag ' + PRI_CLS[c.pri] + '">' + c.pri + "</span></td><td>" + c.owner + "</td>" +
+        '<td><div class="flex"><button class="btn btn-sm btn-success" data-approve="' + c.id + '">✅ 通过</button>' +
+        '<button class="btn btn-sm btn-danger" data-reject="' + c.id + '">❌ 驳回</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("rv-table").innerHTML = html;
+    document.querySelectorAll("[data-approve]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var c = cases.find(function (x) { return x.id === b.dataset.approve; });
+        japi("POST", "/api/cases/" + c.id + "/review", { action: "approve" }).then(reload).catch(function (e) { toast("操作失败：" + (e.message || e), "error"); });
+      });
+    });
+    document.querySelectorAll("[data-reject]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var c = cases.find(function (x) { return x.id === b.dataset.reject; });
+        confirmAction({ title: "驳回用例", message: "确定驳回用例「" + c.title + "」吗？将通知编写人 " + c.owner + " 修改。", onOk: function () {
+          japi("POST", "/api/cases/" + c.id + "/review", { action: "reject" }).then(function () { toast("已驳回并通知 " + c.owner, "warn"); }).catch(function (e) { toast("操作失败：" + (e.message || e), "error"); });
+        }});
+      });
+    });
+  }
+
+  /* ---------- 执行批次 ---------- */
+  function renderBatches() {
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>批次</th><th>名称</th><th>范围</th><th>用例</th><th>通过</th><th>失败</th><th>进度</th><th>状态</th><th style="width:170px">操作</th></tr></thead><tbody>';
+    batches.forEach(function (bt) {
+      var pct = Math.round(bt.pass + bt.fail) / bt.total * 100;
+      html += '<tr><td class="mono">' + bt.id + "</td><td><div class=\"cell-main\">" + bt.name + '</div><div class="cell-sub">' + bt.by + " · " + bt.time + "</div></td>" +
+        "<td>" + bt.scope + '</td><td class="mono">' + bt.total + '</td><td class="mono text-green">' + bt.pass + '</td><td class="mono text-red">' + bt.fail + "</td>" +
+        '<td><div class="progress" style="width:90px"><div class="bar bar-green" style="width:' + pct + '%"></div></div></td>' +
+        "<td>" + (bt.status === "已完成" ? '<span class="tag tag-blue">已完成</span>' : '<span class="tag tag-orange">执行中</span>') + "</td>" +
+        '<td><div class="row-actions" style="opacity:1">' +
+        '<button class="btn btn-sm btn-ghost" data-bdetail="' + bt.id + '">详情</button>' +
+        (bt.status === "执行中" ? '<button class="btn btn-sm btn-danger" data-bstop="' + bt.id + '">停止</button>' : "") + "</div></td></tr>";
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("batch-table").innerHTML = html;
+    document.querySelectorAll("[data-bdetail]").forEach(function (b) {
+      b.addEventListener("click", function () { toast("演示环境：批次详情页建设中", "info"); });
+    });
+    document.querySelectorAll("[data-bstop]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var bt = batches.find(function (x) { return x.id === b.dataset.bstop; });
+        confirmAction({ title: "停止批次", message: "确定停止执行批次「" + bt.name + "」吗？", onOk: function () {
+          japi("POST", "/api/case-batches/" + bt.id + "/stop").then(reload).catch(function (e) { toast("停止失败：" + (e.message || e), "error"); });
+        }});
+      });
+    });
+  }
+  document.getElementById("fb-save").addEventListener("click", function () {
+    var n = document.getElementById("fb-name").value.trim();
+    if (!n) return toast("请填写批次名称", "error");
+    japi("POST", "/api/case-batches", { name: n, scope: gv("fb-scope") }).then(function () { closeModal("modal-batch"); document.getElementById("fb-name").value = ""; toast("批次已创建并开始执行", "success"); return reload(); }).catch(function (e) { toast("创建失败：" + (e.message || ""), "error"); });
+  });
+
+Array.prototype.forEach.call(document.querySelectorAll('[data-open-modal="modal-case"]'), function (btn) { btn.addEventListener("click", openNewCaseModal); });
+  reload().then(function () {
+    var key = qs("tab");
+    if (key) { var tb = document.querySelector('.tab[data-tab="' + key + '"]'); if (tb) tb.click(); }
+  });
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+- generic [ref=f6e2]:
+  - generic [ref=f6e3]:
+    - generic [ref=f6e4]:
+      - link "AT AITest Hub" [ref=f6e6] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f6e7]: AT
+        - text: AITest Hub
+      - generic [ref=f6e8]:
+        - heading "AI 驱动的 测试工程师在线工具箱" [level=1] [ref=f6e9]: AI 驱动的测试工程师在线工具箱
+        - paragraph [ref=f6e10]: 可视化压测 · AI 用例 · 提示词库 · UI 自动化 · 工具箱，五大能力浏览器打开即用。
+        - generic [ref=f6e11]:
+          - generic [ref=f6e12]: 🧪 压测编排
+          - generic [ref=f6e14]: 🤖 AI 用例
+          - generic [ref=f6e16]: 📚 提示词库
+          - generic [ref=f6e18]: 🖱️ UI 自动化
+    - generic [ref=f6e21]:
+      - generic [ref=f6e22]:
+        - button "登录" [ref=f6e23] [cursor=pointer]
+        - link "注册" [ref=f6e24] [cursor=pointer]:
+          - /url: /register
+      - heading "欢迎回来 👋" [level=2] [ref=f6e25]
+      - paragraph [ref=f6e26]: 登录 AITest Hub，继续你的测试工作
+      - generic [ref=f6e27]:
+        - generic [ref=f6e28]: 🎭 演示账号：13800000000 / De******26
+        - button "一键填充" [active] [ref=f6e29] [cursor=pointer]
+      - generic [ref=f6e30]:
+        - generic [ref=f6e31]:
+          - generic [ref=f6e32]: 手机号 / 账号
+          - textbox "手机号 / 账号" [ref=f6e33]:
+            - /placeholder: 请输入手机号
+            - text: "13800000000"
+        - generic [ref=f6e34]:
+          - generic [ref=f6e35]: 密码
+          - generic [ref=f6e36]:
+            - textbox "密码" [ref=f6e37]:
+              - /placeholder: 请输入密码
+              - text: Demo@2026
+            - button "👁" [ref=f6e38] [cursor=pointer]
+        - generic [ref=f6e39]:
+          - generic [ref=f6e40] [cursor=pointer]:
+            - checkbox "记住我" [checked] [ref=f6e41]
+            - text: 记住我
+          - link "忘记密码？" [ref=f6e42] [cursor=pointer]:
+            - /url: "#"
+        - button "登 录" [ref=f6e43] [cursor=pointer]
+        - paragraph [ref=f6e44]:
+          - text: 没有账号？
+          - link "注册账号" [ref=f6e45] [cursor=pointer]:
+            - /url: /register
+          - text: ·
+          - link "返回首页" [ref=f6e46] [cursor=pointer]:
+            - /url: /
+  - generic [ref=f6e47]:
+    - generic [ref=f6e48]: ℹ️
+    - generic [ref=f6e49]: 已填充演示账号

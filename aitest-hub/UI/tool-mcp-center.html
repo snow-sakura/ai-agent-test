@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MCP 服务中心 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / MCP 服务中心</div>
+    <div class="page-head">
+      <div>
+        <h1>🔌 MCP 服务中心</h1>
+        <div class="sub">服务市场 + 我的服务：发现并接入 MCP 服务，连通性测试、注册自有服务，供 AI Agent 与各模块调用</div>
+      </div>
+      <div class="flex">
+        <button class="btn btn-ghost" id="btn-refresh">🔄 刷新状态</button>
+        <button class="btn btn-primary" data-open-modal="modal-reg">＋ 注册服务</button>
+      </div>
+    </div>
+
+    <div class="banner banner-info">ℹ️ 对应平台 MCPMarketplace 模块：市场服务一键接入，自有服务支持 HTTP / WebSocket / Stdio 三种协议；连通性测试通过后即可在 AI 用例 / 自动化 / 问答助手中作为工具调用。</div>
+
+    <div class="tabs" data-scope="mcp">
+      <button class="tab active" data-tab="market">🛒 服务市场 <span class="badge-count" id="mk-cnt">0</span></button>
+      <button class="tab" data-tab="mine">📡 我的服务 <span class="badge-count" id="my-cnt">0</span></button>
+    </div>
+
+    <div id="mcp">
+      <!-- ============ 服务市场 ============ -->
+      <div class="tab-pane active" data-pane="market">
+        <div class="filter-bar">
+          <input class="input search" id="m-kw" placeholder="🔍 搜索服务名称 / 描述 / 标签">
+          <select class="select" id="m-cat"><option value="">全部分类</option><option>测试数据</option><option>文档解析</option><option>数据库</option><option>通知推送</option><option>开发工具</option></select>
+          <select class="select" id="m-conn"><option value="">全部状态</option><option>已连接</option><option>未连接</option></select>
+        </div>
+        <div id="mk-grid" class="grid grid-3"></div>
+      </div>
+
+      <!-- ============ 我的服务 ============ -->
+      <div class="tab-pane" data-pane="mine">
+        <div id="my-table"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 服务详情弹窗 -->
+<div class="modal-mask" id="modal-detail">
+  <div class="modal">
+    <div class="modal-head"><h3 id="dt-title">服务详情</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body" id="dt-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>关闭</button>
+      <button class="btn btn-primary" id="dt-connect">🔗 接入此服务</button>
+    </div>
+  </div>
+</div>
+
+<!-- 注册/编辑服务弹窗 -->
+<div class="modal-mask" id="modal-reg">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="rg-title">＋ 注册服务</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="grid grid-2" style="gap:12px">
+        <div class="field"><label>服务名称 <span class="text-red">*</span></label><input class="input" id="rg-name" placeholder="如：内部知识库 MCP"></div>
+        <div class="field"><label>协议</label>
+          <div class="flex" style="gap:14px">
+            <label class="checkbox"><input type="radio" name="rg-proto" value="HTTP" checked> HTTP</label>
+            <label class="checkbox"><input type="radio" name="rg-proto" value="WebSocket"> WebSocket</label>
+            <label class="checkbox"><input type="radio" name="rg-proto" value="Stdio"> Stdio</label>
+          </div>
+        </div>
+      </div>
+      <div class="field"><label>服务地址 <span class="text-red">*</span></label><input class="input mono" id="rg-url" placeholder="http://localhost:3000/mcp"></div>
+      <div class="field"><label>描述</label><input class="input" id="rg-desc" placeholder="服务用途说明"></div>
+      <div class="field"><label>鉴权 Token（选填）</label><input class="input mono" type="password" placeholder="Bearer Token / API Key"></div>
+      <label class="checkbox"><input type="checkbox" id="rg-enable" checked> 注册后立即启用</label>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="rg-save">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  var market = [
+    { id: "MC-01", name: "TestHub 数据工厂", cat: "测试数据", desc: "生成姓名 / 手机号 / 身份证 / 银行卡等测试数据", tags: ["数据", "造数"], conn: "已连接", proto: "HTTP", url: "https://mcp.testhubkit.com/data-factory", calls: 1284 },
+    { id: "MC-02", name: "需求文档解析", cat: "文档解析", desc: "PDF / Word / TXT 需求文档结构化提取", tags: ["需求", "解析"], conn: "已连接", proto: "HTTP", url: "https://mcp.testhubkit.com/doc-parser", calls: 862 },
+    { id: "MC-03", name: "MySQL 查询", cat: "数据库", desc: "只读查询业务库，辅助数据校验与断言", tags: ["数据库", "SQL"], conn: "未连接", proto: "HTTP", url: "https://mcp.testhubkit.com/mysql", calls: 0 },
+    { id: "MC-04", name: "企业微信通知", cat: "通知推送", desc: "向企业微信群推送任务结果与告警", tags: ["通知", "企微"], conn: "已连接", proto: "HTTP", url: "https://mcp.testhubkit.com/wecom", calls: 341 },
+    { id: "MC-05", name: "Jira 同步", cat: "开发工具", desc: "缺陷双向同步 Jira，状态变更实时回传", tags: ["缺陷", "Jira"], conn: "未连接", proto: "WebSocket", url: "wss://mcp.testhubkit.com/jira", calls: 0 },
+    { id: "MC-06", name: "本地命令执行", cat: "开发工具", desc: "Stdio 协议本地命令行工具，构建 / 脚本执行", tags: ["命令行", "本地"], conn: "未连接", proto: "Stdio", url: "npx @testhub/mcp-cli", calls: 0 }
+  ];
+  var mine = [
+    { id: "MS-11", name: "内部知识库 MCP", url: "http://10.0.0.8:3000/mcp", proto: "HTTP", status: "启用", created: "2026-09-18", health: "正常" },
+    { id: "MS-10", name: "Allure 报告服务", url: "http://10.0.0.9:8081/mcp", proto: "HTTP", status: "启用", created: "2026-09-12", health: "正常" },
+    { id: "MS-09", name: "旧版造数服务", url: "ws://10.0.0.5:9090", proto: "WebSocket", status: "禁用", created: "2026-08-30", health: "—" }
+  ];
+  var C_CLS = { "测试数据": "tag-green", "文档解析": "tag-blue", "数据库": "tag-purple", "通知推送": "tag-orange", "开发工具": "tag" };
+
+  function renderMarket() {
+    document.getElementById("mk-cnt").textContent = market.length;
+    var kw = document.getElementById("m-kw").value.trim().toLowerCase();
+    var cat = document.getElementById("m-cat").value;
+    var cn = document.getElementById("m-conn").value;
+    var d = market.filter(function (s) {
+      return (!kw || (s.name + s.desc + s.tags.join()).toLowerCase().indexOf(kw) >= 0) && (!cat || s.cat === cat) && (!cn || s.conn === cn);
+    });
+    var grid = document.getElementById("mk-grid");
+    grid.innerHTML = d.length ? d.map(function (s) {
+      return '<div class="card card-hover">' +
+        '<div class="flex-between"><span class="tag ' + C_CLS[s.cat] + '">' + s.cat + '</span>' +
+        (s.conn === "已连接" ? '<span class="tag tag-green">● 已连接</span>' : '<span class="tag">未连接</span>') + "</div>" +
+        '<h3 style="font-size:15px; margin:10px 0 6px">' + s.name + "</h3>" +
+        '<p class="text-dim" style="font-size:12.5px">' + s.desc + "</p>" +
+        '<div class="mt-8">' + s.tags.map(function (t) { return '<span class="tag" style="margin-right:4px">#' + t + "</span>"; }).join("") + "</div>" +
+        '<div class="flex-between mt-16"><span class="text-faint mono" style="font-size:11px">' + s.proto + " · " + s.calls + " 次调用</span>" +
+        '<div class="flex"><button class="btn btn-sm btn-ghost" data-dt="' + s.id + '">详情</button>' +
+        (s.conn === "已连接" ? '<button class="btn btn-sm btn-ghost" data-dc="' + s.id + '">断开</button>' : '<button class="btn btn-sm btn-primary" data-ct="' + s.id + '">接入</button>') + "</div></div></div>";
+    }).join("") : '<div class="card" style="grid-column:1/-1"><div class="empty"><div class="e-icon">🛒</div><div class="e-text">无匹配服务</div></div></div>';
+    bindMarket();
+  }
+  function bindMarket() {
+    document.querySelectorAll("[data-dt]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var s = market.find(function (x) { return x.id === b.dataset.dt; });
+        document.getElementById("dt-title").textContent = s.name;
+        document.getElementById("dt-body").innerHTML =
+          '<div class="kv"><span>服务 ID</span><b class="mono">' + s.id + '</b></div>' +
+          '<div class="kv"><span>分类</span><b>' + s.cat + '</b></div>' +
+          '<div class="kv"><span>协议</span><b class="mono">' + s.proto + '</b></div>' +
+          '<div class="kv"><span>地址</span><b class="mono" style="font-size:12px; word-break:break-all">' + s.url + '</b></div>' +
+          '<div class="kv"><span>状态</span><b>' + (s.conn === "已连接" ? '<span class="tag tag-green">已连接</span>' : '<span class="tag">未连接</span>') + '</b></div>' +
+          '<div class="kv"><span>累计调用</span><b class="mono">' + s.calls + '</b></div>' +
+          '<div class="text-dim" style="font-size:12.5px; margin-top:10px">' + s.desc + "</div>";
+        document.getElementById("dt-connect").onclick = function () {
+          closeModal("modal-detail");
+          doConnect(s);
+        };
+        openModal("modal-detail");
+      });
+    });
+    document.querySelectorAll("[data-ct]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var s = market.find(function (x) { return x.id === b.dataset.ct; });
+        doConnect(s);
+      });
+    });
+    document.querySelectorAll("[data-dc]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var s = market.find(function (x) { return x.id === b.dataset.dc; });
+        confirmAction({ title: "断开服务", message: "断开后依赖该服务的 AI 技能将无法调用「" + s.name + "」，确定吗？", onOk: function () {
+          s.conn = "未连接"; renderMarket(); toast("已断开「" + s.name + "」", "success");
+        }});
+      });
+    });
+  }
+  function doConnect(s) {
+    toast("正在与「" + s.name + "」握手…", "info");
+    setTimeout(function () {
+      s.conn = "已连接"; s.calls += 1; renderMarket();
+      toast("接入成功 ✅ 已可在技能与 Agent 中调用", "success");
+    }, 1200);
+  }
+  ["m-kw", "m-cat", "m-conn"].forEach(function (id, i) {
+    document.getElementById(id).addEventListener(i === 0 ? "input" : "change", debounce(renderMarket, i === 0 ? 200 : 0));
+  });
+
+  /* ---------- 我的服务 ---------- */
+  function renderMine() {
+    document.getElementById("my-cnt").textContent = mine.length;
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>ID</th><th>服务名称</th><th>地址</th><th>协议</th><th>健康</th><th>状态</th><th>创建时间</th><th style="width:240px">操作</th></tr></thead><tbody>';
+    mine.forEach(function (s) {
+      html += '<tr><td class="mono">' + s.id + "</td>" +
+        '<td><div class="cell-main">' + s.name + "</div></td>" +
+        '<td class="mono" style="font-size:12px; max-width:220px; overflow:hidden; text-overflow:ellipsis">' + s.url + "</td>" +
+        '<td><span class="tag">' + s.proto + "</span></td>" +
+        "<td>" + (s.health === "正常" ? '<span class="tag tag-green">正常</span>' : '<span class="tag">—</span>') + "</td>" +
+        "<td>" + (s.status === "启用" ? '<span class="tag tag-green">启用</span>' : '<span class="tag">禁用</span>') + "</td>" +
+        '<td class="mono" style="font-size:12px">' + s.created + "</td>" +
+        '<td><div class="row-actions" style="opacity:1">' +
+        '<button class="btn btn-sm btn-ghost" data-test="' + s.id + '">连通测试</button>' +
+        '<button class="btn btn-sm btn-ghost" data-edit="' + s.id + '">编辑</button>' +
+        '<button class="btn btn-sm btn-danger" data-del="' + s.id + '">删除</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("my-table").innerHTML = html;
+    document.querySelectorAll("[data-test]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var s = mine.find(function (x) { return x.id === b.dataset.test; });
+        toast("正在测试「" + s.name + "」连通性…", "info");
+        setTimeout(function () {
+          s.health = "正常"; renderMine();
+          toast(s.name + " 连通正常 ✅（延迟 45ms）", "success");
+        }, 1000);
+      });
+    });
+    document.querySelectorAll("[data-edit]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var s = mine.find(function (x) { return x.id === b.dataset.edit; });
+        document.getElementById("rg-title").textContent = "编辑服务 · " + s.id;
+        document.getElementById("rg-name").value = s.name;
+        document.getElementById("rg-url").value = s.url;
+        openModal("modal-reg");
+      });
+    });
+    document.querySelectorAll("[data-del]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var s = mine.find(function (x) { return x.id === b.dataset.del; });
+        confirmAction({ title: "删除服务", message: "确定删除「" + s.name + "」吗？该操作不可恢复。", onOk: function () {
+          mine = mine.filter(function (x) { return x.id !== s.id; });
+          renderMine(); toast("服务已删除", "success");
+        }});
+      });
+    });
+  }
+
+  /* ---------- 注册保存 ---------- */
+  document.getElementById("rg-save").addEventListener("click", function () {
+    var n = document.getElementById("rg-name").value.trim();
+    var u = document.getElementById("rg-url").value.trim();
+    if (!n) return toast("请填写服务名称", "error");
+    if (!u) return toast("请填写服务地址", "error");
+    var proto = document.querySelector('input[name="rg-proto"]:checked').value;
+    mine.unshift({ id: "MS-" + (12 + mine.length - 3), name: n, url: u, proto: proto, status: document.getElementById("rg-enable").checked ? "启用" : "禁用", created: "刚刚", health: "待测试" });
+    closeModal("modal-reg");
+    document.getElementById("rg-name").value = ""; document.getElementById("rg-url").value = "";
+    renderMine(); toast("服务已注册，建议先做连通测试", "success");
+  });
+
+  document.getElementById("btn-refresh").addEventListener("click", function () {
+    var btn = this;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 刷新中…';
+    setTimeout(function () {
+      btn.disabled = false; btn.textContent = "🔄 刷新状态";
+      toast("已刷新：市场 6 个服务，2 个已连接", "success");
+    }, 1000);
+  });
+
+  if (qs("tab")) {
+    var tb = document.querySelector('.tab[data-tab="' + qs("tab") + '"]');
+    if (tb) tb.click();
+  }
+
+  renderMarket(); renderMine();
+})();
+</script>
+</body>
+</html>

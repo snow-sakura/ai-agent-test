@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数据工厂 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / 数据工厂</div>
+    <div class="page-head">
+      <div>
+        <h1>🏭 数据工厂</h1>
+        <div class="sub">50+ 实用工具：字符处理 · 编码转换 · 加密解密 · 随机数据 · 测试数据生成 · JSON 处理 · Crontab，支持在接口测试与 UI 自动化中直接引用</div>
+      </div>
+      <div class="flex">
+        <a class="btn btn-ghost" href="tool-media-data-hub.html">🧰 媒体工具箱</a>
+        <a class="btn btn-ghost" href="tool-api-testing.html">🔗 去接口测试引用</a>
+      </div>
+    </div>
+
+    <div class="banner banner-info">ℹ️ 参考 TestHub 数据工厂：所有工具本地执行、结果可复制；生成的测试数据（姓名/手机号/邮箱）可在接口测试环境变量中通过 <span class="mono">{{df.name}}</span> 直接引用。</div>
+
+    <div class="tabs" data-scope="df">
+      <button class="tab active" data-tab="testdata">👤 测试数据生成</button>
+      <button class="tab" data-tab="random">🎲 随机工具</button>
+      <button class="tab" data-tab="crypto">🔐 加密工具</button>
+      <button class="tab" data-tab="string">🔤 字符工具</button>
+      <button class="tab" data-tab="json">🧾 JSON 工具</button>
+      <button class="tab" data-tab="crontab">⏰ Crontab 工具</button>
+    </div>
+
+    <div id="df">
+      <!-- ============ 测试数据生成 ============ -->
+      <div class="tab-pane active" data-pane="testdata">
+        <div class="card">
+          <div class="card-title">👤 测试数据批量生成 <span class="tag tag-red">AI 增强</span></div>
+          <div class="grid grid-4" style="gap:10px">
+            <div class="field"><label>中文姓名</label><input class="input mono" id="td-name" readonly></div>
+            <div class="field"><label>手机号</label><input class="input mono" id="td-phone" readonly></div>
+            <div class="field"><label>邮箱</label><input class="input mono" id="td-email" readonly></div>
+            <div class="field"><label>地址</label><input class="input mono" id="td-addr" readonly></div>
+          </div>
+          <div class="grid grid-4" style="gap:10px">
+            <div class="field"><label>身份证号</label><input class="input mono" id="td-idcard" readonly></div>
+            <div class="field"><label>银行卡号</label><input class="input mono" id="td-bank" readonly></div>
+            <div class="field"><label>统一社会信用代码</label><input class="input mono" id="td-credit" readonly></div>
+            <div class="field"><label>UUID</label><input class="input mono" id="td-uuid" readonly></div>
+          </div>
+          <div class="flex">
+            <button class="btn btn-primary" id="td-gen">🎲 生成一批</button>
+            <button class="btn btn-ghost" id="td-copy">📋 复制全部</button>
+            <button class="btn btn-ghost" id="td-export">⬇️ 导出 CSV</button>
+            <label class="checkbox"><input type="checkbox" id="td-batch"> 批量模式（100 条）</label>
+          </div>
+          <div class="code-block mt-16 hidden" id="td-batch-out" style="max-height:220px; overflow-y:auto"></div>
+          <div class="mt-16">
+            <div class="card-title" style="font-size:13.5px">🤖 AI 数据造景（按场景生成业务数据）</div>
+            <div class="input-group">
+              <input class="input" id="td-ai-input" placeholder="描述场景，如：生成 10 条电商退款订单测试数据（含金额、原因、时间）">
+              <button class="btn btn-primary" id="td-ai-go">✨ AI 生成</button>
+            </div>
+            <div class="code-block mt-8 hidden" id="td-ai-out"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 随机工具 ============ -->
+      <div class="tab-pane" data-pane="random">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-title">🎲 随机数 / 随机字符串</div>
+            <div class="grid grid-2" style="gap:10px">
+              <div class="field"><label>最小值</label><input class="input mono" id="rd-min" type="number" value="0"></div>
+              <div class="field"><label>最大值</label><input class="input mono" id="rd-max" type="number" value="100"></div>
+            </div>
+            <div class="grid grid-2" style="gap:10px">
+              <div class="field"><label>字符串长度</label><input class="input mono" id="rd-len" type="number" value="16"></div>
+              <div class="field"><label>字符集</label><select class="select" id="rd-charset"><option>字母+数字</option><option>纯字母</option><option>纯数字</option><option>含特殊字符</option></select></div>
+            </div>
+            <div class="flex">
+              <button class="btn btn-primary btn-sm" id="rd-num">生成随机数</button>
+              <button class="btn btn-primary btn-sm" id="rd-str">生成随机字符串</button>
+              <button class="btn btn-ghost btn-sm" id="rd-bool">随机布尔</button>
+              <button class="btn btn-ghost btn-sm" id="rd-pick">随机列表元素</button>
+            </div>
+            <div class="code-block mt-16" id="rd-out">// 结果…</div>
+          </div>
+          <div class="card">
+            <div class="card-title">📋 随机工具说明</div>
+            <div style="display:flex; flex-direction:column; gap:10px; font-size:13px; color:var(--text-dim)">
+              <div>• <b>随机数</b>：指定区间 [min, max] 均匀分布</div>
+              <div>• <b>随机字符串</b>：四种字符集，可用于临时密码 / Token</div>
+              <div>• <b>随机布尔</b>：true / false 各 50%</div>
+              <div>• <b>随机列表元素</b>：从逗号分隔列表中随机抽取</div>
+              <div class="banner banner-info" style="margin:0">💡 所有随机结果均可点击「复制」，或在环境变量中以 <span class="mono">{{df.random}}</span> 引用</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 加密工具 ============ -->
+      <div class="tab-pane" data-pane="crypto">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-title">🔐 哈希 / 加密</div>
+            <div class="field"><label>明文</label><textarea class="textarea mono" id="cr-in" rows="4" placeholder="输入待加密内容…"></textarea></div>
+            <div class="field"><label>AES 密钥（加密 / 解密时使用）</label><input class="input mono" id="cr-key" placeholder="16 位密钥"></div>
+            <div class="flex" style="flex-wrap:wrap; gap:6px">
+              <button class="btn btn-primary btn-sm" data-hash="MD5">MD5</button>
+              <button class="btn btn-ghost btn-sm" data-hash="SHA1">SHA1</button>
+              <button class="btn btn-ghost btn-sm" data-hash="SHA256">SHA256</button>
+              <button class="btn btn-ghost btn-sm" data-hash="SHA512">SHA512</button>
+              <button class="btn btn-ghost btn-sm" id="cr-aes-enc">AES 加密</button>
+              <button class="btn btn-ghost btn-sm" id="cr-aes-dec">AES 解密</button>
+              <button class="btn btn-ghost btn-sm" id="cr-hmac">HMAC 签名</button>
+            </div>
+            <div class="field mt-16"><label>结果</label><textarea class="textarea mono" id="cr-out" rows="4" readonly></textarea></div>
+            <button class="btn btn-ghost btn-sm" id="cr-copy">📋 复制结果</button>
+          </div>
+          <div class="card">
+            <div class="card-title">🔓 JWT 解码</div>
+            <div class="field"><label>JWT Token</label><textarea class="textarea mono" id="jwt-in" rows="5" placeholder="eyJhbGciOi…"></textarea></div>
+            <button class="btn btn-primary btn-sm" id="jwt-dec">解码 JWT</button>
+            <div class="code-block mt-16" id="jwt-out" style="min-height:120px">// Header / Payload 将在此显示</div>
+            <div class="banner banner-warn mt-8" style="margin-bottom:0">⚠️ JWT 解码仅做 Base64 还原，不验证签名；请勿在工具中粘贴生产 Token。</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 字符工具 ============ -->
+      <div class="tab-pane" data-pane="string">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-title">🔤 字符处理</div>
+            <div class="field"><label>输入文本</label><textarea class="textarea mono" id="st-in" rows="5" placeholder="输入或粘贴文本…"></textarea></div>
+            <div class="flex" style="flex-wrap:wrap; gap:6px">
+              <button class="btn btn-primary btn-sm" data-st="upper">转大写</button>
+              <button class="btn btn-ghost btn-sm" data-st="lower">转小写</button>
+              <button class="btn btn-ghost btn-sm" data-st="trim">去首尾空格</button>
+              <button class="btn btn-ghost btn-sm" data-st="reverse">反转</button>
+              <button class="btn btn-ghost btn-sm" data-st="count">字数统计</button>
+              <button class="btn btn-ghost btn-sm" data-st="regex">正则测试</button>
+            </div>
+            <div class="field mt-16" id="st-regex-wrap" style="display:none"><label>正则表达式</label>
+              <div class="input-group"><input class="input mono" id="st-regex" placeholder="\\d+"><button class="btn btn-primary" id="st-regex-go">匹配</button></div>
+            </div>
+            <div class="field"><label>输出</label><textarea class="textarea mono" id="st-out" rows="5" readonly></textarea></div>
+            <button class="btn btn-ghost btn-sm" id="st-copy">📋 复制结果</button>
+          </div>
+          <div class="card">
+            <div class="card-title">📐 文本对比（Diff）</div>
+            <div class="field"><label>原文 A</label><textarea class="textarea mono" id="st-diff-a" rows="4">预期：支付成功后订单状态为已支付</textarea></div>
+            <div class="field"><label>文本 B</label><textarea class="textarea mono" id="st-diff-b" rows="4">预期：支付成功后订单状态为待支付</textarea></div>
+            <button class="btn btn-primary btn-sm" id="st-diff-go">🔍 对比</button>
+            <div class="code-block mt-16" id="st-diff-out">// 差异…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ JSON 工具 ============ -->
+      <div class="tab-pane" data-pane="json">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-title">🧾 JSON 处理</div>
+            <div class="field"><label>输入 JSON</label><textarea class="textarea mono" id="js-in" rows="8" placeholder='{"code":0,"data":{"list":[1,2,3]}}'></textarea></div>
+            <div class="flex" style="flex-wrap:wrap; gap:6px">
+              <button class="btn btn-primary btn-sm" id="js-fmt">格式化</button>
+              <button class="btn btn-ghost btn-sm" id="js-min">压缩</button>
+              <button class="btn btn-ghost btn-sm" id="js-validate">校验</button>
+              <button class="btn btn-ghost btn-sm" id="js-xml">转 XML</button>
+              <button class="btn btn-ghost btn-sm" id="js-yaml">转 YAML</button>
+              <button class="btn btn-ghost btn-sm" id="js-csv">转 CSV</button>
+            </div>
+            <div class="field mt-16"><label>JSONPath 查询</label>
+              <div class="input-group"><input class="input mono" id="js-path" placeholder="$.data.list[0]"><button class="btn btn-primary" id="js-path-go">查询</button></div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">输出</div>
+            <div class="code-block" id="js-out" style="min-height:300px">// 结果…</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ Crontab 工具 ============ -->
+      <div class="tab-pane" data-pane="crontab">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-title">⏰ Crontab 表达式</div>
+            <div class="field"><label>表达式</label><input class="input mono" id="ct-in" value="0 2 * * *" placeholder="分 时 日 月 周"></div>
+            <div class="flex">
+              <button class="btn btn-primary btn-sm" id="ct-parse">解析</button>
+              <button class="btn btn-ghost btn-sm" id="ct-next">下次执行时间</button>
+              <button class="btn btn-ghost btn-sm" data-ct="0 2 * * *">每日 2 点</button>
+              <button class="btn btn-ghost btn-sm" data-ct="0 */4 * * *">每 4 小时</button>
+              <button class="btn btn-ghost btn-sm" data-ct="30 3 * * 1">每周一 3:30</button>
+            </div>
+            <div class="code-block mt-16" id="ct-out">// 解析结果…</div>
+            <div class="mt-8"><a class="btn btn-ghost btn-sm" href="tool-scheduler.html">⏰ 去定时任务模块使用 →</a></div>
+          </div>
+          <div class="card">
+            <div class="card-title">📖 常用表达式参考</div>
+            <div class="table-wrap" style="border:none">
+              <table class="table"><thead><tr><th>表达式</th><th>含义</th></tr></thead><tbody>
+                <tr><td class="mono">0 2 * * *</td><td>每天凌晨 2:00</td></tr>
+                <tr><td class="mono">*/30 * * * *</td><td>每 30 分钟</td></tr>
+                <tr><td class="mono">0 0 1 * *</td><td>每月 1 号 0:00</td></tr>
+                <tr><td class="mono">0 9-18 * * 1-5</td><td>工作日 9-18 点整点</td></tr>
+                <tr><td class="mono">0 3 * * 0</td><td>每周日 3:00</td></tr>
+              </tbody></table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  /* ================= 测试数据生成 ================= */
+  var SURNAMES = "张王李赵刘陈杨黄周吴徐孙马朱胡郭何高林罗郑梁谢宋唐许韩冯邓曹彭".split("");
+  var GIVEN = ["伟", "芳", "娜", "敏", "静", "磊", "军", "洋", "勇", "艳", "杰", "涛", "明", "超", "秀英"];
+  var CITIES = ["北京市朝阳区", "上海市浦东新区", "广州市天河区", "深圳市南山区", "杭州市西湖区", "成都市高新区"];
+  var rnd = function (arr) { return arr[Math.floor(Math.random() * arr.length)]; };
+  var rint = function (a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; };
+  function genOne() {
+    var name = rnd(SURNAMES) + rnd(GIVEN) + (Math.random() > 0.6 ? rnd(GIVEN) : "");
+    var phone = "1" + rnd(["3", "5", "7", "8", "9"]) + String(rint(100000000, 999999999));
+    var email = "test_" + rint(1000, 9999) + "@" + rnd(["qq.com", "163.com", "gmail.com"]);
+    var addr = rnd(CITIES) + rnd(["幸福路", "望江道", "科技园", "创业大街"]) + rint(1, 999) + "号";
+    var idcard = "1101011990" + String(rint(1, 12)).padStart(2, "0") + String(rint(1, 28)).padStart(2, "0") + rint(1000, 9999);
+    var bank = "62" + String(rint(1000000000000000, 9999999999999999)).slice(0, 17);
+    var credit = "91310000MA" + rint(100000, 999999) + "X" + rint(10, 99);
+    var uuid = crypto.randomUUID ? crypto.randomUUID() : "xxxxxxxx-xxxx".replace(/x/g, function () { return Math.floor(Math.random() * 16).toString(16); });
+    return { name: name, phone: phone, email: email, addr: addr, idcard: idcard, bank: bank, credit: credit, uuid: uuid };
+  }
+  function fillOne(d) {
+    document.getElementById("td-name").value = d.name;
+    document.getElementById("td-phone").value = d.phone;
+    document.getElementById("td-email").value = d.email;
+    document.getElementById("td-addr").value = d.addr;
+    document.getElementById("td-idcard").value = d.idcard;
+    document.getElementById("td-bank").value = d.bank;
+    document.getElementById("td-credit").value = d.credit;
+    document.getElementById("td-uuid").value = d.uuid;
+  }
+  document.getElementById("td-gen").addEventListener("click", function () {
+    if (document.getElementById("td-batch").checked) {
+      var rows = [];
+      for (var i = 0; i < 100; i++) { var d = genOne(); rows.push([d.name, d.phone, d.email, d.addr].join(",")); }
+      var out = document.getElementById("td-batch-out");
+      out.classList.remove("hidden");
+      out.textContent = "name,phone,email,addr\n" + rows.join("\n");
+      toast("已生成 100 条批量数据", "success");
+    } else {
+      fillOne(genOne());
+      document.getElementById("td-batch-out").classList.add("hidden");
+    }
+  });
+  document.getElementById("td-copy").addEventListener("click", function () {
+    var vals = ["td-name", "td-phone", "td-email", "td-addr"].map(function (id) { return document.getElementById(id).value; });
+    if (vals.every(function (v) { return !v; })) return toast("请先生成数据", "warn");
+    copyText(vals.join("\n"), "已复制全部字段");
+  });
+  document.getElementById("td-export").addEventListener("click", function () { toast("test-data.csv 导出成功（演示）", "success"); });
+  // AI 数据造景
+  document.getElementById("td-ai-go").addEventListener("click", function () {
+    var q = document.getElementById("td-ai-input").value.trim();
+    if (!q) return toast("请描述数据场景", "error");
+    toast("AI 正在按场景生成业务数据…", "info");
+    setTimeout(function () {
+      var out = document.getElementById("td-ai-out");
+      out.classList.remove("hidden");
+      var rows = [];
+      var reasons = ["不想要了", "拍错了", "质量问题", "与描述不符"];
+      for (var i = 0; i < 5; i++) {
+        var d = genOne();
+        rows.push(JSON.stringify({ orderId: "ORD2026" + rint(10000, 99999), user: d.name, phone: d.phone, amount: (rint(10, 990) / 10).toFixed(2), reason: rnd(reasons), createdAt: "2026-09-2" + rint(0, 2) + " 1" + rint(0, 9) + ":3" + rint(0, 9) }));
+      }
+      out.textContent = rows.join("\n");
+      toast("AI 已生成 5 条场景数据，可复制到接口测试引用", "success");
+    }, 1400);
+  });
+  fillOne(genOne());
+
+  /* ================= 随机工具 ================= */
+  function out(t) { document.getElementById("rd-out").textContent = t; }
+  document.getElementById("rd-num").addEventListener("click", function () {
+    out(String(rint(+document.getElementById("rd-min").value, +document.getElementById("rd-max").value)));
+  });
+  document.getElementById("rd-str").addEventListener("click", function () {
+    var len = +document.getElementById("rd-len").value || 16;
+    var sets = { "字母+数字": "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789", "纯字母": "abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ", "纯数字": "0123456789", "含特殊字符": "abcdefghijkmnpqrstuvwxyz23456789!@#$%^&*" };
+    var cs = sets[document.getElementById("rd-charset").value], s = "";
+    for (var i = 0; i < len; i++) s += cs[rint(0, cs.length - 1)];
+    out(s);
+  });
+  document.getElementById("rd-bool").addEventListener("click", function () { out(Math.random() > 0.5 ? "true" : "false"); });
+  document.getElementById("rd-pick").addEventListener("click", function () {
+    promptModal({
+      title: "🎯 随机列表元素", label: "候选列表（逗号分隔）", defaultValue: "Chrome,Firefox,Edge",
+      onOk: function (val) {
+        var list = (val || "").split(",").map(function (x) { return x.trim(); }).filter(Boolean);
+        if (!list.length) return toast("请至少输入一个候选项", "warn");
+        var picked = rnd(list);
+        out(picked);
+        toast("已随机选出：" + picked, "success");
+      }
+    });
+  });
+
+  /* ================= 加密工具（演示哈希） ================= */
+  function demoHash(alg, text) {
+    // 演示环境：非真实哈希，仅展示格式
+    var seed = 0; for (var i = 0; i < text.length; i++) seed = (seed * 31 + text.charCodeAt(i)) >>> 0;
+    var hex = seed.toString(16).padStart(8, "0");
+    var len = { MD5: 32, SHA1: 40, SHA256: 64, SHA512: 128 }[alg] || 32;
+    var s = ""; while (s.length < len) s += (hex + Math.random().toString(16).slice(2)).slice(0, 8);
+    return s.slice(0, len);
+  }
+  document.querySelectorAll("[data-hash]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var v = document.getElementById("cr-in").value;
+      if (!v) return toast("请输入明文", "warn");
+      document.getElementById("cr-out").value = demoHash(b.dataset.hash, v);
+      toast(b.dataset.hash + " 完成（演示格式）", "success");
+    });
+  });
+  document.getElementById("cr-aes-enc").addEventListener("click", function () {
+    var v = document.getElementById("cr-in").value, k = document.getElementById("cr-key").value;
+    if (!v || !k) return toast("请输入明文与密钥", "warn");
+    document.getElementById("cr-out").value = btoa(unescape(encodeURIComponent(v + "::" + k)));
+    toast("AES 加密完成（演示）", "success");
+  });
+  document.getElementById("cr-aes-dec").addEventListener("click", function () {
+    try {
+      var raw = decodeURIComponent(escape(atob(document.getElementById("cr-out").value.trim())));
+      document.getElementById("cr-out").value = raw.split("::")[0];
+      toast("AES 解密完成（演示）", "success");
+    } catch (e) { toast("解密失败：内容非本工具加密结果", "error"); }
+  });
+  document.getElementById("cr-hmac").addEventListener("click", function () {
+    var v = document.getElementById("cr-in").value, k = document.getElementById("cr-key").value;
+    if (!v || !k) return toast("请输入明文与密钥", "warn");
+    document.getElementById("cr-out").value = "hmac:" + demoHash("SHA256", v + k);
+    toast("HMAC 签名完成（演示）", "success");
+  });
+  document.getElementById("cr-copy").addEventListener("click", function () {
+    if (!document.getElementById("cr-out").value) return toast("暂无结果", "warn");
+    copyText(document.getElementById("cr-out").value, "已复制结果");
+  });
+  document.getElementById("jwt-dec").addEventListener("click", function () {
+    var t = document.getElementById("jwt-in").value.trim();
+    if (!t) return toast("请输入 JWT", "warn");
+    var parts = t.split(".");
+    if (parts.length < 2) return toast("JWT 格式不正确", "error");
+    try {
+      var h = JSON.parse(decodeURIComponent(escape(atob(parts[0]))));
+      var p = JSON.parse(decodeURIComponent(escape(atob(parts[1].replace(/-/g, "+").replace(/_/g, "/")))));
+      document.getElementById("jwt-out").innerHTML = '<span class="k">// Header</span>\n' + JSON.stringify(h, null, 2) + '\n\n<span class="k">// Payload</span>\n' + JSON.stringify(p, null, 2);
+      toast("JWT 解码成功", "success");
+    } catch (e) { toast("解码失败：" + e.message, "error"); }
+  });
+
+  /* ================= 字符工具 ================= */
+  document.querySelectorAll("[data-st]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      var v = document.getElementById("st-in").value;
+      var op = b.dataset.st, out2 = document.getElementById("st-out");
+      if (op === "regex") { document.getElementById("st-regex-wrap").style.display = "block"; return; }
+      if (!v && op !== "count") return toast("请输入文本", "warn");
+      if (op === "upper") out2.value = v.toUpperCase();
+      if (op === "lower") out2.value = v.toLowerCase();
+      if (op === "trim") out2.value = v.trim();
+      if (op === "reverse") out2.value = v.split("").reverse().join("");
+      if (op === "count") out2.value = "字符数：" + v.length + " · 行数：" + (v.split("\n").length) + " · 词数（空格分隔）：" + (v.trim().split(/\s+/).filter(Boolean).length);
+      if (op === "regex") out2.value = "请填写正则后点击「匹配」";
+    });
+  });
+  document.getElementById("st-regex-go").addEventListener("click", function () {
+    var v = document.getElementById("st-in").value, re = document.getElementById("st-regex").value;
+    try {
+      var m = v.match(new RegExp(re, "g"));
+      document.getElementById("st-out").value = m ? "匹配 " + m.length + " 处：\n" + m.join("\n") : "无匹配";
+    } catch (e) { toast("正则语法错误", "error"); }
+  });
+  document.getElementById("st-copy").addEventListener("click", function () {
+    if (!document.getElementById("st-out").value) return toast("暂无结果", "warn");
+    copyText(document.getElementById("st-out").value, "已复制结果");
+  });
+  document.getElementById("st-diff-go").addEventListener("click", function () {
+    var a = document.getElementById("st-diff-a").value.split("\n"), b2 = document.getElementById("st-diff-b").value.split("\n");
+    var html = "", add = 0, del = 0, max = Math.max(a.length, b2.length);
+    for (var i = 0; i < max; i++) {
+      if (a[i] === b2[i]) html += "  " + (a[i] || "") + "\n";
+      else {
+        if (a[i] !== undefined) { html += '<span class="n">- ' + a[i].replace(/</g, "&lt;") + "</span>\n"; del++; }
+        if (b2[i] !== undefined) { html += '<span class="s">+ ' + b2[i].replace(/</g, "&lt;") + "</span>\n"; add++; }
+      }
+    }
+    document.getElementById("st-diff-out").innerHTML = html;
+    toast("对比完成：+" + add + " / -" + del, "success");
+  });
+
+  /* ================= JSON 工具 ================= */
+  function jout(t) { document.getElementById("js-out").textContent = t; }
+  function tryParse() {
+    var v = document.getElementById("js-in").value;
+    try { return JSON.parse(v); } catch (e) { toast("JSON 语法错误：" + e.message.slice(0, 40), "error"); return null; }
+  }
+  document.getElementById("js-fmt").addEventListener("click", function () { var o = tryParse(); if (o !== null) { jout(JSON.stringify(o, null, 2)); toast("格式化成功", "success"); } });
+  document.getElementById("js-min").addEventListener("click", function () { var o = tryParse(); if (o !== null) { jout(JSON.stringify(o)); toast("压缩成功", "success"); } });
+  document.getElementById("js-validate").addEventListener("click", function () {
+    var o = tryParse();
+    if (o !== null) { jout("✅ JSON 合法\n顶层类型：" + (Array.isArray(o) ? "Array" : typeof o) + "\n顶层键数：" + (typeof o === "object" && o ? Object.keys(o).length : "-")); toast("校验通过", "success"); }
+  });
+  document.getElementById("js-xml").addEventListener("click", function () {
+    var o = tryParse(); if (o === null) return;
+    function toXml(obj, indent) {
+      var pad = indent || "", x = "";
+      for (var k in obj) {
+        if (typeof obj[k] === "object" && obj[k] !== null) x += pad + "<" + k + ">\n" + toXml(obj[k], pad + "  ") + pad + "</" + k + ">\n";
+        else x += pad + "<" + k + ">" + obj[k] + "</" + k + ">\n";
+      }
+      return x;
+    }
+    jout("<root>\n" + toXml(o, "  ") + "</root>");
+    toast("已转 XML（演示）", "success");
+  });
+  document.getElementById("js-yaml").addEventListener("click", function () {
+    var o = tryParse(); if (o === null) return;
+    function toYaml(obj, indent) {
+      var pad = "  ".repeat(indent || 0), y = "";
+      for (var k in obj) {
+        if (typeof obj[k] === "object" && obj[k] !== null) y += pad + k + ":\n" + toYaml(obj[k], (indent || 0) + 1);
+        else y += pad + k + ": " + obj[k] + "\n";
+      }
+      return y;
+    }
+    jout(toYaml(o));
+    toast("已转 YAML（演示）", "success");
+  });
+  document.getElementById("js-csv").addEventListener("click", function () {
+    var o = tryParse(); if (o === null) return;
+    var arr = Array.isArray(o) ? o : [o];
+    var keys = Object.keys(arr[0] || {});
+    jout(keys.join(",") + "\n" + arr.map(function (r) { return keys.map(function (k) { return r[k]; }).join(","); }).join("\n"));
+    toast("已转 CSV（演示）", "success");
+  });
+  document.getElementById("js-path-go").addEventListener("click", function () {
+    var o = tryParse(); if (o === null) return;
+    var p = document.getElementById("js-path").value.trim();
+    try {
+      // 简易 JSONPath：$.a.b[0]
+      var parts = p.replace(/^\$\.?/, "").split(/\.|\[(\d+)\]/).filter(Boolean);
+      var cur = o;
+      for (var i = 0; i < parts.length; i++) { cur = cur[parts[i]]; if (cur === undefined) break; }
+      jout(cur === undefined ? "路径不存在" : JSON.stringify(cur, null, 2));
+      toast(cur === undefined ? "路径不存在" : "查询成功", cur === undefined ? "warn" : "success");
+    } catch (e) { toast("查询失败", "error"); }
+  });
+
+  /* ================= Crontab ================= */
+  var WEEK = ["周日", "周一", "周二", "周三", "周四", "周五", "周六"];
+  function parseCron(c) {
+    var p = c.trim().split(/\s+/);
+    if (p.length !== 5) return null;
+    function desc(f, unit, names) {
+      if (f === "*") return "每" + unit;
+      if (f.indexOf("*/") === 0) return "每 " + f.slice(2) + " " + unit;
+      if (f.indexOf("-") >= 0 && f.indexOf("/") < 0) {
+        var r = f.split("-");
+        return (names ? r.map(function (x) { return names[+x]; }).join("、") : r[0] + " 至 " + r[1] + " " + unit);
+      }
+      if (f.indexOf(",") >= 0) return "在 " + f + " " + unit;
+      return (names && names[+f] !== undefined ? names[+f] : f + " " + unit);
+    }
+    return "分：" + desc(p[0], "分钟") + "｜时：" + desc(p[1], "小时") + "｜日：" + desc(p[2], "日") + "｜月：" + desc(p[3], "月") + "｜周：" + desc(p[4], "周", WEEK);
+  }
+  document.getElementById("ct-parse").addEventListener("click", function () {
+    var d = parseCron(document.getElementById("ct-in").value);
+    document.getElementById("ct-out").textContent = d || "❌ 表达式格式不正确（需 5 段：分 时 日 月 周）";
+    toast(d ? "解析成功" : "表达式格式不正确", d ? "success" : "error");
+  });
+  document.getElementById("ct-next").addEventListener("click", function () {
+    document.getElementById("ct-out").textContent = "下次执行（模拟）：2026-09-23 02:00:00\n再下次：2026-09-24 02:00:00\n（演示环境，按每日 2 点示例）";
+    toast("已计算下次执行时间（演示）", "success");
+  });
+  document.querySelectorAll("[data-ct]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      document.getElementById("ct-in").value = b.dataset.ct;
+      document.getElementById("ct-out").textContent = parseCron(b.dataset.ct) || "";
+      toast("已填入模板", "info");
+    });
+  });
+
+  if (qs("tab")) {
+    var tb = document.querySelector('.tab[data-tab="' + qs("tab") + '"]');
+    if (tb) tb.click();
+  }
+})();
+</script>
+</body>
+</html>

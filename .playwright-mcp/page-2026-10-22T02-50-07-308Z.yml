@@ -1,0 +1,207 @@
+- generic [ref=f3e50]:
+  - banner [ref=f3e51]:
+    - link "AT AITest Hub" [ref=f3e52] [cursor=pointer]:
+      - /url: /
+      - generic [ref=f3e53]: AT
+      - text: AITest Hub
+    - generic [ref=f3e54]:
+      - generic [ref=f3e55]:
+        - link "🗂️ 卡片列表" [ref=f3e56] [cursor=pointer]:
+          - /url: /app
+          - generic [ref=f3e57]: 🗂️
+          - text: 卡片列表
+        - link "🌐 官网首页" [ref=f3e58] [cursor=pointer]:
+          - /url: /
+          - generic [ref=f3e59]: 🌐
+          - text: 官网首页
+        - button "⚙️ 个人设置" [ref=f3e60] [cursor=pointer]:
+          - generic [ref=f3e61]: ⚙️
+          - text: 个人设置
+        - button "🚪 退出登录" [ref=f3e62] [cursor=pointer]:
+          - generic [ref=f3e63]: 🚪
+          - text: 退出登录
+      - generic [ref=f3e64]:
+        - generic [ref=f3e65]: S
+        - generic [ref=f3e66]: snow-sakura · 测试工程师
+  - generic [ref=f3e67]:
+    - complementary [ref=f3e68]:
+      - generic [ref=f3e69]:
+        - link "← 返回卡片列表" [ref=f3e70] [cursor=pointer]:
+          - /url: /app
+        - generic [ref=f3e71]:
+          - generic [ref=f3e72]: 🤖
+          - text: AI 用例工作台
+      - navigation [ref=f3e73]:
+        - generic [ref=f3e74]:
+          - generic [ref=f3e75]: 🏠
+          - generic [ref=f3e76]: 总览
+    - main [ref=f3e77]:
+      - generic [ref=f3e78]:
+        - link "工具台" [ref=f3e79] [cursor=pointer]:
+          - /url: /app
+        - text: / AI 用例工作台
+      - generic [ref=f3e80]:
+        - generic [ref=f3e81]:
+          - heading "🤖 AI 用例工作台" [level=1] [ref=f3e82]
+          - generic [ref=f3e83]: 粘贴需求 → AI 生成结构化用例 → 会话精修 → 导出 Excel / Markdown
+        - generic [ref=f3e84]:
+          - button "⬇️ 导出 Markdown" [ref=f3e85] [cursor=pointer]
+          - button "⬇️ 导出 Excel" [ref=f3e86] [cursor=pointer]
+          - button "💾 保存用例集" [ref=f3e87] [cursor=pointer]
+      - generic [ref=f3e88]:
+        - generic [ref=f3e89]:
+          - generic [ref=f3e90]:
+            - button "✍️ 单条生成" [ref=f3e91] [cursor=pointer]
+            - button "🚀 序列生成" [active] [ref=f3e92] [cursor=pointer]
+          - generic [ref=f3e270]:
+            - generic [ref=f3e271]:
+              - text: 🚀 序列生成
+              - generic [ref=f3e272]: 🆓 免费 · 串行
+            - generic [ref=f3e273]:
+              - generic [ref=f3e274]: 任务清单（每行一条任务需求，≤ 20 条） *
+              - textbox "每行一条任务需求，例如： 登录模块的验证码登录流程用例 购物车合并去重与库存边界用例" [ref=f3e275]:
+                - /placeholder: "每行一条任务需求，例如：\n登录模块的验证码登录流程用例\n购物车合并去重与库存边界用例"
+                - text: 订单退款的申请退款流程，设计功能与边界用例 优惠券领取与下单使用流程，重点并发领取与过期边界 发票抬头申请与邮件送达，含校验失败异常用例
+              - generic [ref=f3e276]: 共 3 个任务 · 生成风格与单条生成共用上方选择
+            - generic [ref=f3e277]:
+              - generic [ref=f3e278]: AI 模型（档位决定调度策略）
+              - combobox [ref=f3e279] [cursor=pointer]:
+                - option "默认模型" [selected]
+                - option "🆓 DeepSeek-V4-Flash"
+                - option "🆓 DeepSeek-V3（未配置 Key）"
+                - option "💎 通义千问 Qwen-Plus（未配置 Key）"
+                - option "🆓 智谱 GLM-4-Plus（未配置 Key）"
+                - option "💎 OpenAI GPT-4o（未配置 Key）"
+                - option "🆓 月之暗面 Kimi（未配置 Key）"
+                - option "🆓 OpenAI GPT-4o-mini（未配置 Key）"
+                - option "🆓 本地 Ollama（未配置 Key）"
+            - generic [ref=f3e280]:
+              - generic [ref=f3e281]: ➡️ 免费模型 · 单任务序列（并发 1，串行保护额度）
+              - generic [ref=f3e282]: 3 个任务 · 模型「DeepSeek-V4-Flash」 · 预计墙钟 ≈ 各任务耗时之和
+            - button "🚀 开始序列生成" [ref=f3e283] [cursor=pointer]
+            - generic [ref=f3e284]: 免费模型任务自动排队串行，保护免费额度不被限流打断；付费模型多路并行提速。 提交后可在右侧查看实时时间线，不阻塞其他操作。
+          - generic [ref=f3e117]:
+            - generic [ref=f3e118]:
+              - text: 🕘 历史用例集
+              - button "清空" [ref=f3e119] [cursor=pointer]
+            - generic [ref=f3e120]:
+              - generic [ref=f3e121]:
+                - generic [ref=f3e122]:
+                  - generic [ref=f3e123]: 用例生成序列 · 18:26:24…
+                  - generic [ref=f3e124]: 2026/10/21 18:26:59 · 172 条
+                - button "载入" [ref=f3e125] [cursor=pointer]
+              - generic [ref=f3e126]:
+                - generic [ref=f3e127]:
+                  - generic [ref=f3e128]: 用例生成序列 · 10:44:51…
+                  - generic [ref=f3e129]: 2026/10/21 10:54:57 · 193 条
+                - button "载入" [ref=f3e130] [cursor=pointer]
+        - generic [ref=f3e131]:
+          - generic [ref=f3e132]:
+            - generic [ref=f3e133]:
+              - text: 💬 AI 会话
+              - generic [ref=f3e134]: 就绪
+            - generic [ref=f3e137]:
+              - generic [ref=f3e138]: 🤖
+              - generic [ref=f3e139]: 你好，我是用例生成助手。请在左侧粘贴需求或填写蓝湖链接，选择生成风格后点击「AI 生成用例」。生成后你可以继续对话精修，例如：“补充支付失败场景”、“边界值再细化”。
+            - generic [ref=f3e140]:
+              - textbox "输入精修指令，如：补充退款审核拒绝的异常场景…" [ref=f3e141]
+              - button "发送" [ref=f3e142] [cursor=pointer]
+          - generic [ref=f3e143]:
+            - generic [ref=f3e144]:
+              - generic [ref=f3e145]:
+                - text: 📝 生成的用例
+                - generic [ref=f3e146]: 148 条
+              - generic [ref=f3e147]:
+                - textbox "🔍 搜索用例…" [ref=f3e148]
+                - combobox [ref=f3e149] [cursor=pointer]:
+                  - option "全部优先级" [selected]
+                  - option "P0"
+                  - option "P1"
+                  - option "P2"
+            - generic [ref=f3e150]:
+              - table [ref=f3e151]:
+                - rowgroup [ref=f3e152]:
+                  - row [ref=f3e153]:
+                    - columnheader "编号" [ref=f3e154]
+                    - columnheader "标题" [ref=f3e155]
+                    - columnheader "优先级" [ref=f3e156]
+                    - columnheader "前置条件" [ref=f3e157]
+                    - columnheader "操作" [ref=f3e158]
+                - rowgroup [ref=f3e159]:
+                  - row [ref=f3e160]:
+                    - cell "TC-1001" [ref=f3e161]
+                    - cell "正常提交退款申请" [ref=f3e162]
+                    - cell "P0" [ref=f3e164]
+                    - cell "用户已登录，存在可退款订单" [ref=f3e166]
+                    - cell [ref=f3e167]:
+                      - button "编辑" [ref=f3e169] [cursor=pointer]
+                  - row [ref=f3e170]:
+                    - cell "TC-1002" [ref=f3e171]
+                    - cell "退款原因不选直接提交" [ref=f3e172]
+                    - cell "P0" [ref=f3e174]
+                    - cell "进入退款申请页" [ref=f3e176]
+                    - cell [ref=f3e177]:
+                      - button "编辑" [ref=f3e179] [cursor=pointer]
+                  - row [ref=f3e180]:
+                    - cell "TC-1003" [ref=f3e181]
+                    - cell "退款说明 200 字边界" [ref=f3e182]
+                    - cell "P1" [ref=f3e184]
+                    - cell "进入退款申请页" [ref=f3e186]
+                    - cell [ref=f3e187]:
+                      - button "编辑" [ref=f3e189] [cursor=pointer]
+                  - row [ref=f3e190]:
+                    - cell "TC-1004" [ref=f3e191]
+                    - cell "支付金额与订单一致校验" [ref=f3e192]
+                    - cell "P0" [ref=f3e194]
+                    - cell "存在待支付订单" [ref=f3e196]
+                    - cell [ref=f3e197]:
+                      - button "编辑" [ref=f3e199] [cursor=pointer]
+                  - row [ref=f3e200]:
+                    - cell "TC-1005" [ref=f3e201]
+                    - cell "支付超时订单关闭" [ref=f3e202]
+                    - cell "P1" [ref=f3e204]
+                    - cell "存在待支付订单" [ref=f3e206]
+                    - cell [ref=f3e207]:
+                      - button "编辑" [ref=f3e209] [cursor=pointer]
+                  - row [ref=f3e210]:
+                    - cell "TC-1006" [ref=f3e211]
+                    - cell "未登录访问个人中心" [ref=f3e212]
+                    - cell "P0" [ref=f3e214]
+                    - cell "未登录状态" [ref=f3e216]
+                    - cell [ref=f3e217]:
+                      - button "编辑" [ref=f3e219] [cursor=pointer]
+                  - row [ref=f3e220]:
+                    - cell "TC-1007" [ref=f3e221]
+                    - cell "库存为0时禁止下单" [ref=f3e222]
+                    - cell "P0" [ref=f3e224]
+                    - cell "某SKU库存为0" [ref=f3e226]
+                    - cell [ref=f3e227]:
+                      - button "编辑" [ref=f3e229] [cursor=pointer]
+                  - row [ref=f3e230]:
+                    - cell "TC-1008" [ref=f3e231]
+                    - cell "已废弃：老版退款页兼容" [ref=f3e232]
+                    - cell "P2" [ref=f3e234]
+                    - cell "-" [ref=f3e236]
+                    - cell [ref=f3e237]:
+                      - button "编辑" [ref=f3e239] [cursor=pointer]
+                  - row [ref=f3e240]:
+                    - cell "TC-1009" [ref=f3e241]
+                    - cell "FR-01 用户在订单详情页点击「申请退款」进入申请页，退款原因必填（7 项枚举）" [ref=f3e242]
+                    - cell "P1" [ref=f3e244]
+                    - cell "已登录并进入相关业务页面" [ref=f3e246]
+                    - cell [ref=f3e247]:
+                      - button "编辑" [ref=f3e249] [cursor=pointer]
+                  - row [ref=f3e250]:
+                    - cell "TC-1010" [ref=f3e251]
+                    - cell "功能验证种子-77234-0" [ref=f3e252]
+                    - cell "P0" [ref=f3e254]
+                    - cell "-" [ref=f3e256]
+                    - cell [ref=f3e257]:
+                      - button "编辑" [ref=f3e259] [cursor=pointer]
+              - generic [ref=f3e260]:
+                - generic [ref=f3e261]: 共 148 条 · 第 1/15 页
+                - button "首页" [disabled] [ref=f3e262]
+                - button "上一页" [disabled] [ref=f3e263]
+                - generic [ref=f3e264] [cursor=pointer]: "1"
+                - button "下一页" [ref=f3e265] [cursor=pointer]
+                - button "末页" [ref=f3e266] [cursor=pointer]

@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UI 自动化 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / UI 自动化</div>
+    <div class="page-head">
+      <div>
+        <h1>🖱️ UI 自动化（OmniFlow）</h1>
+        <div class="sub">URL + 自然语言步骤搭建场景，服务器无头执行；运行后查看截图、录像并回放</div>
+      </div>
+      <button class="btn btn-primary" data-open-modal="modal-new-scene">＋ 新建场景</button>
+    </div>
+
+    <div class="banner banner-info">ℹ️ 本模块为 Web UI 自动化；App（Android · ADB/Appium）与桌面端（Windows）自动化能力独立开通，如需咨询请通过 <a href="#">投稿 / 建议</a> 联系。</div>
+
+    <div class="tabs" data-scope="uia">
+      <button class="tab active" data-tab="scenes">🎬 场景管理 <span class="badge-count" id="scene-cnt">0</span></button>
+      <button class="tab" data-tab="runs">📜 执行记录 <span class="badge-count">6</span></button>
+    </div>
+
+    <div id="uia">
+      <!-- ============ 场景管理 ============ -->
+      <div class="tab-pane active" data-pane="scenes">
+        <div class="filter-bar">
+          <input class="input search" id="sc-kw" placeholder="🔍 搜索场景名称 / URL">
+          <select class="select" id="sc-status">
+            <option value="">全部状态</option><option>启用</option><option>停用</option>
+          </select>
+          <span class="text-faint" style="font-size:12.5px" id="sc-count"></span>
+        </div>
+        <div id="scene-table"></div>
+      </div>
+
+      <!-- ============ 执行记录 ============ -->
+      <div class="tab-pane" data-pane="runs">
+        <div class="filter-bar">
+          <select class="select" id="run-scene-filter"><option value="">全部场景</option></select>
+          <select class="select" id="run-result">
+            <option value="">全部结果</option><option>成功</option><option>失败</option><option>运行中</option>
+          </select>
+          <input class="input" id="run-date" type="date" value="2026-09-22" style="width:160px">
+          <button class="btn btn-ghost btn-sm" id="run-reset">重置</button>
+        </div>
+        <div id="run-table"></div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 新建/编辑场景弹窗 -->
+<div class="modal-mask" id="modal-new-scene">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="ns-title">＋ 新建场景</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="steps mb-16">
+        <div class="step active" data-step="1"><span class="s-num">1</span>基础信息</div><div class="step-line"></div>
+        <div class="step" data-step="2"><span class="s-num">2</span>步骤编排</div><div class="step-line"></div>
+        <div class="step" data-step="3"><span class="s-num">3</span>场景配置</div>
+      </div>
+
+      <!-- Step 1 基础信息 -->
+      <div class="ns-step" data-step="1">
+        <div class="field"><label>场景名称 <span class="text-red">*</span></label><input class="input" id="ns-name" placeholder="如：登录-下单-支付主流程"></div>
+        <div class="field"><label>目标 URL <span class="text-red">*</span></label><input class="input mono" id="ns-url" placeholder="https://shop.example.com/login"></div>
+        <div class="field"><label>浏览器</label>
+          <select class="select" id="ns-browser"><option>Chromium（无头）</option><option>Chrome</option><option>Firefox</option></select>
+        </div>
+      </div>
+
+      <!-- Step 2 步骤编排 -->
+      <div class="ns-step hidden" data-step="2">
+        <div id="ns-steps" style="display:flex; flex-direction:column; gap:8px"></div>
+        <div class="flex mt-8" style="gap:6px; flex-wrap:wrap">
+          <button class="btn btn-sm btn-ghost" data-addstep="goto">🌐 打开页面</button>
+          <button class="btn btn-sm btn-ghost" data-addstep="fill">⌨️ 输入</button>
+          <button class="btn btn-sm btn-ghost" data-addstep="click">👆 点击</button>
+          <button class="btn btn-sm btn-ghost" data-addstep="llm">🤖 LLM 操作</button>
+          <button class="btn btn-sm btn-ghost" data-addstep="assert">✅ 验证</button>
+          <button class="btn btn-sm btn-ghost" data-addstep="wait">⏱️ 等待</button>
+          <button class="btn btn-sm btn-ghost" data-addstep="upload">📎 上传</button>
+        </div>
+      </div>
+
+      <!-- Step 3 场景配置 -->
+      <div class="ns-step hidden" data-step="3">
+        <div class="card mb-16" style="padding:14px">
+          <div class="card-title" style="font-size:13.5px">🔐 登录步骤</div>
+          <div class="grid grid-2" style="gap:10px">
+            <div class="field"><label>登录 URL</label><input class="input mono" placeholder="https://shop.example.com/login"></div>
+            <div class="field"><label>凭证变量</label><select class="select"><option>使用公共变量 USER / PASS</option><option>手动输入</option></select></div>
+          </div>
+        </div>
+        <div class="card" style="padding:14px">
+          <div class="card-title" style="font-size:13.5px">🌐 内网 SSH 隧道 + CDP <span class="tag tag-purple">进阶</span></div>
+          <label class="checkbox mb-8"><input type="checkbox" id="ns-ssh"> 启用 SSH 隧道（内网站点）</label>
+          <div class="grid grid-2" style="gap:10px">
+            <div class="field"><label>SSH 主机</label><input class="input mono" placeholder="jump@10.0.0.5" disabled></div>
+            <div class="field"><label>CDP 端口（Chrome 9222）</label><input class="input mono" placeholder="9222" disabled></div>
+          </div>
+          <div class="hint text-faint" style="font-size:12px">开启后服务器经隧道映射内网 Chrome 9222，平台可直连调试</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-ghost hidden" id="ns-prev">← 上一步</button>
+      <button class="btn btn-primary" id="ns-next">下一步 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- 执行详情 / 回放弹窗 -->
+<div class="modal-mask" id="modal-run">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="run-title">执行详情</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="flex mb-16" id="run-meta"></div>
+      <div class="grid grid-2" style="gap:12px">
+        <div>
+          <div class="card-title" style="font-size:13.5px">📸 关键截图</div>
+          <div class="grid grid-2" style="gap:8px" id="run-shots"></div>
+        </div>
+        <div>
+          <div class="card-title" style="font-size:13.5px">🎥 录像回放</div>
+          <div style="background:var(--bg-soft); border:1px solid var(--border); border-radius:var(--radius); aspect-ratio:16/9; display:grid; place-items:center; position:relative">
+            <div style="text-align:center">
+              <div style="font-size:34px">▶️</div>
+              <div class="text-dim" style="font-size:12.5px">run-recording.webm · 00:42</div>
+              <button class="btn btn-primary btn-sm mt-8" id="btn-replay">播放录像</button>
+            </div>
+            <div class="progress" style="position:absolute; bottom:8px; left:8px; right:8px"><div class="bar" id="replay-bar" style="width:0%"></div></div>
+          </div>
+          <div class="card-title mt-16" style="font-size:13.5px">🧾 步骤结果</div>
+          <div id="run-step-log" class="code-block" style="height:120px; overflow-y:auto"></div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="run-retry">🔄 重新执行</button>
+      <button class="btn btn-primary" data-close-modal>关闭</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  /* ================= 场景数据 ================= */
+  var scenes = [
+    { id: "sc-001", name: "登录-下单-支付主流程", url: "https://shop.example.com", status: "启用", steps: 9, lastRun: "2026-09-22 08:51", lastResult: "成功", browser: "Chromium（无头）" },
+    { id: "sc-002", name: "首页搜索加购验证", url: "https://shop.example.com/search", status: "启用", steps: 6, lastRun: "2026-09-21 19:03", lastResult: "成功", browser: "Chromium（无头）" },
+    { id: "sc-003", name: "优惠券领取边界", url: "https://shop.example.com/coupon", status: "停用", steps: 5, lastRun: "2026-09-18 14:20", lastResult: "失败", browser: "Firefox" },
+    { id: "sc-004", name: "内网 OA 审批流冒烟", url: "http://oa.intra.local/approve", status: "启用", steps: 12, lastRun: "2026-09-20 10:11", lastResult: "成功", browser: "Chrome", ssh: true },
+    { id: "sc-005", name: "注册页表单校验", url: "https://shop.example.com/register", status: "启用", steps: 7, lastRun: "2026-09-17 16:45", lastResult: "失败", browser: "Chromium（无头）" },
+    { id: "sc-006", name: "订单列表分页翻页", url: "https://shop.example.com/orders", status: "停用", steps: 4, lastRun: "2026-09-15 09:30", lastResult: "成功", browser: "Chromium（无头）" }
+  ];
+
+  var STEP_LIB = {
+    goto:  { icon: "🌐", label: "打开页面", ph: "https://…" },
+    fill:  { icon: "⌨️", label: "输入", ph: "在 #username 输入 admin" },
+    click: { icon: "👆", label: "点击", ph: "点击按钮「登录」" },
+    llm:   { icon: "🤖", label: "LLM 操作", ph: "AI 识别页面并点击「购物车」入口" },
+    assert:{ icon: "✅", label: "验证", ph: "断言页面包含「订单提交成功」" },
+    wait:  { icon: "⏱️", label: "等待", ph: "等待 2 秒 / 等待元素 .loading 消失" },
+    upload:{ icon: "📎", label: "上传", ph: "上传文件 ~/data/avatar.png 至 #file" }
+  };
+  var nsSteps = [];
+  var nsStepNo = 1;
+
+  /* ---------- 场景表 ---------- */
+  function renderScenes() {
+    var kw = document.getElementById("sc-kw").value.trim().toLowerCase();
+    var st = document.getElementById("sc-status").value;
+    var d = scenes.filter(function (s) {
+      return (!kw || (s.name + s.url).toLowerCase().indexOf(kw) >= 0) && (!st || s.status === st);
+    });
+    document.getElementById("scene-cnt").textContent = scenes.length;
+    document.getElementById("sc-count").textContent = "共 " + d.length + " 个场景";
+    var wrap = document.getElementById("scene-table");
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>场景</th><th>浏览器</th><th>步骤数</th><th>最近执行</th><th>最近结果</th><th>状态</th><th style="width:210px">操作</th></tr></thead><tbody>';
+    if (!d.length) html += '<tr><td colspan="7"><div class="empty"><div class="e-icon">🎬</div><div class="e-text">无匹配场景</div></div></td></tr>';
+    d.forEach(function (s) {
+      html += '<tr><td><div class="cell-main">' + s.name + (s.ssh ? ' <span class="tag tag-purple" title="SSH 隧道">SSH</span>' : "") + '</div><div class="cell-sub mono">' + s.url + "</div></td>" +
+        "<td>" + s.browser + "</td><td class=\"mono\">" + s.steps + "</td>" +
+        '<td class="mono" style="font-size:12.5px">' + s.lastRun + "</td>" +
+        "<td>" + (s.lastResult === "成功" ? '<span class="tag tag-green">成功</span>' : '<span class="tag tag-red">失败</span>') + "</td>" +
+        "<td>" + (s.status === "启用" ? '<span class="tag tag-blue">启用</span>' : '<span class="tag">停用</span>') + "</td>" +
+        '<td><div class="row-actions" style="opacity:1">' +
+        '<button class="btn btn-sm btn-success" data-run="' + s.id + '">▶ 执行</button>' +
+        '<button class="btn btn-sm btn-ghost" data-edit="' + s.id + '">编辑</button>' +
+        '<button class="btn btn-sm btn-ghost" data-del="' + s.id + '">删除</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    wrap.innerHTML = html;
+
+    wrap.querySelectorAll("[data-run]").forEach(function (b) { b.addEventListener("click", function () { runScene(b.dataset.run); }); });
+    wrap.querySelectorAll("[data-edit]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var s = scenes.find(function (x) { return x.id === b.dataset.edit; });
+        document.getElementById("ns-title").textContent = "编辑场景 · " + s.id;
+        document.getElementById("ns-name").value = s.name;
+        document.getElementById("ns-url").value = s.url;
+        openModal("modal-new-scene");
+      });
+    });
+    wrap.querySelectorAll("[data-del]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var s = scenes.find(function (x) { return x.id === b.dataset.del; });
+        confirmAction({ title: "删除场景", message: "确定删除场景「" + s.name + "」吗？其执行记录将保留。", onOk: function () {
+          scenes = scenes.filter(function (x) { return x.id !== s.id; });
+          renderScenes(); toast("场景已删除", "success");
+        }});
+      });
+    });
+  }
+  document.getElementById("sc-kw").addEventListener("input", debounce(renderScenes, 200));
+  document.getElementById("sc-status").addEventListener("change", renderScenes);
+
+  /* ---------- 新建场景向导 ---------- */
+  var nsCur = 1;
+  document.getElementById("ns-next").addEventListener("click", function () {
+    if (nsCur === 1) {
+      if (!document.getElementById("ns-name").value.trim()) return toast("请填写场景名称", "error");
+      if (!/^https?:\/\//.test(document.getElementById("ns-url").value.trim())) return toast("请填写合法目标 URL", "error");
+    }
+    if (nsCur < 3) { nsCur++; showNsStep(); }
+    else { // 保存
+      scenes.unshift({ id: "sc-" + String(100 + scenes.length).slice(-3), name: document.getElementById("ns-name").value, url: document.getElementById("ns-url").value, status: "启用", steps: nsSteps.length, lastRun: "—", lastResult: "成功", browser: document.getElementById("ns-browser").value });
+      closeModal("modal-new-scene"); resetNs(); renderScenes();
+      toast("场景已创建", "success");
+    }
+  });
+  document.getElementById("ns-prev").addEventListener("click", function () { if (nsCur > 1) { nsCur--; showNsStep(); } });
+  function showNsStep() {
+    document.querySelectorAll(".ns-step").forEach(function (s) { s.classList.toggle("hidden", +s.dataset.step !== nsCur); });
+    document.querySelectorAll(".step[data-step]").forEach(function (s) {
+      s.classList.toggle("active", +s.dataset.step === nsCur);
+      s.classList.toggle("done", +s.dataset.step < nsCur);
+    });
+    document.getElementById("ns-prev").classList.toggle("hidden", nsCur === 1);
+    document.getElementById("ns-next").textContent = nsCur === 3 ? "💾 保存场景" : "下一步 →";
+  }
+  function resetNs() {
+    nsCur = 1; nsSteps = []; nsStepNo = 1; renderNsSteps();
+    document.getElementById("ns-title").textContent = "＋ 新建场景";
+    document.getElementById("ns-name").value = ""; document.getElementById("ns-url").value = "";
+    showNsStep();
+  }
+  function renderNsSteps() {
+    var box = document.getElementById("ns-steps");
+    box.innerHTML = nsSteps.length ? nsSteps.map(function (st, i) {
+      var lib = STEP_LIB[st.type];
+      return '<div class="flex" style="gap:8px"><span class="tag tag-blue" style="min-width:30px; justify-content:center">' + (i + 1) + '</span>' +
+        '<span class="n-icon" style="width:30px;height:30px;border-radius:8px;display:grid;place-items:center;background:var(--panel-2)">' + lib.icon + '</span>' +
+        '<input class="input" value="' + st.text + '" placeholder="' + lib.ph + '" data-stext="' + i + '" style="flex:1">' +
+        '<button class="btn btn-sm btn-ghost" data-sdel="' + i + '">✕</button></div>';
+    }).join("") : '<div class="empty" style="padding:20px"><div class="e-text text-faint">暂无步骤，从下方按钮添加</div></div>';
+    box.querySelectorAll("[data-sdel]").forEach(function (b) {
+      b.addEventListener("click", function () { nsSteps.splice(+b.dataset.sdel, 1); renderNsSteps(); });
+    });
+    box.querySelectorAll("[data-stext]").forEach(function (inp) {
+      inp.addEventListener("change", function () { nsSteps[+inp.dataset.stext].text = inp.value; });
+    });
+  }
+  document.querySelectorAll("[data-addstep]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      nsSteps.push({ type: b.dataset.addstep, text: "" });
+      renderNsSteps();
+    });
+  });
+
+  /* ================= 执行 ================= */
+  function runScene(id) {
+    var s = scenes.find(function (x) { return x.id === id; });
+    toast("场景「" + s.name + "」已提交无头执行…", "info");
+    s.lastRun = "执行中"; s.lastResult = "运行中";
+    renderScenes();
+    setTimeout(function () {
+      var ok = Math.random() > 0.25;
+      s.lastRun = new Date().toLocaleTimeString("zh-CN", { hour12: false });
+      s.lastResult = ok ? "成功" : "失败";
+      renderScenes();
+      runs.unshift({ id: "R-" + Math.floor(1000 + Math.random() * 9000), scene: s.name, sceneId: s.id, time: "刚刚", dur: Math.floor(30 + Math.random() * 40) + "s", result: ok ? "成功" : "失败", steps: s.steps });
+      renderRuns();
+      toast(ok ? "执行成功 🎉 可查看截图与录像" : "执行失败：步骤 5 验证未通过", ok ? "success" : "error");
+    }, 2200);
+  }
+
+  /* ================= 执行记录 ================= */
+  var runs = [
+    { id: "R-2043", scene: "登录-下单-支付主流程", sceneId: "sc-001", time: "2026-09-22 08:51", dur: "42s", result: "成功", steps: 9 },
+    { id: "R-2042", scene: "首页搜索加购验证", sceneId: "sc-002", time: "2026-09-21 19:03", dur: "28s", result: "成功", steps: 6 },
+    { id: "R-2041", scene: "优惠券领取边界", sceneId: "sc-003", time: "2026-09-18 14:20", dur: "35s", result: "失败", steps: 5 },
+    { id: "R-2040", scene: "内网 OA 审批流冒烟", sceneId: "sc-004", time: "2026-09-20 10:11", dur: "66s", result: "成功", steps: 12 },
+    { id: "R-2039", scene: "注册页表单校验", sceneId: "sc-005", time: "2026-09-17 16:45", dur: "31s", result: "失败", steps: 7 },
+    { id: "R-2038", scene: "订单列表分页翻页", sceneId: "sc-006", time: "2026-09-15 09:30", dur: "22s", result: "成功", steps: 4 }
+  ];
+
+  function renderRuns() {
+    // 场景筛选下拉选项
+    var sel = document.getElementById("run-scene-filter");
+    var cur = sel.value;
+    sel.innerHTML = '<option value="">全部场景</option>' + scenes.map(function (s) { return '<option value="' + s.id + '">' + s.name + "</option>"; }).join("");
+    sel.value = cur;
+
+    var sf = sel.value, rf = document.getElementById("run-result").value;
+    var d = runs.filter(function (r) {
+      return (!sf || r.sceneId === sf) && (!rf || r.result === rf);
+    });
+    var wrap = document.getElementById("run-table");
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>记录 ID</th><th>场景</th><th>执行时间</th><th>耗时</th><th>步骤</th><th>结果</th><th style="width:150px">操作</th></tr></thead><tbody>';
+    if (!d.length) html += '<tr><td colspan="7"><div class="empty"><div class="e-icon">📜</div><div class="e-text">暂无执行记录</div></div></td></tr>';
+    d.forEach(function (r) {
+      html += '<tr><td class="mono">' + r.id + "</td>" +
+        '<td><div class="cell-main">' + r.scene + "</div></td>" +
+        '<td class="mono" style="font-size:12.5px">' + r.time + "</td>" +
+        '<td class="mono">' + r.dur + "</td>" +
+        '<td class="mono">' + r.steps + "</td>" +
+        "<td>" + (r.result === "成功" ? '<span class="tag tag-green">成功</span>' : r.result === "失败" ? '<span class="tag tag-red">失败</span>' : '<span class="tag tag-orange">运行中</span>') + "</td>" +
+        '<td><div class="row-actions" style="opacity:1"><button class="btn btn-sm btn-ghost" data-view="' + r.id + '">详情 / 回放</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    wrap.innerHTML = html;
+    wrap.querySelectorAll("[data-view]").forEach(function (b) {
+      b.addEventListener("click", function () { openRun(b.dataset.view); });
+    });
+  }
+  function openRun(id) {
+    var r = runs.find(function (x) { return x.id === id; });
+    document.getElementById("run-title").textContent = "执行详情 · " + r.id;
+    document.getElementById("run-meta").innerHTML =
+      '<span class="tag tag-blue">' + r.scene + '</span><span class="tag">' + r.time + '</span><span class="tag">⏱ ' + r.dur + "</span>" +
+      (r.result === "成功" ? '<span class="tag tag-green">✅ 成功</span>' : '<span class="tag tag-red">❌ 失败</span>');
+    document.getElementById("run-shots").innerHTML = ["01-登录页", "02-商品详情", "03-确认订单", "04-支付结果"].map(function (n, i) {
+      return '<div class="card" style="padding:0; text-align:center; overflow:hidden"><div style="aspect-ratio:16/10; display:grid; place-items:center; background:linear-gradient(135deg,#f3e8d8,#efe2cf); font-size:22px">🖼️</div><div style="font-size:11.5px; padding:6px" class="text-faint">' + n + ".png</div></div>";
+    }).join("");
+    var fail = r.result === "失败";
+    document.getElementById("run-step-log").innerHTML =
+      '<span class="c">// 步骤执行日志</span>\n' +
+      '<span class="s">✔ [1/9] 打开页面 https://shop.example.com</span>\n' +
+      '<span class="s">✔ [2/9] 输入 #username</span>\n' +
+      '<span class="s">✔ [3/9] 点击「登录」按钮</span>\n' +
+      '<span class="s">✔ [4/9] LLM 识别并进入商品详情</span>\n' +
+      (fail
+        ? '<span class="n">✖ [5/9] 验证失败：期望包含「订单提交成功」，实际「库存不足」</span>\n<span class="c">// 已截图 fail-step5.png，录像已保存</span>'
+        : '<span class="s">✔ [5/9] 验证通过：包含「订单提交成功」</span>\n<span class="s">✔ [9/9] 全部步骤完成</span>');
+    document.getElementById("btn-replay").onclick = function () {
+      var bar = document.getElementById("replay-bar"), w = 0;
+      this.disabled = true; this.textContent = "播放中…";
+      var t = setInterval(function () {
+        w += 4; bar.style.width = w + "%";
+        if (w >= 100) { clearInterval(t); var b = document.getElementById("btn-replay"); b.disabled = false; b.textContent = "播放录像"; bar.style.width = "0%"; }
+      }, 120);
+    };
+    document.getElementById("run-retry").onclick = function () {
+      closeModal("modal-run"); runScene(r.sceneId);
+    };
+    openModal("modal-run");
+  }
+  document.getElementById("run-scene-filter").addEventListener("change", renderRuns);
+  document.getElementById("run-result").addEventListener("change", renderRuns);
+  document.getElementById("run-reset").addEventListener("click", function () {
+    document.getElementById("run-scene-filter").value = "";
+    document.getElementById("run-result").value = "";
+    document.getElementById("run-date").value = "2026-09-22";
+    renderRuns(); toast("筛选已重置", "info");
+  });
+
+  /* ================= Tab 参数 ================= */
+  if (qs("tab")) {
+    var tb = document.querySelector('.tab[data-tab="' + qs("tab") + '"]');
+    if (tb) tb.click();
+  }
+
+  renderScenes(); renderRuns();
+})();
+</script>
+</body>
+</html>

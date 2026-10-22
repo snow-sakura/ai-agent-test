@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>配置中心 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / 配置中心</div>
+    <div class="page-head">
+      <div>
+        <h1>⚙️ 配置中心</h1>
+        <div class="sub">统一管理 AI 模型（多提供商 / 按角色配置）、UI 自动化环境、Dify 助手与通知渠道，支持连接测试</div>
+      </div>
+      <button class="btn btn-primary" id="btn-save-all">💾 保存全部配置</button>
+    </div>
+
+    <div class="banner banner-info">ℹ️ 参考 TestHub 统一配置中心：AI 模型支持按角色配置（用例编写 / 用例评审 / 智能模式），API Key 仅本地存储；环境检测可一键安装浏览器驱动。</div>
+
+    <div class="tabs" data-scope="cc">
+      <button class="tab active" data-tab="ai">🤖 AI 模型</button>
+      <button class="tab" data-tab="roles">👥 按角色配置</button>
+      <button class="tab" data-tab="env">🖥️ UI 自动化环境</button>
+      <button class="tab" data-tab="dify">💬 Dify 助手</button>
+      <button class="tab" data-tab="notify">📨 通知渠道</button>
+    </div>
+
+    <div id="cc">
+      <!-- ============ AI 模型 ============ -->
+      <div class="tab-pane active" data-pane="ai">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-title">📝 文本模型 <span class="tag tag-green">已连接</span></div>
+            <div class="field"><label>提供商</label>
+              <select class="select"><option>DeepSeek</option><option>通义千问</option><option>硅基流动</option><option>OpenAI</option><option>Anthropic</option><option>Google Gemini</option></select>
+            </div>
+            <div class="field"><label>API Base URL</label><input class="input mono" value="https://api.deepseek.com/v1"></div>
+            <div class="field"><label>API Key</label><input class="input mono" type="password" value="sk-demo-xxxx" placeholder="sk-…"></div>
+            <div class="grid grid-2" style="gap:10px">
+              <div class="field"><label>模型</label><input class="input mono" value="deepseek-chat"></div>
+              <div class="field"><label>Temperature</label><input class="input mono" type="number" value="0.7" step="0.1" min="0" max="2"></div>
+            </div>
+            <button class="btn btn-ghost btn-sm" data-test="文本模型">🔌 测试连接</button>
+          </div>
+          <div class="card">
+            <div class="card-title">🖼️ 视觉模型（附件解析） <span class="tag tag-orange">未配置</span></div>
+            <div class="field"><label>API Base URL</label><input class="input mono" placeholder="https://…"></div>
+            <div class="field"><label>视觉 API Key</label><input class="input mono" type="password" placeholder="sk-…"></div>
+            <div class="field"><label>视觉模型</label><input class="input mono" placeholder="如：qwen-vl-max"></div>
+            <div class="hint">用于需求文档图片解析、AI 用例附件上下文</div>
+            <button class="btn btn-ghost btn-sm" data-test="视觉模型">🔌 测试连接</button>
+          </div>
+        </div>
+        <div class="grid grid-2 mt-16">
+          <div class="card">
+            <div class="card-title">🖱️ Cursor Agent（WebUI 自动化）</div>
+            <div class="field"><label>Cursor API Key</label><input class="input mono" type="password" placeholder="从 Cursor → Access Tokens 获取"></div>
+            <div class="hint">用于 WebUI 自动化 Agent 执行；Agent 模型仅国内可用</div>
+            <button class="btn btn-ghost btn-sm" data-test="Cursor Agent">🔌 测试连接</button>
+          </div>
+          <div class="card">
+            <div class="card-title">🔑 使用额度 <span class="tag tag-blue">按日重置</span></div>
+            <div class="table-wrap" style="border:none">
+              <table class="table"><thead><tr><th>能力</th><th>今日已用</th><th>每日上限</th></tr></thead><tbody>
+                <tr><td>文本 AI</td><td class="mono">128</td><td class="mono">200</td></tr>
+                <tr><td>视觉 AI</td><td class="mono">6</td><td class="mono">50</td></tr>
+                <tr><td>Cursor Agent</td><td class="mono">3</td><td class="mono">20</td></tr>
+              </tbody></table>
+            </div>
+            <a class="btn btn-ghost btn-sm" href="tool-token-usage.html">🪙 查看 Tokens 消费明细 →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 按角色配置 ============ -->
+      <div class="tab-pane" data-pane="roles">
+        <div class="banner banner-green">✅ 不同业务角色可使用不同模型：用例编写追求质量、用例评审追求速度、智能模式要求视觉能力。</div>
+        <div class="table-wrap">
+          <table class="table"><thead><tr><th>业务角色</th><th>当前模型</th><th>Temperature</th><th>说明</th><th style="width:150px">操作</th></tr></thead><tbody>
+            <tr><td><div class="cell-main">AI 需求分析</div><div class="cell-sub">requirement-analysis</div></td><td>DeepSeek-V3</td><td class="mono">0.3</td><td class="text-dim" style="font-size:12.5px">低温度保证解析稳定</td><td><button class="btn btn-sm btn-ghost" data-role-edit="AI 需求分析">调整</button></td></tr>
+            <tr><td><div class="cell-main">用例编写</div><div class="cell-sub">testcases</div></td><td>DeepSeek-V3</td><td class="mono">0.7</td><td class="text-dim" style="font-size:12.5px">适中温度平衡质量与多样性</td><td><button class="btn btn-sm btn-ghost" data-role-edit="用例编写">调整</button></td></tr>
+            <tr><td><div class="cell-main">用例评审</div><div class="cell-sub">reviews</div></td><td>通义千问-Max</td><td class="mono">0.2</td><td class="text-dim" style="font-size:12.5px">低温度严格比对检查清单</td><td><button class="btn btn-sm btn-ghost" data-role-edit="用例评审">调整</button></td></tr>
+            <tr><td><div class="cell-main">AI 问答助手</div><div class="cell-sub">assistant</div></td><td>DeepSeek-V3</td><td class="mono">0.7</td><td class="text-dim" style="font-size:12.5px">对话咨询</td><td><button class="btn btn-sm btn-ghost" data-role-edit="AI 问答助手">调整</button></td></tr>
+            <tr><td><div class="cell-main">Browser-use 智能模式</div><div class="cell-sub">ui-automation</div></td><td>未配置（需视觉模型）</td><td class="mono">—</td><td class="text-dim" style="font-size:12.5px">文本/视觉双模式</td><td><button class="btn btn-sm btn-ghost" data-role-edit="智能模式">调整</button></td></tr>
+          </tbody></table>
+        </div>
+      </div>
+
+      <!-- ============ UI 自动化环境 ============ -->
+      <div class="tab-pane" data-pane="env">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-title">🖥️ 执行环境</div>
+            <div class="field"><label>执行引擎</label>
+              <select class="select"><option>Playwright</option><option>Selenium</option></select>
+            </div>
+            <div class="field"><label>浏览器</label>
+              <select class="select"><option>Chromium</option><option>Chrome</option><option>Firefox</option><option>Edge</option></select>
+            </div>
+            <div class="field"><label>运行模式</label>
+              <div class="flex" style="gap:14px">
+                <label class="checkbox"><input type="radio" name="env-head"> 有头（调试用）</label>
+                <label class="checkbox"><input type="radio" name="env-head" checked> 无头（服务器执行）</label>
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">🩺 环境检测 <span class="tag tag-red">一键诊断</span></div>
+            <div class="table-wrap" style="border:none">
+              <table class="table"><thead><tr><th>检查项</th><th>状态</th><th>操作</th></tr></thead><tbody>
+                <tr><td>系统浏览器 Chrome</td><td><span class="tag tag-green">✅ 已安装 126.0</span></td><td>—</td></tr>
+                <tr><td>Playwright 驱动</td><td><span class="tag tag-green">✅ 正常</span></td><td>—</td></tr>
+                <tr><td>GeckoDriver（Firefox）</td><td><span class="tag tag-orange">⚠️ 未安装</span></td><td><button class="btn btn-sm btn-ghost" data-install="GeckoDriver">一键安装</button></td></tr>
+                <tr><td>Appium Server</td><td><span class="tag tag">未启用</span></td><td>—</td></tr>
+              </tbody></table>
+            </div>
+            <button class="btn btn-primary btn-sm" id="env-diag">🩺 重新检测</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ Dify 助手 ============ -->
+      <div class="tab-pane" data-pane="dify">
+        <div class="card">
+          <div class="card-title">💬 Dify 智能助手接入</div>
+          <div class="grid grid-2" style="gap:12px">
+            <div class="field"><label>Dify API Base URL</label><input class="input mono" value="https://api.dify.ai/v1"></div>
+            <div class="field"><label>API Key</label><input class="input mono" type="password" placeholder="app-…"></div>
+          </div>
+          <div class="grid grid-2" style="gap:12px">
+            <div class="field"><label>应用类型</label><select class="select"><option>聊天助手（Chatflow）</option><option>Agent</option><option>工作流</option></select></div>
+            <div class="field"><label>会话隔离</label><select class="select"><option>按用户隔离（conversation_id）</option><option>共享会话</option></select></div>
+          </div>
+          <div class="flex">
+            <button class="btn btn-ghost btn-sm" data-test="Dify">🔌 测试连接</button>
+            <a class="btn btn-ghost btn-sm" href="tool-ai-assistant.html">💬 去问答助手验证 →</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 通知渠道 ============ -->
+      <div class="tab-pane" data-pane="notify">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-title">📨 Webhook 机器人</div>
+            <div class="field"><label>企业微信</label>
+              <div class="input-group"><input class="input mono" placeholder="Webhook URL" value="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=demo"><button class="btn btn-sm btn-ghost" data-notify-test="企业微信">测试</button></div>
+              <label class="checkbox mt-8"><input type="checkbox" checked> 启用</label>
+            </div>
+            <div class="field"><label>钉钉</label>
+              <div class="input-group"><input class="input mono" placeholder="Webhook URL"><button class="btn btn-sm btn-ghost" data-notify-test="钉钉">测试</button></div>
+              <label class="checkbox mt-8"><input type="checkbox"> 启用</label>
+            </div>
+            <div class="field"><label>飞书</label>
+              <div class="input-group"><input class="input mono" placeholder="Webhook URL"><button class="btn btn-sm btn-ghost" data-notify-test="飞书">测试</button></div>
+              <label class="checkbox mt-8"><input type="checkbox"> 启用</label>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-title">✉️ 邮件通知</div>
+            <div class="grid grid-2" style="gap:10px">
+              <div class="field"><label>SMTP 服务器</label><input class="input mono" value="smtp.example.com"></div>
+              <div class="field"><label>端口</label><input class="input mono" value="465"></div>
+            </div>
+            <div class="field"><label>发件账号</label><input class="input mono" value="testhub@example.com"></div>
+            <div class="field"><label>授权码</label><input class="input mono" type="password" value="demo-auth-code"></div>
+            <div class="field"><label>通知事件</label>
+              <div class="flex" style="gap:8px; flex-wrap:wrap">
+                <label class="checkbox"><input type="checkbox" checked> 定时任务结果</label>
+                <label class="checkbox"><input type="checkbox" checked> 测试完成</label>
+                <label class="checkbox"><input type="checkbox"> 高危安全发现</label>
+              </div>
+            </div>
+            <button class="btn btn-ghost btn-sm" data-notify-test="邮件">测试发送</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 角色调整弹窗 -->
+<div class="modal-mask" id="modal-role">
+  <div class="modal">
+    <div class="modal-head"><h3 id="role-title">调整角色模型</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>模型</label>
+        <select class="select" id="role-model"><option>DeepSeek-V3</option><option>通义千问-Max</option><option>硅基流动 · GLM-4</option><option>GPT-4o</option></select>
+      </div>
+      <div class="field"><label>Temperature</label><input class="input mono" id="role-temp" type="number" value="0.7" step="0.1" min="0" max="2"></div>
+      <div class="hint">调整后立即对该角色的所有 AI 调用生效</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="role-save">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  // 测试连接
+  document.querySelectorAll("[data-test]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      toast("正在测试 " + b.dataset.test + " 连通性…", "info");
+      setTimeout(function () { toast(b.dataset.test + " 连接成功 ✅", "success"); }, 1000);
+    });
+  });
+  // 通知测试
+  document.querySelectorAll("[data-notify-test]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      toast("测试消息已发送至 " + b.dataset.notifyTest + "（演示）", "success");
+    });
+  });
+  // 驱动安装
+  document.querySelectorAll("[data-install]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      toast("正在安装 " + b.dataset.install + "…", "info");
+      setTimeout(function () {
+        b.closest("tr").querySelector(".tag").outerHTML = '<span class="tag tag-green">✅ 已安装</span>';
+        b.disabled = true;
+        toast(b.dataset.install + " 安装成功", "success");
+      }, 1500);
+    });
+  });
+  // 环境诊断
+  document.getElementById("env-diag").addEventListener("click", function () {
+    var btn = this;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 检测中…';
+    setTimeout(function () {
+      btn.disabled = false; btn.textContent = "🩺 重新检测";
+      toast("环境检测完成：3 项正常，1 项建议安装", "success");
+    }, 1300);
+  });
+  // 角色调整
+  var curRole = "";
+  document.querySelectorAll("[data-role-edit]").forEach(function (b) {
+    b.addEventListener("click", function () {
+      curRole = b.dataset.roleEdit;
+      document.getElementById("role-title").textContent = "调整角色模型 · " + curRole;
+      openModal("modal-role");
+    });
+  });
+  document.getElementById("role-save").addEventListener("click", function () {
+    closeModal("modal-role");
+    toast("角色「" + curRole + "」已切换为 " + document.getElementById("role-model").value, "success");
+  });
+  // 保存全部
+  document.getElementById("btn-save-all").addEventListener("click", function () {
+    var btn = this;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 保存中…';
+    setTimeout(function () {
+      btn.disabled = false; btn.textContent = "💾 保存全部配置";
+      toast("全部配置已保存（Key 仅本地存储）", "success");
+    }, 900);
+  });
+
+  if (qs("tab")) {
+    var tb = document.querySelector('.tab[data-tab="' + qs("tab") + '"]');
+    if (tb) tb.click();
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>提示词库 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+  <div class="breadcrumb"><a href="app.html">工具台</a> / 提示词库</div>
+  <div class="page-head">
+    <div>
+      <h1>📚 提示词库</h1>
+      <div class="sub">实战验证的测试提示词模板，按场景分类，一键复制到 Cursor / Agent 即用</div>
+    </div>
+    <div class="flex">
+      <button class="btn btn-primary" data-open-modal="modal-submit">＋ 投稿提示词</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="all">📚 提示词列表</button>
+    <button class="tab" data-tab="favs">⭐ 我的收藏</button>
+    <button class="tab" data-tab="submit">📮 投稿管理</button>
+  </div>
+  <div class="tab-panes">
+  <div class="tab-pane active" data-pane="all">
+  <!-- 筛选栏 -->
+  <div class="filter-bar">
+    <input class="input search" id="kw" placeholder="🔍 搜索标题 / 标签 / 内容关键词">
+    <select class="select" id="cat">
+      <option value="">全部分类</option>
+      <option>测试设计</option>
+      <option>缺陷分析</option>
+      <option>接口测试</option>
+      <option>自动化</option>
+      <option>性能测试</option>
+      <option>AI 用例</option>
+    </select>
+    <select class="select" id="sort">
+      <option value="hot">按热度排序</option>
+      <option value="new">按最新排序</option>
+    </select>
+    <span class="text-faint" style="font-size:12.5px" id="result-count"></span>
+  </div>
+
+  <!-- 提示词列表 -->
+  <div id="prompt-list"></div>
+  </div>
+
+  <div class="tab-pane" data-pane="favs">
+    <div class="banner">收藏内容来自「提示词列表」中点击 ☆/⭐ 收藏的模板，可直接查看与复制。</div>
+    <div id="fav-list"></div>
+  </div>
+
+  <div class="tab-pane" data-pane="submit">
+    <div class="grid grid-3">
+      <div class="card"><div class="card-title">① 编写提示词</div><div class="text-dim" style="font-size:12.5px">角色设定 + 方法论 + 结构化输出要求 + <span class="mono">{{变量占位符}}</span>，四件齐备易复用</div></div>
+      <div class="card"><div class="card-title">② 提交投稿</div><div class="text-dim" style="font-size:12.5px">点击下方按钮提交，演示环境即时入列（真实环境走运维审核）</div></div>
+      <div class="card"><div class="card-title">③ 入库共享</div><div class="text-dim" style="font-size:12.5px">审核通过后进入公共库，按热度排序供全员一键复制使用</div></div>
+    </div>
+    <div class="flex mt-16"><button class="btn btn-primary" data-open-modal="modal-submit">＋ 投稿提示词</button></div>
+  </div>
+  </div>
+  </main>
+</div>
+
+  <!-- 投稿弹窗 -->
+  <div class="modal-mask" id="modal-submit">
+    <div class="modal">
+      <div class="modal-head"><h3>＋ 投稿提示词</h3><button class="modal-close" data-close-modal>✕</button></div>
+      <div class="modal-body">
+        <div class="field"><label>标题 <span class="text-red">*</span></label><input class="input" id="sub-title" placeholder="如：接口断言设计专家"></div>
+        <div class="field"><label>分类 <span class="text-red">*</span></label>
+          <select class="select" id="sub-cat"><option>测试设计</option><option>缺陷分析</option><option>接口测试</option><option>自动化</option><option>性能测试</option><option>AI 用例</option></select>
+        </div>
+        <div class="field"><label>提示词内容 <span class="text-red">*</span></label><textarea class="textarea mono" id="sub-content" rows="6" placeholder="粘贴完整提示词模板…"></textarea></div>
+        <div class="field"><label>适用说明（选填）</label><input class="input" id="sub-note" placeholder="如：适用于 Cursor / Claude 等编码 Agent"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" data-close-modal>取消</button>
+        <button class="btn btn-primary" id="sub-ok">提交投稿</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 查看弹窗 -->
+  <div class="modal-mask" id="modal-view">
+    <div class="modal modal-lg">
+      <div class="modal-head"><h3 id="view-title"></h3><button class="modal-close" data-close-modal>✕</button></div>
+      <div class="modal-body">
+        <div class="flex mb-16" id="view-meta"></div>
+        <div class="code-block" id="view-content"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn btn-ghost" id="view-copy">📋 复制全文</button>
+        <button class="btn btn-primary" data-close-modal>关闭</button>
+      </div>
+    </div>
+  </div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  var CATS = ["测试设计", "缺陷分析", "接口测试", "自动化", "性能测试", "AI 用例"];
+  var DATA = [
+    { id: 1, title: "测试用例设计专家", cat: "测试设计", tags: ["用例", "需求分析"], hot: 982, date: "2026-09-18", content: "你是一名资深测试工程师。请基于以下需求，使用等价类划分、边界值分析、判定表和场景法设计完整测试用例。输出表格：用例编号 / 标题 / 优先级 / 前置条件 / 步骤 / 预期结果。需求：\n{{需求文本}}" },
+    { id: 2, title: "Bug 复现步骤分析", cat: "缺陷分析", tags: ["缺陷", "复现"], hot: 876, date: "2026-09-15", content: "你是一名缺陷分析专家。根据以下缺陷描述，分析最可能的根因，给出最小复现步骤、复现概率评估，并建议补充的日志埋点。缺陷描述：\n{{缺陷内容}}" },
+    { id: 3, title: "接口断言设计专家", cat: "接口测试", tags: ["断言", "API"], hot: 851, date: "2026-09-20", content: "你是一名接口测试专家。针对以下接口文档，设计断言清单：状态码、响应结构 Schema、业务字段值、数据库落库校验、幂等性校验。接口文档：\n{{接口文档}}" },
+    { id: 4, title: "Selenium 自动化脚本生成", cat: "自动化", tags: ["Selenium", "Python"], hot: 790, date: "2026-09-12", content: "你是一名自动化工程师。基于以下操作步骤生成 Python + Selenium 脚本，使用 Page Object 模式，显式等待，异常截图，并附带 pytest 用例骨架。步骤：\n{{操作步骤}}" },
+    { id: 5, title: "JMeter 压测场景顾问", cat: "性能测试", tags: ["JMeter", "压测"], hot: 733, date: "2026-09-10", content: "你是一名性能测试专家。根据业务目标 QPS {{QPS}} 与接口清单，设计 JMeter 线程组参数（并发数 / Ramp-Up / 循环）、阶梯加压策略、监控指标与通过标准。" },
+    { id: 6, title: "AI 需求转用例（结构化）", cat: "AI 用例", tags: ["AI", "用例"], hot: 712, date: "2026-09-21", content: "你是一名测试用例生成器。将以下需求转换为 Given-When-Then 格式的结构化用例，覆盖正常流、异常流与边界值，按 P0/P1/P2 标注优先级。需求：\n{{需求}}" },
+    { id: 7, title: "日志错误聚类分析", cat: "缺陷分析", tags: ["日志", "定位"], hot: 655, date: "2026-09-08", content: "你是一名线上问题排查专家。分析以下错误日志，按根因聚类输出：错误类型 / 出现次数 / 可能模块 / 建议排查方向。日志：\n{{日志片段}}" },
+    { id: 8, title: "Playwright E2E 用例生成", cat: "自动化", tags: ["Playwright", "E2E"], hot: 620, date: "2026-09-19", content: "你是一名 E2E 测试专家。基于以下用户旅程，生成 Playwright + TypeScript 测试代码，包含 fixture 封装、失败重试与截图录像配置。旅程：\n{{用户旅程}}" },
+    { id: 9, title: "SQL 造数脚本生成", cat: "接口测试", tags: ["SQL", "造数"], hot: 588, date: "2026-09-05", content: "你是一名数据构造专家。根据表结构与造数规则，生成批量 INSERT 脚本，注意字段约束、唯一索引冲突规避与事务分批提交。表结构：\n{{DDL}}\n规则：{{规则}}" },
+    { id: 10, title: "兼容性测试矩阵设计", cat: "测试设计", tags: ["兼容性", "矩阵"], hot: 540, date: "2026-09-02", content: "你是一名测试架构师。针对 {{产品类型}} 设计浏览器 / OS / 分辨率 / 弱网兼容性测试矩阵，标注优先级与覆盖策略，输出执行排期建议。" },
+    { id: 11, title: "接口 Mock 数据策略", cat: "接口测试", tags: ["Mock", "数据"], hot: 501, date: "2026-08-30", content: "你是一名接口测试专家。为以下依赖接口设计 Mock 方案：字段规则、异常码模拟、延迟注入、有状态 Mock 序列。接口定义：\n{{接口定义}}" },
+    { id: 12, title: "APP 崩溃日志归因", cat: "缺陷分析", tags: ["Android", "崩溃"], hot: 477, date: "2026-08-27", content: "你是一名移动端稳定性专家。分析以下 crash 堆栈，定位可疑代码路径，给出修复建议与回归验证用例。堆栈：\n{{堆栈}}" },
+    { id: 13, title: "混沌工程演练方案", cat: "性能测试", tags: ["混沌", "高可用"], hot: 442, date: "2026-08-24", content: "你是一名高可用专家。为 {{系统名称}} 设计混沌演练方案：故障注入点、爆炸半径控制、观测指标、回滚预案与演练记录模板。" },
+    { id: 14, title: "AI 缺陷报告润色", cat: "AI 用例", tags: ["AI", "缺陷"], hot: 410, date: "2026-08-20", content: "你是一名 QA 文档专家。将以下草稿润色为规范缺陷报告：标题（环境+模块+现象）、复现概率、严重等级建议、附件清单。草稿：\n{{草稿}}" },
+    { id: 15, title: "CI 流水线质量门禁设计", cat: "自动化", tags: ["CI", "门禁"], hot: 388, date: "2026-08-16", content: "你是一名 DevOps 专家。为 {{项目}} 设计 CI 质量门禁：单测覆盖率阈值、静态扫描规则、接口回归范围、阻断策略与通知链路。" }
+  ];
+  var PAGE_SIZE = 10;  var page = 1;
+  var favKey = "aitesthub_prompt_favs";
+  var favs = JSON.parse(localStorage.getItem(favKey) || "[]");
+  var onlyFav = false;
+  var viewingId = null;
+
+  function isFav(id) { return favs.indexOf(id) >= 0; }
+
+  function getData() {
+    var kw = document.getElementById("kw").value.trim().toLowerCase();
+    var cat = document.getElementById("cat").value;
+    var sort = document.getElementById("sort").value;
+    var d = DATA.slice();
+    if (cat) d = d.filter(function (p) { return p.cat === cat; });
+    if (kw) d = d.filter(function (p) { return (p.title + p.tags.join("") + p.content).toLowerCase().indexOf(kw) >= 0; });
+    d.sort(function (a, b) { return sort === "hot" ? b.hot - a.hot : b.date.localeCompare(a.date); });
+    return d;
+  }
+
+  function render() {
+    var d = getData();
+    var pages = Math.max(1, Math.ceil(d.length / PAGE_SIZE));
+    if (page > pages) page = pages;
+    var rows = d.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    document.getElementById("result-count").textContent = "共 " + d.length + " 条模板";
+    var list = document.getElementById("prompt-list");
+    if (!rows.length) {
+      list.innerHTML = '<div class="card"><div class="empty"><div class="e-icon">🔍</div><div class="e-text">未找到匹配的提示词<br><button class="btn btn-sm btn-ghost mt-8" id="reset-f">重置筛选</button></div></div></div>';
+      var rf = document.getElementById("reset-f");
+      if (rf) rf.addEventListener("click", resetFilters);
+      return;
+    }
+    list.innerHTML = '<div class="grid grid-3">' + rows.map(function (p) {
+      return '<div class="card card-hover">' +
+        '<div class="flex-between"><span class="tag tag-blue">' + p.cat + '</span>' +
+        '<button class="btn btn-sm btn-ghost" data-fav="' + p.id + '" title="收藏">' + (isFav(p.id) ? "⭐" : "☆") + '</button></div>' +
+        '<h3 style="font-size:15px; margin:10px 0 6px">' + p.title + '</h3>' +
+        '<div class="text-faint" style="font-size:12px; margin-bottom:8px">🔥 ' + p.hot + " · " + p.date + '</div>' +
+        '<div class="code-block" style="font-size:11.5px; height:64px; overflow:hidden; white-space:pre-wrap">' + p.content.replace(/</g, "&lt;").slice(0, 90) + '…</div>' +
+        '<div class="flex-between mt-8"><div>' + p.tags.map(function (t) { return '<span class="tag" style="margin-right:4px">' + t + "</span>"; }).join("") + "</div>" +
+        '<div class="flex" style="gap:4px"><button class="btn btn-sm btn-ghost" data-view="' + p.id + '">查看</button>' +
+        '<button class="btn btn-sm btn-primary" data-copy="' + p.id + '">复制</button></div></div></div>';
+    }).join("") + "</div>";
+
+    // 分页条
+    var pg = '<div class="pagination"><span class="page-info">共 ' + d.length + " 条 · 第 " + page + "/" + pages + " 页</span>" +
+      '<label class="pg-size">每页 <select class="pg-size-sel" id="pt-psel">' + [10, 20, 50, 100].map(function (n) { return '<option value="' + n + '"' + (n === PAGE_SIZE ? " selected" : "") + ">" + n + "</option>"; }).join("") + "</select> 条</label>" +
+      '<button class="page-btn txt" data-goto="1">首页</button><button class="page-btn txt" data-goto="' + (page - 1) + '" ' + (page <= 1 ? "disabled" : "") + ">上一页</button>";
+    var start = Math.max(1, page - 2), end = Math.min(pages, start + 4);
+    for (var i = start; i <= end; i++) pg += '<button class="page-btn' + (i === page ? " active" : "") + '" data-goto="' + i + '">' + i + "</button>";
+    pg += '<button class="page-btn txt" data-goto="' + (page + 1) + '" ' + (page >= pages ? "disabled" : "") + ">下一页</button>" +
+      '<button class="page-btn txt" data-goto="' + pages + '">末页</button></div>';
+    list.innerHTML += pg;
+
+    var psel = document.getElementById("pt-psel");
+    if (psel) psel.addEventListener("change", function () { PAGE_SIZE = parseInt(psel.value, 10); page = 1; render(); });
+
+    // 事件绑定
+    list.querySelectorAll("[data-copy]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = DATA.find(function (x) { return x.id === +b.dataset.copy; });
+        copyText(p.content, "已复制「" + p.title + "」");
+      });
+    });
+    list.querySelectorAll("[data-view]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = DATA.find(function (x) { return x.id === +b.dataset.view; });
+        viewingId = p.id;
+        document.getElementById("view-title").textContent = p.title;
+        document.getElementById("view-meta").innerHTML = '<span class="tag tag-blue">' + p.cat + '</span><span class="tag">🔥 ' + p.hot + '</span><span class="tag">' + p.date + "</span>" + p.tags.map(function (t) { return '<span class="tag">' + t + "</span>"; }).join("");
+        document.getElementById("view-content").textContent = p.content;
+        openModal("modal-view");
+      });
+    });
+    list.querySelectorAll("[data-fav]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = +b.dataset.fav;
+        if (isFav(id)) { favs = favs.filter(function (x) { return x !== id; }); toast("已取消收藏", "info"); }
+        else { favs.push(id); toast("已收藏", "success"); }
+        localStorage.setItem(favKey, JSON.stringify(favs));
+        render(); renderFavs();
+      });
+    });
+    list.querySelectorAll("[data-goto]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = +b.dataset.goto;
+        if (p >= 1 && p <= pages) { page = p; render(); }
+      });
+    });
+  }
+
+  function resetFilters() {
+    document.getElementById("kw").value = "";
+    document.getElementById("cat").value = "";
+    page = 1; render();
+  }
+
+  document.getElementById("kw").addEventListener("input", debounce(function () { page = 1; render(); }, 250));
+  document.getElementById("cat").addEventListener("change", function () { page = 1; render(); });
+  document.getElementById("sort").addEventListener("change", function () { page = 1; render(); });
+  document.getElementById("view-copy").addEventListener("click", function () {
+    var p = DATA.find(function (x) { return x.id === viewingId; });
+    if (p) copyText(p.content, "已复制全文");
+  });
+
+  // 投稿
+  document.getElementById("sub-ok").addEventListener("click", function () {
+    var t = document.getElementById("sub-title").value.trim();
+    var c = document.getElementById("sub-content").value.trim();
+    if (!t) return toast("请填写标题", "error");
+    if (!c) return toast("请填写提示词内容", "error");
+    DATA.unshift({ id: Date.now(), title: t, cat: document.getElementById("sub-cat").value, tags: ["投稿"], hot: 1, date: "2026-09-22", content: c });
+    closeModal("modal-submit");
+    document.getElementById("sub-title").value = ""; document.getElementById("sub-content").value = ""; document.getElementById("sub-note").value = "";
+    page = 1; document.getElementById("sort").value = "new"; render();
+    toast("投稿成功，已进入列表（演示数据不入库）", "success");
+  });
+
+  function renderFavs() {
+    var box = document.getElementById("fav-list");
+    if (!box) return;
+    var fav = DATA.filter(function (p) { return isFav(p.id); });
+    if (!fav.length) {
+      box.innerHTML = '<div class="card"><div class="empty"><div class="e-icon">⭐</div><div class="e-text">还没有收藏 —— 在「提示词列表」点击 ☆ 收藏常用模板</div></div></div>';
+      return;
+    }
+    box.innerHTML = '<div class="grid grid-3">' + fav.map(function (p) {
+      return '<div class="card card-hover"><div class="flex-between"><span class="tag tag-blue">' + p.cat + '</span><button class="btn btn-sm btn-ghost" data-ufav="' + p.id + '">⭐</button></div>' +
+        '<h3 style="font-size:15px; margin:10px 0 6px">' + p.title + '</h3>' +
+        '<div class="code-block" style="font-size:11.5px; height:56px; overflow:hidden; white-space:pre-wrap">' + p.content.replace(/</g, "&lt;").slice(0, 80) + '…</div>' +
+        '<div class="flex mt-8" style="gap:4px"><button class="btn btn-sm btn-ghost" data-uview="' + p.id + '">查看</button>' +
+        '<button class="btn btn-sm btn-primary" data-ucopy="' + p.id + '">复制</button></div></div>';
+    }).join("") + "</div>";
+    box.querySelectorAll("[data-ucopy]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = DATA.find(function (x) { return x.id === +b.dataset.ucopy; });
+        copyText(p.content, "已复制「" + p.title + "」");
+      });
+    });
+    box.querySelectorAll("[data-uview]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = DATA.find(function (x) { return x.id === +b.dataset.uview; });
+        viewingId = p.id;
+        document.getElementById("view-title").textContent = p.title;
+        document.getElementById("view-meta").innerHTML = '<span class="tag tag-blue">' + p.cat + '</span><span class="tag">🔥 ' + p.hot + '</span><span class="tag">' + p.date + "</span>";
+        document.getElementById("view-content").textContent = p.content;
+        openModal("modal-view");
+      });
+    });
+    box.querySelectorAll("[data-ufav]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var id = +b.dataset.ufav;
+        favs = favs.filter(function (x) { return x !== id; });
+        localStorage.setItem(favKey, JSON.stringify(favs));
+        toast("已取消收藏", "info");
+        render(); renderFavs();
+      });
+    });
+  }
+
+  render(); renderFavs();
+  document.addEventListener("click", function (e) {
+    if (e.target.closest && e.target.closest('.tab[data-tab="favs"]')) renderFavs();
+  });
+})();
+</script>
+</body>
+</html>

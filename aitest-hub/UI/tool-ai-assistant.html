@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 问答助手 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / AI 问答助手</div>
+    <div class="page-head">
+      <div>
+        <h1>💬 AI 问答助手</h1>
+        <div class="sub">测试咨询与问题解答 · 自动匹配技能库 · 知识库引用溯源 · 多模型切换</div>
+      </div>
+      <div class="flex">
+        <a class="btn btn-ghost" href="tool-skill-library.html">🧩 技能库</a>
+        <button class="btn btn-ghost" data-open-modal="modal-history">🕘 历史会话</button>
+        <button class="btn btn-ghost" id="btn-clear">🗑 新会话</button>
+      </div>
+    </div>
+
+    <div class="banner banner-info">ℹ️ 参考 TestHub 智能助手（Dify 集成）：助手可调用 <a href="tool-skill-library.html">技能库</a> 中的技能执行任务，回答附知识引用来源；提问建议附带功能点、操作步骤与报错信息。</div>
+
+    <div class="grid" style="grid-template-columns: 300px 1fr; gap:14px">
+      <!-- 左：模型与快捷问题 -->
+      <div>
+        <div class="card" style="padding:14px">
+          <div class="card-title" style="font-size:13.5px">🤖 模型配置 <span class="tag tag-red">AI</span></div>
+          <div class="field"><label>当前模型</label>
+            <select class="select" id="as-model"><option>DeepSeek-V3</option><option>通义千问-Max</option><option>硅基流动 · GLM-4</option><option>GPT-4o</option></select>
+          </div>
+          <div class="field"><label>回答风格</label>
+            <select class="select" id="as-style"><option>专业严谨</option><option>简明扼要</option><option>手把手教学</option></select>
+          </div>
+          <div class="field"><label>知识库检索</label>
+            <label class="checkbox"><input type="checkbox" id="as-rag" checked> 开启 RAG（引用平台文档与历史缺陷）</label>
+          </div>
+          <div class="field"><label>技能自动匹配</label>
+            <label class="checkbox"><input type="checkbox" id="as-skill" checked> 根据问题自动匹配并调用技能</label>
+          </div>
+          <div class="banner banner-green" style="margin:0; font-size:12px">📊 今日额度：文本 128/200 次</div>
+        </div>
+
+        <div class="card mt-16" style="padding:14px">
+          <div class="card-title" style="font-size:13.5px">⚡ 快捷提问</div>
+          <div style="display:flex; flex-direction:column; gap:6px" id="quick-qs">
+            <button class="btn btn-sm btn-ghost" style="text-align:left; justify-content:flex-start">🧪 帮我设计登录接口的测试用例</button>
+            <button class="btn btn-sm btn-ghost" style="text-align:left; justify-content:flex-start">🐞 这个崩溃堆栈怎么分析？</button>
+            <button class="btn btn-sm btn-ghost" style="text-align:left; justify-content:flex-start">🚀 秒杀场景压测方案怎么定 QPS？</button>
+            <button class="btn btn-sm btn-ghost" style="text-align:left; justify-content:flex-start">🛡️ 支付接口有哪些安全测试点？</button>
+            <button class="btn btn-sm btn-ghost" style="text-align:left; justify-content:flex-start">⏰ Crontab「工作日 9 点」怎么写？</button>
+          </div>
+        </div>
+
+        <div class="card mt-16" style="padding:14px">
+          <div class="card-title" style="font-size:13.5px">🔗 已匹配技能</div>
+          <div id="matched-skills" style="display:flex; flex-direction:column; gap:6px">
+            <div class="text-faint" style="font-size:12px">发送问题后，自动匹配的技能将显示在这里</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右：对话区 -->
+      <div class="card" style="display:flex; flex-direction:column; min-height:560px">
+        <div class="chat-box flex-1" id="chat" style="flex:1; overflow-y:auto; max-height:480px; min-height:420px">
+          <div class="msg ai">
+            <div class="m-avatar">🤖</div>
+            <div class="m-body">你好，我是 AITest 智能助手 👋<br>可以咨询用例设计、缺陷分析、自动化、性能与安全测试问题。我会自动匹配<a href="tool-skill-library.html">技能库</a>能力来完成任务，回答附带知识来源。试试左侧的快捷提问吧。</div>
+          </div>
+        </div>
+        <div class="input-group mt-16">
+          <input class="input" id="chat-in" placeholder="输入你的问题，Enter 发送…（Shift+Enter 换行请用长文本模式）">
+          <button class="btn btn-primary" id="chat-send">发送</button>
+        </div>
+        <div class="flex mt-8" style="font-size:11.5px; color:var(--text-faint)">
+          <span>💡 提问请尽量附带：功能点、操作步骤与报错/截图描述</span>
+          <span style="margin-left:auto">内容由 AI 生成，仅供参考</span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 历史会话弹窗 -->
+<div class="modal-mask" id="modal-history">
+  <div class="modal">
+    <div class="modal-head"><h3>🕘 历史会话</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div id="hist-list" style="display:flex; flex-direction:column; gap:8px"></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>关闭</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  var hist = [
+    { title: "秒杀压测 QPS 方案", time: "今天 09:12", msgs: 6 },
+    { title: "崩溃堆栈 NPE 分析", time: "昨天 17:40", msgs: 4 },
+    { title: "退款用例设计咨询", time: "2026-09-20", msgs: 9 }
+  ];
+  var SKILLS = [
+    { kw: ["用例", "测试点", "设计"], id: "SK-01", name: "退款需求→用例技能包" },
+    { kw: ["崩溃", "堆栈", "NPE", "异常"], id: "SK-05", name: "崩溃日志归因技能" },
+    { kw: ["压测", "QPS", "性能", "并发"], id: "SK-04", name: "性能瓶颈定位技能" },
+    { kw: ["安全", "漏洞", "注入", "越权"], id: "SK-03", name: "安全基线核查技能" },
+    { kw: ["接口", "断言"], id: "SK-02", name: "接口断言生成技能" },
+    { kw: ["crontab", "定时", "cron"], id: null, name: null }
+  ];
+  var ANSWERS = {
+    "用例": "已按技能「退款需求→用例技能包」处理 ✅\n\n📌 建议用例（节选 4 条，完整 10 条可导入用例管理）：\n1. 【P0】正常提交退款：选原因+填说明 → 生成待审核退款单\n2. 【P0】不选原因直接提交 → 提示「请选择退款原因」\n3. 【P1】说明输入 200/201 字 → 第 201 字禁止输入\n4. 【P1】审核拒绝后重新申请 → 生成新退款单\n\n📎 知识引用：\n· 《退款功能 PRD v2.1》第 3.2 节\n· 历史缺陷 BUG-2042（说明截断）\n\n👉 可一键导入：",
+    "崩溃": "已按技能「崩溃日志归因技能」聚类分析 ✅\n\n📌 根因假设（置信度排序）：\n1️⃣ NPE：OrderPresenter.onLoad() 在 Activity 销毁后回调（占 62%）\n2️⃣ 主线程网络请求超时未捕获（占 24%）\n\n📌 建议：回调前检查 isDestroyed()；网络层统一 try-catch 上报\n📎 知识引用：APP 崩溃平台近 7 日聚类报告\n👉 ",
+    "压测": "已按技能「性能瓶颈定位技能」给出方案 ✅\n\n📌 QPS 估算：目标在线用户 5 万 × 峰值转化 8% ≈ 4,000 QPS，预留 1.5 倍冗余 → 压测目标 6,000 QPS\n📌 阶梯策略：500 → 2000 → 4000 → 6000，每档持续 5min\n📌 观测：QPS / P99 / 错误率 + 网关与 DB 连接池\n\n👉 可在性能测试模块一键创建场景：",
+    "安全": "已按技能「安全基线核查技能」梳理 ✅\n\n📌 支付接口安全测试点（OWASP 映射）：\n· A01 越权：篡改 orderId / amount（服务端必须重算金额）\n· A04 限流：同账号支付请求速率限制\n· A08 完整性：回调签名校验 + 幂等\n· A09 日志：敏感字段脱敏\n\n👉 详细 PoC 与复验用例见安全测试模块：",
+    "接口": "已按技能「接口断言生成技能」处理 ✅\n\n📌 对 /v1/pay 建议断言：\n· 状态码 == 200\n· $.code == 0\n· $.data.payUrl 非空且 https 开头\n· 幂等：重复提交返回同一 payUrl\n\n👉 前往接口测试模块配置：",
+    "crontab": "「工作日 9 点」Crontab：0 9 * * 1-5\n\n分(0) 时(9) 日(*) 月(*) 周(1-5，周一到周五)\n\n⏰ 可在定时任务模块创建该任务："
+  };
+  var LINKS = {
+    "用例": '<a href="tool-case-management.html">🗂️ 导入用例管理 →</a> <a href="tool-test-cases.html">✨ 去 AI 用例工作台 →</a>',
+    "崩溃": '<a href="tool-defect-management.html">🐞 提交缺陷 →</a>',
+    "压测": '<a href="tool-performance-testing.html">🚀 创建性能场景 →</a> <a href="tool-api-scenario-studio.html">🎛️ 压测编排 →</a>',
+    "安全": '<a href="tool-security-testing.html">🛡️ 安全测试模块 →</a>',
+    "接口": '<a href="tool-api-testing.html">🔗 接口测试 →</a>',
+    "crontab": '<a href="tool-scheduler.html">⏰ 定时任务 →</a> <a href="tool-data-factory.html?tab=crontab">🏭 Crontab 工具 →</a>'
+  };
+
+  function matchSkill(q) {
+    q = q.toLowerCase();
+    for (var i = 0; i < SKILLS.length; i++) {
+      var s = SKILLS[i];
+      for (var j = 0; j < s.kw.length; j++) {
+        if (q.indexOf(s.kw[j].toLowerCase()) >= 0) return s;
+      }
+    }
+    return null;
+  }
+
+  function addMsg(html, who) {
+    var box = document.getElementById("chat");
+    var div = document.createElement("div");
+    div.className = "msg " + (who === "user" ? "user" : "ai");
+    div.innerHTML = '<div class="m-avatar">' + (who === "user" ? "🙂" : "🤖") + '</div><div class="m-body">' + html + "</div>";
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+    return div;
+  }
+
+  function showSkills(s) {
+    var box = document.getElementById("matched-skills");
+    if (!s) {
+      box.innerHTML = '<div class="text-faint" style="font-size:12px">本次未匹配到技能（直接回答）</div>';
+      return;
+    }
+    box.innerHTML =
+      '<div class="flex-between" style="padding:8px 10px; border:1px solid var(--border); border-radius:8px">' +
+      '<div><div style="font-size:12.5px; font-weight:600">' + s.name + '</div><div class="text-faint mono" style="font-size:11px">' + s.id + " · Function Calling</div></div>" +
+      '<span class="tag tag-green">已调用</span></div>';
+  }
+
+  function send(text) {
+    var inp = document.getElementById("chat-in");
+    var q = (text || inp.value).trim();
+    if (!q) return;
+    if (!text) inp.value = "";
+    addMsg(q.replace(/</g, "&lt;"), "user");
+    var tip = addMsg('<span class="typing-dots"><span></span><span></span><span></span></span> ' + document.getElementById("as-model").value + " 思考中…", "ai");
+
+    var skill = document.getElementById("as-skill").checked ? matchSkill(q) : null;
+    setTimeout(function () {
+      showSkills(skill);
+      var key = Object.keys(ANSWERS).find(function (k) { return q.toLowerCase().indexOf(k.toLowerCase()) >= 0; }) || "用例";
+      var style = document.getElementById("as-style").value;
+      var body = (ANSWERS[key] || ANSWERS["用例"]) + (LINKS[key] || "");
+      if (style === "简明扼要") body = body.split("\n").slice(0, 5).join("\n") + "\n…（简明模式已截断，可切换回答风格）";
+      if (style === "手把手教学") body = "🖐 手把手模式：\n" + body + "\n\n第一步：打开对应模块 → 第二步：按上述配置填写 → 第三步：执行并核对结果。";
+      if (!document.getElementById("as-rag").checked) body = body.replace(/📎 知识引用[\s\S]*?(?=\n👉|\n\n👉|$)/, "📎 知识引用：未开启 RAG\n");
+      tip.querySelector(".m-body").innerHTML = body.replace(/\n/g, "<br>");
+      document.getElementById("chat").scrollTop = document.getElementById("chat").scrollHeight;
+    }, 1400);
+  }
+
+  document.getElementById("chat-send").addEventListener("click", function () { send(); });
+  document.getElementById("chat-in").addEventListener("keydown", function (e) { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } });
+  document.querySelectorAll("#quick-qs .btn").forEach(function (b) {
+    b.addEventListener("click", function () { send(b.textContent.replace(/^[^\s]+\s/, "")); });
+  });
+  document.getElementById("btn-clear").addEventListener("click", function () {
+    confirmAction({ title: "开启新会话", message: "当前会话将清空（历史会话保留），确定吗？", onOk: function () {
+      var box = document.getElementById("chat");
+      box.innerHTML = '<div class="msg ai"><div class="m-avatar">🤖</div><div class="m-body">新会话已开始，请问有什么测试问题？</div></div>';
+      showSkills(null);
+      toast("已开启新会话", "success");
+    }});
+  });
+
+  function renderHist() {
+    document.getElementById("hist-list").innerHTML = hist.map(function (h) {
+      return '<div class="flex-between" style="padding:9px 12px; border:1px solid var(--border); border-radius:8px">' +
+        '<div><div style="font-size:13px; font-weight:600">' + h.title + '</div><div class="text-faint" style="font-size:11.5px">' + h.time + " · " + h.msgs + " 条消息</div></div>" +
+        '<button class="btn btn-sm btn-ghost" onclick="toast(\'演示环境：会话回放建设中\',\'info\')">查看</button></div>';
+    }).join("") || '<div class="empty" style="padding:24px"><div class="e-text">暂无历史会话</div></div>';
+  }
+
+  renderHist();
+})();
+</script>
+</body>
+</html>

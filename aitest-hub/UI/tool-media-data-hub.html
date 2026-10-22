@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>媒体与数据工具箱 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / 媒体与数据工具箱</div>
+    <div class="page-head">
+      <div>
+        <h1>🧰 媒体与数据工具箱</h1>
+        <div class="sub">媒体处理与开发助手一页集齐，浏览器本地处理，数据不出域</div>
+      </div>
+    </div>
+
+    <div class="tabs" data-scope="hub">
+      <button class="tab active" data-tab="json">🧾 JSON 工具</button>
+      <button class="tab" data-tab="diff">📐 文本 Diff</button>
+      <button class="tab" data-tab="ts">⏰ 时间戳</button>
+      <button class="tab" data-tab="codec">🔐 Base64 / URL</button>
+      <button class="tab" data-tab="img">🖼️ 图片处理</button>
+      <button class="tab" data-tab="tts">🔊 音频生成</button>
+    </div>
+
+    <div id="hub">
+      <!-- ============ JSON ============ -->
+      <div class="tab-pane active" data-pane="json">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="flex-between mb-8">
+              <div class="card-title" style="margin:0">输入</div>
+              <div class="flex">
+                <button class="btn btn-sm btn-ghost" id="json-sample">示例</button>
+                <button class="btn btn-sm btn-ghost" id="json-clear">清空</button>
+              </div>
+            </div>
+            <textarea class="textarea mono" id="json-in" rows="12" placeholder='{"name":"AITest Hub","version":"1.0"}'></textarea>
+            <div class="flex mt-8">
+              <button class="btn btn-primary btn-sm" id="json-format">✨ 格式化</button>
+              <button class="btn btn-ghost btn-sm" id="json-min">压缩</button>
+              <button class="btn btn-ghost btn-sm" id="json-sort">键排序</button>
+              <button class="btn btn-ghost btn-sm" id="json-copy">复制结果</button>
+            </div>
+            <div id="json-status" class="mt-8" style="font-size:12.5px"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">输出</div>
+            <div class="code-block" id="json-out" style="min-height:280px">// 格式化结果将在此显示</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ Diff ============ -->
+      <div class="tab-pane" data-pane="diff">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-title">原文（A）</div>
+            <textarea class="textarea mono" id="diff-a" rows="10" placeholder="粘贴原始文本…">登录接口返回 code:0
+用户列表分页大小 10
+订单状态：待支付</textarea>
+          </div>
+          <div class="card">
+            <div class="card-title">新文（B）</div>
+            <textarea class="textarea mono" id="diff-b" rows="10" placeholder="粘贴对比文本…">登录接口返回 code:200
+用户列表分页大小 20
+订单状态：待支付
+新增：退款状态：审核中</textarea>
+          </div>
+        </div>
+        <div class="flex mt-16">
+          <button class="btn btn-primary" id="diff-run">🔍 对比</button>
+          <button class="btn btn-ghost" id="diff-swap">⇄ 交换 A/B</button>
+          <span class="text-dim" id="diff-stat" style="font-size:12.5px"></span>
+        </div>
+        <div class="card mt-16">
+          <div class="card-title">差异结果</div>
+          <div class="code-block" id="diff-out">// 点击「对比」查看差异</div>
+        </div>
+      </div>
+
+      <!-- ============ 时间戳 ============ -->
+      <div class="tab-pane" data-pane="ts">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-title">时间戳 → 日期</div>
+            <div class="field"><label>时间戳（秒或毫秒）</label>
+              <div class="input-group">
+                <input class="input mono" id="ts-in" placeholder="1727000000">
+                <button class="btn btn-primary" id="ts-conv">转换</button>
+              </div>
+            </div>
+            <div class="card" style="background:var(--bg-soft)" id="ts-out"><span class="text-faint">结果将在此显示</span></div>
+          </div>
+          <div class="card">
+            <div class="card-title">当前时间</div>
+            <div class="mono" id="ts-now" style="font-size:18px">—</div>
+            <div class="flex mt-8">
+              <button class="btn btn-sm btn-ghost" id="ts-copy-s">复制秒级</button>
+              <button class="btn btn-sm btn-ghost" id="ts-copy-ms">复制毫秒级</button>
+            </div>
+            <hr style="border:none; border-top:1px solid var(--border); margin:14px 0">
+            <div class="field"><label>日期 → 时间戳</label>
+              <input class="input" id="ts-date" type="datetime-local">
+            </div>
+            <button class="btn btn-primary btn-sm" id="ts-rev">反向转换</button>
+            <div class="mono mt-8" id="ts-rev-out" style="color:var(--green)"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ Base64 / URL ============ -->
+      <div class="tab-pane" data-pane="codec">
+        <div class="grid grid-2">
+          <div class="card">
+            <div class="card-title">Base64</div>
+            <textarea class="textarea mono" id="b64-in" rows="5" placeholder="输入文本…"></textarea>
+            <div class="flex mt-8">
+              <button class="btn btn-primary btn-sm" id="b64-enc">编码 →</button>
+              <button class="btn btn-ghost btn-sm" id="b64-dec">← 解码</button>
+            </div>
+            <textarea class="textarea mono mt-8" id="b64-out" rows="5" placeholder="结果…"></textarea>
+          </div>
+          <div class="card">
+            <div class="card-title">URL 编解码</div>
+            <textarea class="textarea mono" id="url-in" rows="5" placeholder="输入 URL 或含特殊字符文本…"></textarea>
+            <div class="flex mt-8">
+              <button class="btn btn-primary btn-sm" id="url-enc">编码 →</button>
+              <button class="btn btn-ghost btn-sm" id="url-dec">← 解码</button>
+            </div>
+            <textarea class="textarea mono mt-8" id="url-out" rows="5" placeholder="结果…"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 图片处理 ============ -->
+      <div class="tab-pane" data-pane="img">
+        <div class="grid" style="grid-template-columns: 1fr 1.2fr">
+          <div class="card">
+            <div class="card-title">上传图片</div>
+            <div class="card" style="border-style:dashed; text-align:center; padding:34px; cursor:pointer" id="img-drop">
+              <div style="font-size:32px">🖼️</div>
+              <div class="text-dim mt-8">点击选择或拖拽图片到此处</div>
+              <div class="text-faint" style="font-size:12px">支持 PNG / JPG / WebP，≤ 10MB</div>
+            </div>
+            <input type="file" id="img-input" class="hidden" accept="image/*">
+            <div class="field mt-16"><label>目标格式</label>
+              <select class="select" id="img-fmt"><option>WebP</option><option>JPEG</option><option>PNG</option></select>
+            </div>
+            <div class="field"><label>压缩质量 <span class="mono text-dim" id="img-q-val">80</span>%</label>
+              <input type="range" id="img-q" min="10" max="100" value="80" style="width:100%; accent-color:var(--primary)">
+            </div>
+            <button class="btn btn-primary" id="img-go" disabled style="width:100%">⚙️ 开始压缩 / 转换</button>
+            <div id="img-result" class="mt-8" style="font-size:12.5px"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">预览 <span class="tag" id="img-info">未加载</span></div>
+            <div style="background:var(--bg-soft); border:1px solid var(--border); border-radius:var(--radius); min-height:300px; display:grid; place-items:center; overflow:hidden">
+              <img id="img-preview" class="hidden" style="max-width:100%; max-height:300px">
+              <span class="text-faint" id="img-ph">图片预览区</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ 音频 ============ -->
+      <div class="tab-pane" data-pane="tts">
+        <div class="grid" style="grid-template-columns: 1fr 1.2fr">
+          <div class="card">
+            <div class="card-title">文本转语音（TTS）</div>
+            <div class="field"><label>文本内容 <span class="text-red">*</span></label>
+              <textarea class="textarea" id="tts-text" rows="6" placeholder="输入要转换为语音的文本，最多 500 字…">欢迎登录 AITest Hub，测试效率提升一个量级。</textarea>
+              <div class="hint"><span id="tts-count">0</span>/500 字</div>
+            </div>
+            <div class="grid grid-2" style="gap:10px">
+              <div class="field"><label>音色</label>
+                <select class="select" id="tts-voice"><option>晓晓（女声·温柔）</option><option>宇轩（男声·沉稳）</option><option>灵儿（女声·活泼）</option></select>
+              </div>
+              <div class="field"><label>语速</label>
+                <select class="select" id="tts-speed"><option>0.8x</option><option selected>1.0x</option><option>1.2x</option><option>1.5x</option></select>
+              </div>
+            </div>
+            <button class="btn btn-primary" id="tts-go" style="width:100%">🎵 生成音频</button>
+          </div>
+          <div class="card">
+            <div class="card-title">播放器</div>
+            <div class="card" style="background:var(--bg-soft); text-align:center; padding:40px" id="tts-player">
+              <div style="font-size:36px">🎵</div>
+              <div class="text-dim mt-8" id="tts-status">尚未生成音频</div>
+              <div class="mt-16 hidden" id="tts-ctrl">
+                <div class="progress mb-8"><div class="bar" id="tts-bar" style="width:0%"></div></div>
+                <div class="flex" style="justify-content:center">
+                  <button class="btn btn-primary btn-sm" id="tts-play">▶ 播放</button>
+                  <button class="btn btn-ghost btn-sm" id="tts-dl">⬇️ 下载 MP3</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  /* ================= JSON ================= */
+  function setJsonOut(obj) {
+    var s = typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
+    document.getElementById("json-out").textContent = s;
+  }
+  document.getElementById("json-format").addEventListener("click", function () {
+    try {
+      var obj = JSON.parse(document.getElementById("json-in").value);
+      setJsonOut(obj);
+      document.getElementById("json-status").innerHTML = '<span class="text-green">✅ JSON 合法</span> · ' + Object.keys(obj).length + " 个顶层键";
+    } catch (e) {
+      document.getElementById("json-status").innerHTML = '<span class="text-red">❌ 解析失败：' + e.message + "</span>";
+      toast("JSON 语法错误：" + e.message.slice(0, 40), "error");
+    }
+  });
+  document.getElementById("json-min").addEventListener("click", function () {
+    try { setJsonOut(JSON.stringify(JSON.parse(document.getElementById("json-in").value))); toast("已压缩", "success"); }
+    catch (e) { toast("JSON 语法错误", "error"); }
+  });
+  document.getElementById("json-sort").addEventListener("click", function () {
+    function sortKeys(o) {
+      if (Array.isArray(o)) return o.map(sortKeys);
+      if (o && typeof o === "object") {
+        var r = {}; Object.keys(o).sort().forEach(function (k) { r[k] = sortKeys(o[k]); }); return r;
+      }
+      return o;
+    }
+    try { setJsonOut(sortKeys(JSON.parse(document.getElementById("json-in").value))); toast("已按键名排序", "success"); }
+    catch (e) { toast("JSON 语法错误", "error"); }
+  });
+  document.getElementById("json-copy").addEventListener("click", function () {
+    var out = document.getElementById("json-out").textContent;
+    if (out && out.indexOf("//") !== 0) copyText(out); else toast("暂无结果可复制", "warn");
+  });
+  document.getElementById("json-sample").addEventListener("click", function () {
+    document.getElementById("json-in").value = '{"name":"AITest Hub","modules":["jmeter","ai-cases","prompts","ui-automation","toolkit"],"stats":{"qps":1943,"errRate":0.34}}';
+    toast("已填入示例", "info");
+  });
+  document.getElementById("json-clear").addEventListener("click", function () {
+    document.getElementById("json-in").value = "";
+    document.getElementById("json-out").textContent = "// 格式化结果将在此显示";
+    document.getElementById("json-status").textContent = "";
+  });
+
+  /* ================= Diff ================= */
+  document.getElementById("diff-run").addEventListener("click", function () {
+    var a = document.getElementById("diff-a").value.split("\n");
+    var b = document.getElementById("diff-b").value.split("\n");
+    var html = "", add = 0, del = 0;
+    var max = Math.max(a.length, b.length);
+    for (var i = 0; i < max; i++) {
+      if (a[i] === b[i]) html += "  " + (a[i] || "") + "\n";
+      else {
+        if (a[i] !== undefined) { html += '<span class="n">- ' + a[i].replace(/</g, "&lt;") + "</span>\n"; del++; }
+        if (b[i] !== undefined) { html += '<span class="s">+ ' + b[i].replace(/</g, "&lt;") + "</span>\n"; add++; }
+      }
+    }
+    document.getElementById("diff-out").innerHTML = html;
+    document.getElementById("diff-stat").textContent = "差异：+" + add + " 行 / -" + del + " 行";
+    toast("对比完成：+" + add + " / -" + del, "success");
+  });
+  document.getElementById("diff-swap").addEventListener("click", function () {
+    var a = document.getElementById("diff-a"), b = document.getElementById("diff-b");
+    var t = a.value; a.value = b.value; b.value = t;
+    toast("已交换 A/B", "info");
+  });
+
+  /* ================= 时间戳 ================= */
+  function fmt(d) {
+    return d.toLocaleDateString("zh-CN") + " " + d.toLocaleTimeString("zh-CN", { hour12: false }) + " (" + d.toISOString() + ")";
+  }
+  document.getElementById("ts-conv").addEventListener("click", function () {
+    var v = document.getElementById("ts-in").value.trim();
+    if (!/^\d+$/.test(v)) return toast("请输入纯数字时间戳", "error");
+    var n = +v; if (n < 1e12) n *= 1000;
+    document.getElementById("ts-out").innerHTML = '<span class="text-green mono">' + fmt(new Date(n)) + "</span>";
+  });
+  setInterval(function () {
+    document.getElementById("ts-now").textContent = Math.floor(Date.now() / 1000) + " ｜ " + fmt(new Date());
+  }, 1000);
+  document.getElementById("ts-copy-s").addEventListener("click", function () { copyText(String(Math.floor(Date.now() / 1000)), "已复制秒级时间戳"); });
+  document.getElementById("ts-copy-ms").addEventListener("click", function () { copyText(String(Date.now()), "已复制毫秒级时间戳"); });
+  document.getElementById("ts-rev").addEventListener("click", function () {
+    var v = document.getElementById("ts-date").value;
+    if (!v) return toast("请先选择日期时间", "error");
+    var ts = Math.floor(new Date(v).getTime() / 1000);
+    document.getElementById("ts-rev-out").textContent = "秒级：" + ts + " ｜ 毫秒级：" + ts * 1000;
+  });
+
+  /* ================= Base64 / URL ================= */
+  document.getElementById("b64-enc").addEventListener("click", function () {
+    var v = document.getElementById("b64-in").value;
+    if (!v) return toast("请输入文本", "warn");
+    try { document.getElementById("b64-out").value = btoa(unescape(encodeURIComponent(v))); toast("Base64 编码成功", "success"); }
+    catch (e) { toast("编码失败", "error"); }
+  });
+  document.getElementById("b64-dec").addEventListener("click", function () {
+    var v = document.getElementById("b64-in").value;
+    if (!v) return toast("请输入内容", "warn");
+    try { document.getElementById("b64-out").value = decodeURIComponent(escape(atob(v.trim()))); toast("Base64 解码成功", "success"); }
+    catch (e) { toast("不是合法的 Base64", "error"); }
+  });
+  document.getElementById("url-enc").addEventListener("click", function () {
+    var v = document.getElementById("url-in").value;
+    if (!v) return toast("请输入文本", "warn");
+    document.getElementById("url-out").value = encodeURIComponent(v);
+    toast("URL 编码成功", "success");
+  });
+  document.getElementById("url-dec").addEventListener("click", function () {
+    var v = document.getElementById("url-in").value;
+    if (!v) return toast("请输入内容", "warn");
+    try { document.getElementById("url-out").value = decodeURIComponent(v); toast("URL 解码成功", "success"); }
+    catch (e) { toast("解码失败：非法编码", "error"); }
+  });
+
+  /* ================= 图片处理 ================= */
+  var imgFile = null;
+  var drop = document.getElementById("img-drop"), imgInput = document.getElementById("img-input");
+  drop.addEventListener("click", function () { imgInput.click(); });
+  drop.addEventListener("dragover", function (e) { e.preventDefault(); });
+  drop.addEventListener("drop", function (e) { e.preventDefault(); if (e.dataTransfer.files[0]) loadImg(e.dataTransfer.files[0]); });
+  imgInput.addEventListener("change", function () { if (imgInput.files[0]) loadImg(imgInput.files[0]); });
+  function loadImg(f) {
+    if (!f.type.startsWith("image/")) return toast("请选择图片文件", "error");
+    if (f.size > 10 * 1024 * 1024) return toast("图片超过 10MB 限制", "error");
+    imgFile = f;
+    var url = URL.createObjectURL(f);
+    var pv = document.getElementById("img-preview");
+    pv.src = url; pv.classList.remove("hidden");
+    document.getElementById("img-ph").classList.add("hidden");
+    document.getElementById("img-info").textContent = f.name + " · " + (f.size / 1024).toFixed(1) + "KB";
+    document.getElementById("img-go").disabled = false;
+    document.getElementById("img-result").innerHTML = "";
+    toast("图片已加载：" + f.name, "success");
+  }
+  document.getElementById("img-q").addEventListener("input", function () {
+    document.getElementById("img-q-val").textContent = this.value;
+  });
+  document.getElementById("img-go").addEventListener("click", function () {
+    if (!imgFile) return;
+    var btn = this;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 处理中…';
+    setTimeout(function () {
+      var after = Math.round(imgFile.size * (+document.getElementById("img-q").value / 100) * 0.6);
+      document.getElementById("img-result").innerHTML =
+        '<span class="text-green">✅ 转换为 ' + document.getElementById("img-fmt").value +
+        " 完成：" + (imgFile.size / 1024).toFixed(1) + "KB → " + (after / 1024).toFixed(1) + 'KB</span> ' +
+        '<button class="btn btn-sm btn-ghost" onclick="toast(\'演示环境：文件已保存\',\'success\')">⬇️ 下载</button>';
+      btn.disabled = false; btn.textContent = "⚙️ 开始压缩 / 转换";
+      toast("图片处理完成，压缩 " + Math.round((1 - after / imgFile.size) * 100) + "%", "success");
+    }, 1200);
+  });
+
+  /* ================= TTS ================= */
+  var ttsText = document.getElementById("tts-text");
+  ttsText.addEventListener("input", function () {
+    var n = this.value.length;
+    document.getElementById("tts-count").textContent = n;
+    if (n > 500) { this.value = this.value.slice(0, 500); toast("最多 500 字", "warn"); }
+  });
+  document.getElementById("tts-go").addEventListener("click", function () {
+    var t = ttsText.value.trim();
+    if (!t) return toast("请输入文本内容", "error");
+    var btn = this;
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 生成中…';
+    document.getElementById("tts-status").textContent = "音频生成中…";
+    setTimeout(function () {
+      btn.disabled = false; btn.textContent = "🎵 生成音频";
+      document.getElementById("tts-status").textContent = "tts-output.mp3 · " + document.getElementById("tts-voice").value + " · " + document.getElementById("tts-speed").value;
+      document.getElementById("tts-ctrl").classList.remove("hidden");
+      toast("音频生成完成", "success");
+      var bar = document.getElementById("tts-bar"), playing = false;
+      document.getElementById("tts-play").onclick = function () {
+        playing = !playing;
+        this.textContent = playing ? "⏸ 暂停" : "▶ 播放";
+        var w = parseInt(bar.style.width) || 0;
+        var timer = setInterval(function () {
+          if (!playing) return;
+          w += 1; bar.style.width = w + "%";
+          if (w >= 100) { clearInterval(timer); playing = false; document.getElementById("tts-play").textContent = "▶ 播放"; }
+        }, 60);
+      };
+      document.getElementById("tts-dl").onclick = function () { toast("tts-output.mp3 下载成功（演示）", "success"); };
+    }, 1500);
+  });
+
+  /* ================= Tab 参数 ================= */
+  if (qs("tab")) {
+    var tb = document.querySelector('.tab[data-tab="' + qs("tab") + '"]');
+    if (tb) tb.click();
+  }
+})();
+</script>
+</body>
+</html>

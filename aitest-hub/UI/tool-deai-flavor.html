@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>去 AI 味中心 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / 去 AI 味中心</div>
+    <div class="page-head">
+      <div>
+        <h1>🧽 去 AI 味中心</h1>
+        <div class="sub">可复用的「去 AI 味」策略库：对 AI 生成的用例描述 / 报告 / 文档做人性化润色，策略 = 提示词后缀，支持启停与试运行对比</div>
+      </div>
+      <div class="flex">
+        <a class="btn btn-ghost" href="tool-test-cases.html">✨ AI 用例工作台</a>
+        <a class="btn btn-ghost" href="tool-config-center.html">⚙️ 配置中心</a>
+        <button class="btn btn-primary" data-open-modal="modal-pol">＋ 新建策略</button>
+      </div>
+    </div>
+
+    <div class="banner banner-info">ℹ️ 对应平台 DeAIConfig 模块：策略本质是<strong>追加到 AI 提示词末尾的指令后缀</strong>，启用后对全站 AI 生成（用例 / 报告 / 分析结论）统一生效，可按策略试运行对比润色前后效果。</div>
+
+    <div class="tabs" data-scope="deai">
+      <button class="tab active" data-tab="list">📋 策略管理 <span class="badge-count" id="p-cnt">0</span></button>
+      <button class="tab" data-tab="try">🧪 试运行对比</button>
+    </div>
+
+    <div id="deai">
+      <!-- ============ 策略管理 ============ -->
+      <div class="tab-pane active" data-pane="list">
+        <div class="filter-bar">
+          <input class="input search" id="p-kw" placeholder="🔍 搜索策略名称 / 描述">
+          <select class="select" id="p-status"><option value="">全部状态</option><option>启用</option><option>禁用</option></select>
+          <button class="btn btn-ghost btn-sm" id="p-reset">重置</button>
+        </div>
+        <div id="p-table"></div>
+      </div>
+
+      <!-- ============ 试运行对比 ============ -->
+      <div class="tab-pane" data-pane="try">
+        <div class="card">
+          <div class="card-title">🧪 润色效果对比 <span class="tag tag-red">AI</span></div>
+          <div class="grid grid-2" style="gap:12px">
+            <div class="field"><label>应用策略</label>
+              <select class="select" id="try-policy"><option>策略组合（全部启用项）</option><option>口语化人味</option><option>测试术语规范化</option><option>简报压缩</option></select>
+            </div>
+            <div class="field"><label>原文类型</label>
+              <select class="select" id="try-type"><option>测试用例描述</option><option>测试报告结论</option><option>缺陷描述</option></select>
+            </div>
+          </div>
+          <div class="field"><label>AI 原文</label>
+            <textarea class="textarea mono" id="try-in" rows="5">验证用户登录功能：在用户名输入框输入合法的用户名字符串，在密码输入框输入对应的合法密码字符串，随后触发登录按钮的点击事件，系统应当对该次提交进行服务端校验并返回相应的认证结果。</textarea>
+          </div>
+          <button class="btn btn-primary" id="try-go">✨ 执行润色</button>
+          <div class="grid grid-2 mt-16" style="gap:12px">
+            <div>
+              <div class="card-title" style="font-size:13.5px">润色前 <span class="text-faint" style="font-size:11px">AI 味：92%</span></div>
+              <div class="code-block" id="try-before" style="min-height:140px"></div>
+            </div>
+            <div>
+              <div class="card-title" style="font-size:13.5px">润色后 <span class="tag tag-green" id="try-score">AI 味：—</span></div>
+              <div class="code-block" id="try-after" style="min-height:140px">// 点击「执行润色」后显示</div>
+            </div>
+          </div>
+          <div class="flex mt-8">
+            <button class="btn btn-ghost btn-sm" id="try-copy">📋 复制润色后文本</button>
+            <button class="btn btn-ghost btn-sm" id="try-save">💾 存为策略样例</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 新建/编辑策略弹窗 -->
+<div class="modal-mask" id="modal-pol">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="pol-title">＋ 新建策略</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="grid grid-2" style="gap:12px">
+        <div class="field"><label>策略名称 <span class="text-red">*</span></label><input class="input" id="pf-name" placeholder="如：口语化人味"></div>
+        <div class="field"><label>启用状态</label>
+          <div class="flex" style="gap:14px">
+            <label class="checkbox"><input type="radio" name="pf-status" value="启用" checked> 启用</label>
+            <label class="checkbox"><input type="radio" name="pf-status" value="禁用"> 禁用</label>
+          </div>
+        </div>
+      </div>
+      <div class="field"><label>描述</label><input class="input" id="pf-desc" placeholder="策略用途说明"></div>
+      <div class="field"><label>提示词后缀 <span class="text-red">*</span></label>
+        <textarea class="textarea mono" id="pf-suffix" rows="5" placeholder="追加到 AI 提示词后的指令，如：避免排比句与总-分-总模板腔…"></textarea>
+        <div class="hint">该后缀将拼接在所有 AI 生成提示词末尾（用例 / 报告 / 缺陷描述）</div>
+      </div>
+      <div class="field"><label>作用范围</label>
+        <div class="flex" style="gap:8px; flex-wrap:wrap">
+          <label class="checkbox"><input type="checkbox" checked> 测试用例</label>
+          <label class="checkbox"><input type="checkbox" checked> 测试报告</label>
+          <label class="checkbox"><input type="checkbox"> 缺陷描述</label>
+          <label class="checkbox"><input type="checkbox"> AI 问答</label>
+        </div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="pf-save">💾 保存策略</button>
+    </div>
+  </div>
+</div>
+
+<!-- 策略详情弹窗 -->
+<div class="modal-mask" id="modal-view2">
+  <div class="modal">
+    <div class="modal-head"><h3 id="vw2-title">策略详情</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body" id="vw2-body"></div>
+    <div class="modal-foot"><button class="btn btn-primary" data-close-modal>关闭</button></div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  var policies = [
+    { id: "DA-05", name: "口语化人味", desc: "消除排比与模板腔，贴近测试同学日常表达", status: "启用", scope: ["测试用例", "测试报告"], created: "2026-09-20", uses: 156, suffix: "避免排比句、总-分-总结构与「首先/其次/最后」模板词；用测试同学的口吻，短句为主，可直接说结果；不得出现「综上所述」。" },
+    { id: "DA-04", name: "测试术语规范化", desc: "统一用例措辞：验证/校验/预期结果表述", status: "启用", scope: ["测试用例"], created: "2026-09-16", uses: 203, uses2: true, suffix: "统一动词为「验证/校验」；预期结果用「系统应…」句式；禁止模糊词（大概、基本上、可能）。" },
+    { id: "DA-03", name: "简报压缩", desc: "报告结论压缩至 3 句内，只留结论与风险", status: "启用", scope: ["测试报告"], created: "2026-09-10", uses: 88, suffix: "输出压缩为不超过 3 句：结论 → 关键数据 → 风险；删除过程性描述与重复修饰。" },
+    { id: "DA-02", name: "缺陷描述客观化", desc: "去除情绪化与推测性表述，只留事实", status: "禁用", scope: ["缺陷描述"], created: "2026-09-05", uses: 34, suffix: "只陈述观察到的现象、复现步骤与影响范围；禁止推测原因（除非有证据）；禁止主观形容。" },
+    { id: "DA-01", name: "英文报告口吻", desc: "面向海外团队的英文测试报告措辞", status: "禁用", scope: ["测试报告"], created: "2026-08-28", uses: 12, suffix: "Use concise QA report tone; state facts and impact; avoid hedging phrases." }
+  ];
+  var S_CLS = { "测试用例": "tag-blue", "测试报告": "tag-purple", "缺陷描述": "tag-orange", "AI 问答": "tag-green" };
+
+  function render() {
+    document.getElementById("p-cnt").textContent = policies.length;
+    var kw = document.getElementById("p-kw").value.trim().toLowerCase();
+    var st = document.getElementById("p-status").value;
+    var d = policies.filter(function (p) {
+      return (!kw || (p.name + p.desc).toLowerCase().indexOf(kw) >= 0) && (!st || p.status === st);
+    });
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>ID</th><th>策略名称</th><th>作用范围</th><th>使用次数</th><th>创建时间</th><th>状态</th><th style="width:220px">操作</th></tr></thead><tbody>';
+    if (!d.length) html += '<tr><td colspan="7"><div class="empty"><div class="e-icon">🧽</div><div class="e-text">无匹配策略</div></div></td></tr>';
+    d.forEach(function (p) {
+      html += '<tr><td class="mono">' + p.id + "</td>" +
+        '<td><div class="cell-main">' + p.name + '</div><div class="cell-sub">' + p.desc + "</div></td>" +
+        "<td>" + p.scope.map(function (s) { return '<span class="tag ' + S_CLS[s] + '" style="margin-right:3px">' + s + "</span>"; }).join("") + "</td>" +
+        '<td class="mono">' + p.uses + "</td>" +
+        '<td class="mono" style="font-size:12px">' + p.created + "</td>" +
+        "<td>" + (p.status === "启用" ? '<span class="tag tag-green">启用</span>' : '<span class="tag">禁用</span>') + "</td>" +
+        '<td><div class="row-actions" style="opacity:1">' +
+        '<button class="btn btn-sm btn-ghost" data-view="' + p.id + '">查看</button>' +
+        '<button class="btn btn-sm btn-ghost" data-edit="' + p.id + '">编辑</button>' +
+        '<button class="btn btn-sm btn-ghost" data-toggle="' + p.id + '">' + (p.status === "启用" ? "禁用" : "启用") + "</button>" +
+        '<button class="btn btn-sm btn-danger" data-del="' + p.id + '">删除</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("p-table").innerHTML = html;
+    bind();
+  }
+  function bind() {
+    document.querySelectorAll("[data-view]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = policies.find(function (x) { return x.id === b.dataset.view; });
+        document.getElementById("vw2-title").textContent = p.name;
+        document.getElementById("vw2-body").innerHTML =
+          '<div class="kv"><span>ID</span><b class="mono">' + p.id + '</b></div>' +
+          '<div class="kv"><span>描述</span><b>' + p.desc + '</b></div>' +
+          '<div class="kv"><span>作用范围</span><b>' + p.scope.join("、") + '</b></div>' +
+          '<div class="kv"><span>状态</span><b>' + p.status + " · 已应用 " + p.uses + ' 次</b></div>' +
+          '<div class="field mt-16"><label>提示词后缀</label><div class="code-block">' + p.suffix.replace(/</g, "&lt;") + "</div></div>";
+        openModal("modal-view2");
+      });
+    });
+    document.querySelectorAll("[data-edit]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = policies.find(function (x) { return x.id === b.dataset.edit; });
+        document.getElementById("pol-title").textContent = "编辑策略 · " + p.id;
+        document.getElementById("pf-name").value = p.name;
+        document.getElementById("pf-desc").value = p.desc;
+        document.getElementById("pf-suffix").value = p.suffix;
+        openModal("modal-pol");
+      });
+    });
+    document.querySelectorAll("[data-toggle]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = policies.find(function (x) { return x.id === b.dataset.toggle; });
+        p.status = p.status === "启用" ? "禁用" : "启用";
+        render(); toast("策略已" + p.status + (p.status === "启用" ? "，对全站 AI 生成生效" : ""), "success");
+      });
+    });
+    document.querySelectorAll("[data-del]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var p = policies.find(function (x) { return x.id === b.dataset.del; });
+        confirmAction({ title: "删除策略", message: "确定删除「" + p.name + "」吗？已生成的文本不受影响。", onOk: function () {
+          policies = policies.filter(function (x) { return x.id !== p.id; });
+          render(); toast("策略已删除", "success");
+        }});
+      });
+    });
+  }
+  ["p-kw", "p-status"].forEach(function (id, i) {
+    document.getElementById(id).addEventListener(i === 0 ? "input" : "change", debounce(render, i === 0 ? 200 : 0));
+  });
+  document.getElementById("p-reset").addEventListener("click", function () {
+    document.getElementById("p-kw").value = ""; document.getElementById("p-status").value = "";
+    render(); toast("筛选已重置", "info");
+  });
+  document.getElementById("pf-save").addEventListener("click", function () {
+    var n = document.getElementById("pf-name").value.trim();
+    if (!n) return toast("请填写策略名称", "error");
+    if (!document.getElementById("pf-suffix").value.trim()) return toast("请填写提示词后缀", "error");
+    var scope = [];
+    document.querySelectorAll("#modal-pol input[type=checkbox]:checked").forEach(function (c) {
+      if (["测试用例", "测试报告", "缺陷描述", "AI 问答"].indexOf(c.parentNode.textContent.trim()) >= 0) scope.push(c.parentNode.textContent.trim());
+    });
+    policies.unshift({ id: "DA-" + (6 + policies.length - 5), name: n, desc: document.getElementById("pf-desc").value || "—", status: document.querySelector('input[name="pf-status"]:checked').value, scope: scope.length ? scope : ["测试用例"], created: "刚刚", uses: 0, suffix: document.getElementById("pf-suffix").value });
+    closeModal("modal-pol");
+    document.getElementById("pf-name").value = ""; document.getElementById("pf-desc").value = ""; document.getElementById("pf-suffix").value = "";
+    render(); toast("策略已保存", "success");
+  });
+
+  /* ---------- 试运行对比 ---------- */
+  var beforeText = "";
+  document.getElementById("try-go").addEventListener("click", function () {
+    var btn = this;
+    beforeText = document.getElementById("try-in").value.trim();
+    if (!beforeText) return toast("请输入 AI 原文", "warn");
+    document.getElementById("try-before").textContent = beforeText;
+    document.getElementById("try-after").textContent = "润色中…";
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span> 润色中…';
+    setTimeout(function () {
+      var pol = document.getElementById("try-policy").value;
+      var t = document.getElementById("try-type").value;
+      var out;
+      if (pol === "简报压缩") {
+        out = "登录功能验证通过（18/18 用例通过，P99 320ms）。风险：验证码接口在弱网下超时率 2.1%，建议关注。";
+      } else if (pol === "测试术语规范化") {
+        out = "验证用户登录功能：输入合法用户名与密码，点击登录按钮。预期：系统应完成服务端校验并返回认证结果。";
+      } else if (pol === "口语化人味") {
+        out = "测一下正常登录：填对用户名密码，点登录，看服务端能不能正常认人、把结果吐回来。\n（对应 18 条用例已覆盖正常/错误密码/锁定场景）";
+      } else {
+        out = "【组合策略输出】测正常登录：填对账密 → 点登录 → 服务端应正常返回认证结果。\n补充：错误密码提示「用户名或密码错误」而非具体哪个错（安全要求）。";
+      }
+      document.getElementById("try-after").textContent = out;
+      var score = document.getElementById("try-score");
+      score.textContent = "AI 味：" + (pol === "口语化人味" ? "23% ↓" : "41% ↓");
+      btn.disabled = false; btn.textContent = "✨ 执行润色";
+      document.getElementById("try-in")._lastPol = pol;
+      toast("润色完成，AI 味显著下降", "success");
+    }, 1500);
+  });
+  document.getElementById("try-copy").addEventListener("click", function () {
+    var t = document.getElementById("try-after").textContent;
+    if (!t || t.indexOf("点击「执行润色」") === 0 || t === "润色中…") return toast("请先执行润色", "warn");
+    copyText(t, "已复制润色后文本");
+  });
+  document.getElementById("try-save").addEventListener("click", function () {
+    var t = document.getElementById("try-after").textContent;
+    if (!t || t.indexOf("点击「执行润色」") === 0 || t === "润色中…") return toast("请先执行润色", "warn");
+    toast("样例已保存至当前策略（演示）", "success");
+  });
+
+  if (qs("tab")) {
+    var tb = document.querySelector('.tab[data-tab="' + qs("tab") + '"]');
+    if (tb) tb.click();
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>

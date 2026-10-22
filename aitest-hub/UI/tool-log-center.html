@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>日志中心 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / 日志中心</div>
+    <div class="page-head">
+      <div>
+        <h1>📜 日志中心</h1>
+        <div class="sub">全平台操作审计日志：操作类型 / 模块 / 操作人 / 时间区间多维筛选，详情留痕可查，支持导出</div>
+      </div>
+      <div class="flex">
+        <a class="btn btn-ghost" href="tool-scheduler.html">⏰ 定时任务日志</a>
+        <button class="btn btn-primary" id="lg2-export">⬇️ 导出 CSV</button>
+      </div>
+    </div>
+
+    <div class="banner banner-info">ℹ️ 对应平台 SystemLog 模块：记录全站关键操作（登录、AI 调用、配置变更、数据增删改），操作日志不可修改、仅审计员可导出；与定时任务执行日志分表存储。</div>
+
+    <!-- 统计 -->
+    <div class="tabs">
+      <button class="tab active" data-tab="stats">📊 统计概览</button>
+      <button class="tab" data-tab="list">📜 操作日志</button>
+    </div>
+    <div class="tab-panes">
+    <div class="tab-pane active" data-pane="stats">
+      <div class="banner">数据总览与快捷入口；详细数据请切到「📜 操作日志」查看（支持筛选与分页）。</div>
+<div class="grid grid-4 mb-16">
+      <div class="card stat-card"><div class="s-label">今日操作</div><div class="s-value" id="st2-today">0</div></div>
+      <div class="card stat-card"><div class="s-label">AI 调用记录</div><div class="s-value" style="color:var(--red)">37</div></div>
+      <div class="card stat-card"><div class="s-label">失败 / 异常</div><div class="s-value" style="color:var(--orange)" id="st2-fail">0</div></div>
+      <div class="card stat-card"><div class="s-label">本周操作人</div><div class="s-value" style="color:var(--blue)">5</div></div>
+    </div>
+
+    </div>
+    <div class="tab-pane" data-pane="list">
+    <div class="filter-bar">
+      <input class="input search" id="o-kw" placeholder="🔍 搜索操作内容">
+      <select class="select" id="o-type"><option value="">操作类型</option><option>登录</option><option>新增</option><option>修改</option><option>删除</option><option>执行</option><option>AI 调用</option><option>导出</option></select>
+      <select class="select" id="o-module"><option value="">操作模块</option><option>用例管理</option><option>缺陷管理</option><option>接口测试</option><option>UI 自动化</option><option>配置中心</option><option>MCP 服务中心</option><option>技能中心</option></select>
+      <select class="select" id="o-user"><option value="">操作人</option><option>wxh</option><option>admin</option><option>li-qa</option><option>system</option></select>
+      <input class="input" id="o-start" type="date" value="2026-09-16" style="width:145px">
+      <span class="text-faint">至</span>
+      <input class="input" id="o-end" type="date" value="2026-09-22" style="width:145px">
+      <button class="btn btn-ghost btn-sm" id="o-reset">重置</button>
+    </div>
+
+    <div id="o-table" data-nopager="1"></div>
+    <div class="pagination" id="o-page"></div>
+    </div>
+    </div>
+  </main>
+</div>
+
+<!-- 日志详情弹窗 -->
+<div class="modal-mask" id="modal-oplog">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3>操作详情</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div id="ol-meta" class="mb-16"></div>
+      <div class="field"><label>请求 / 响应摘要</label><div class="code-block" id="ol-body" style="max-height:260px; overflow-y:auto"></div></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-primary" data-close-modal>关闭</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  var T_CLS = { "登录": "tag-blue", "新增": "tag-green", "修改": "tag-orange", "删除": "tag-red", "执行": "tag-purple", "AI 调用": "tag-red", "导出": "tag" };
+  var logs = [
+    { id: "OP-1288", time: "2026-09-22 16:42:18", type: "AI 调用", mod: "技能中心", content: "调用技能「失败日志根因分析」生成分析结论", user: "wxh", ip: "192.168.1.24", dur: "4.2s", status: "成功", body: "[AI] model=DeepSeek-V3  skill=AG-06\n[AI] tokens: in=1240 out=868\n[AI] result=成功 cost=¥0.012" },
+    { id: "OP-1287", time: "2026-09-22 15:31:07", type: "修改", mod: "配置中心", content: "修改「用例评审」角色模型：DeepSeek-V3 → 通义千问-Max", user: "admin", ip: "192.168.1.10", dur: "0.3s", status: "成功", body: "PUT /api/config/roles/reviews\n{ \"model\": \"qwen-max\", \"temperature\": 0.2 }\n→ 200 OK" },
+    { id: "OP-1286", time: "2026-09-22 14:20:55", type: "新增", mod: "MCP 服务中心", content: "注册服务「内部知识库 MCP」（HTTP · 10.0.0.8:3000）", user: "wxh", ip: "192.168.1.24", dur: "0.5s", status: "成功", body: "POST /api/mcp/services\n{ \"name\": \"内部知识库 MCP\", \"proto\": \"HTTP\", \"url\": \"http://10.0.0.8:3000/mcp\" }\n→ 201 Created id=MS-11" },
+    { id: "OP-1285", time: "2026-09-22 11:08:33", type: "删除", mod: "用例管理", content: "删除用例「退款-超时未审核自动取消」（含 2 条关联执行记录归档）", user: "li-qa", ip: "192.168.1.31", dur: "0.4s", status: "成功", body: "DELETE /api/cases/342\n{ \"archive_executions\": true }\n→ 200 OK" },
+    { id: "OP-1284", time: "2026-09-22 09:12:40", type: "登录", mod: "系统", content: "用户登录成功（演示账号）", user: "wxh", ip: "192.168.1.24", dur: "0.2s", status: "成功", body: "POST /api/auth/login\n{ \"account\": \"180****2234\" }\n→ 200 OK  jwt issued" },
+    { id: "OP-1283", time: "2026-09-22 02:00:05", type: "执行", mod: "接口测试", content: "定时任务「每夜接口回归」自动触发（12 条用例）", user: "system", ip: "10.0.0.2", dur: "3m42s", status: "成功", body: "[SCHEDULER] task=ST-21 trigger=cron(0 2 * * *)\n[EXEC] 12/12 passed\n[NOTIFY] 邮件+企业微信 已推送" },
+    { id: "OP-1282", time: "2026-09-21 17:45:12", type: "执行", mod: "UI 自动化", content: "执行 UI 套件「主站冒烟」失败：场景 3 元素未找到", user: "system", ip: "10.0.0.2", dur: "2m08s", status: "失败", body: "[EXEC] suite=主站冒烟 scene=3/5\n[ERROR] locator 'button.pay' not found (timeout 30s)\n[NOTIFY] 失败通知已推送（仅失败策略）" },
+    { id: "OP-1281", time: "2026-09-21 16:02:19", type: "AI 调用", mod: "用例管理", content: "AI 批量生成用例 10 条（需求 REQ-2026-0125）", user: "li-qa", ip: "192.168.1.31", dur: "8.6s", status: "成功", body: "[AI] model=DeepSeek-V3  req=REQ-2026-0125\n[AI] generated=10  tokens: in=3120 out=2410\n[AI] result=成功 cost=¥0.038" },
+    { id: "OP-1280", time: "2026-09-20 10:15:47", type: "导出", mod: "缺陷管理", content: "导出缺陷列表 CSV（23 条）", user: "wxh", ip: "192.168.1.24", dur: "0.8s", status: "成功", body: "GET /api/defects/export?format=csv&count=23\n→ 200 OK  file=defects-20260920.csv" },
+    { id: "OP-1279", time: "2026-09-18 09:30:02", type: "登录", mod: "系统", content: "登录失败：密码错误（连续第 1 次）", user: "admin", ip: "203.0.113.7", dur: "0.1s", status: "失败", body: "POST /api/auth/login\n{ \"account\": \"admin\" }\n→ 401 Unauthorized  reason=bad_password" },
+    { id: "OP-1278", time: "2026-09-17 14:22:36", type: "修改", mod: "技能中心", content: "禁用技能「回归集智能筛选」", user: "admin", ip: "192.168.1.10", dur: "0.2s", status: "成功", body: "PATCH /api/skills/AG-03\n{ \"status\": \"disabled\" }\n→ 200 OK" },
+    { id: "OP-1277", time: "2026-09-16 11:05:14", type: "新增", mod: "配置中心", content: "新增 Webhook 通知渠道「企业微信」（key=demo…）", user: "admin", ip: "192.168.1.10", dur: "0.3s", status: "成功", body: "POST /api/notify/channels\n{ \"type\": \"wecom\", \"enabled\": true }\n→ 201 Created" }
+  ];
+  var PAGE = 10, page = 1, pageSize = 10;
+
+  function refreshStats() {
+    document.getElementById("st2-today").textContent = logs.filter(function (l) { return l.time.indexOf("2026-09-22") === 0; }).length;
+    document.getElementById("st2-fail").textContent = logs.filter(function (l) { return l.status === "失败"; }).length;
+  }
+
+  function inRange(t) {
+    var s = document.getElementById("o-start").value, e = document.getElementById("o-end").value;
+    var d = t.slice(0, 10);
+    return (!s || d >= s) && (!e || d <= e);
+  }
+  function filtered() {
+    var kw = document.getElementById("o-kw").value.trim().toLowerCase();
+    var tp = document.getElementById("o-type").value;
+    var md = document.getElementById("o-module").value;
+    var u = document.getElementById("o-user").value;
+    return logs.filter(function (l) {
+      return (!kw || l.content.toLowerCase().indexOf(kw) >= 0) && (!tp || l.type === tp) && (!md || l.mod === md) && (!u || l.user === u) && inRange(l.time);
+    });
+  }
+  function render() {
+    refreshStats();
+    var d = filtered();
+    var pages = Math.max(1, Math.ceil(d.length / pageSize));
+    if (page > pages) page = pages;
+    var rows = d.slice((page - 1) * pageSize, page * pageSize);
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>时间</th><th>操作类型</th><th>操作模块</th><th>操作内容</th><th>操作人</th><th>请求 IP</th><th>耗时</th><th>状态</th><th style="width:80px">详情</th></tr></thead><tbody>';
+    if (!rows.length) html += '<tr><td colspan="9"><div class="empty"><div class="e-icon">📜</div><div class="e-text">无匹配日志</div></div></td></tr>';
+    rows.forEach(function (l) {
+      html += '<tr><td class="mono" style="font-size:12px; white-space:nowrap">' + l.time + "</td>" +
+        '<td><span class="tag ' + T_CLS[l.type] + '">' + l.type + "</span></td>" +
+        '<td class="cell-sub" style="font-size:12.5px">' + l.mod + "</td>" +
+        '<td style="max-width:280px"><div class="cell-main" style="font-size:12.5px; white-space:normal">' + l.content + "</div></td>" +
+        "<td>" + l.user + '</td><td class="mono" style="font-size:12px">' + l.ip + '</td><td class="mono">' + l.dur + "</td>" +
+        "<td>" + (l.status === "成功" ? '<span class="tag tag-green">成功</span>' : '<span class="tag tag-red">失败</span>') + "</td>" +
+        '<td><div class="row-actions" style="opacity:1"><button class="btn btn-sm btn-ghost" data-view="' + l.id + '">详情</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("o-table").innerHTML = html;
+    var pg = document.getElementById("o-page");
+    pg.innerHTML = d.length ? (function () {
+      var h = '<span class="page-info">共 ' + d.length + " 条 · 第 " + page + "/" + pages + " 页</span>";
+      h += '<label class="pg-size">每页 <select class="pg-size-sel" id="o-psel">' + [10, 20, 50, 100].map(function (n) { return '<option value="' + n + '"' + (n === pageSize ? " selected" : "") + ">" + n + "</option>"; }).join("") + "</select> 条</label>";
+      h += '<button class="page-btn txt" data-gp="1"' + (page <= 1 ? " disabled" : "") + '>首页</button>';
+      h += '<button class="page-btn txt" data-gp="' + (page - 1) + '"' + (page <= 1 ? " disabled" : "") + '>上一页</button>';
+      for (var i = 1; i <= pages; i++) h += '<button class="page-btn' + (i === page ? " active" : "") + '" data-gp="' + i + '">' + i + "</button>";
+      h += '<button class="page-btn txt" data-gp="' + (page + 1) + '"' + (page >= pages ? " disabled" : "") + '>下一页</button>';
+      h += '<button class="page-btn txt" data-gp="' + pages + '"' + (page >= pages ? " disabled" : "") + '>末页</button>';
+      return h;
+    })() : "";
+    pg.querySelectorAll("[data-gp]").forEach(function (b) {
+      b.addEventListener("click", function () { if (b.disabled) return; var p = +b.dataset.gp; if (p >= 1 && p <= pages) { page = p; render(); } });
+    });
+    var psel = document.getElementById("o-psel");
+    if (psel) psel.addEventListener("change", function () { pageSize = parseInt(psel.value, 10); page = 1; render(); });
+    document.querySelectorAll("[data-view]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var l = logs.find(function (x) { return x.id === b.dataset.view; });
+        document.getElementById("ol-meta").innerHTML =
+          '<span class="tag tag-blue">' + l.type + '</span><span class="tag">' + l.mod + '</span><span class="tag">' + l.user +
+          '</span><span class="tag mono" style="font-size:11px">' + l.time + '</span><span class="tag mono" style="font-size:11px">IP ' + l.ip +
+          '</span><span class="tag">⏱ ' + l.dur + "</span>" +
+          (l.status === "成功" ? '<span class="tag tag-green">成功</span>' : '<span class="tag tag-red">失败</span>') +
+          '<div class="text-dim mt-8" style="font-size:13px">' + l.content + "（" + l.id + "）</div>";
+        document.getElementById("ol-body").textContent = l.body;
+        openModal("modal-oplog");
+      });
+    });
+  }
+  var ids = ["o-kw", "o-type", "o-module", "o-user", "o-start", "o-end"];
+  ids.forEach(function (id, i) {
+    document.getElementById(id).addEventListener((i === 0) ? "input" : "change", debounce(render, i === 0 ? 200 : 0));
+  });
+  document.getElementById("o-reset").addEventListener("click", function () {
+    ids.forEach(function (id) { document.getElementById(id).value = ""; });
+    document.getElementById("o-start").value = "2026-09-16"; document.getElementById("o-end").value = "2026-09-22";
+    page = 1; render(); toast("筛选已重置", "info");
+  });
+  document.getElementById("lg2-export").addEventListener("click", function () {
+    var n = filtered().length;
+    if (!n) return toast("当前筛选无数据可导出", "warn");
+    toast("已导出 " + n + " 条操作日志为 CSV（演示）", "success");
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

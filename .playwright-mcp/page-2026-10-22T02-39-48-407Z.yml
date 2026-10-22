@@ -1,0 +1,209 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - link "AT AITest Hub" [ref=e5] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e6]: AT
+      - text: AITest Hub
+    - generic [ref=e7]:
+      - generic [ref=e8]:
+        - link "🗂️ 卡片列表" [ref=e9] [cursor=pointer]:
+          - /url: /app
+          - generic [ref=e10]: 🗂️
+          - text: 卡片列表
+        - link "🌐 官网首页" [ref=e11] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e12]: 🌐
+          - text: 官网首页
+        - button "⚙️ 个人设置" [ref=e13] [cursor=pointer]:
+          - generic [ref=e14]: ⚙️
+          - text: 个人设置
+        - button "🚪 退出登录" [ref=e15] [cursor=pointer]:
+          - generic [ref=e16]: 🚪
+          - text: 退出登录
+      - generic [ref=e17]:
+        - generic [ref=e18]: S
+        - generic [ref=e19]: snow-sakura · 测试工程师
+  - generic [ref=e20]:
+    - generic [ref=e24]: 🌿
+    - generic [ref=e25]: 🧪
+    - generic [ref=e26]: 🤖
+    - generic [ref=e27]: 📱
+    - generic [ref=e28]:
+      - generic [ref=e29]: AI TEST HUB · 测试与质量工具聚合平台
+      - heading "把测试工作拍成一叠拍立得 每一张都是可复用的资产" [level=1] [ref=e30]: 把测试工作拍成一叠拍立得每一张都是可复用的资产
+      - paragraph [ref=e31]: 可视化压测、AI 用例、接口测试、用例与缺陷管理、UI / App 自动化、提示词库与工具箱——九大模块，浏览器打开即用。
+      - generic [ref=e32]:
+        - link "免费开始使用 →" [ref=e33] [cursor=pointer]:
+          - /url: /auth
+        - link "注册新账号" [ref=e34] [cursor=pointer]:
+          - /url: /register
+        - link "浏览能力模块 ↓" [ref=e35] [cursor=pointer]:
+          - /url: "#features"
+      - generic [ref=e36]:
+        - generic [ref=e37]: ✅ 无需安装
+        - generic [ref=e38]: ✅ 个人免费
+        - generic [ref=e39]: ✅ 数据本地
+        - generic [ref=e40]: ✅ 9 大模块
+  - generic [ref=e42]:
+    - button "🧪 测试执行 ▾" [ref=e44] [cursor=pointer]:
+      - text: 🧪 测试执行
+      - generic [ref=e45]: ▾
+    - button "🤖 AI 与资产 ▾" [ref=e47] [cursor=pointer]:
+      - text: 🤖 AI 与资产
+      - generic [ref=e48]: ▾
+    - button "🧰 效率工具 ▾" [ref=e50] [cursor=pointer]:
+      - text: 🧰 效率工具
+      - generic [ref=e51]: ▾
+    - link "✨ 提示词库" [ref=e52] [cursor=pointer]:
+      - /url: /prompts
+    - link "📊 进入工具台" [ref=e53] [cursor=pointer]:
+      - /url: /app
+  - generic [ref=e55]:
+    - generic [ref=e56]:
+      - generic [ref=e58]: 🧪
+      - generic [ref=e59]: 压测编排
+    - generic [ref=e60]:
+      - generic [ref=e62]: 🤖
+      - generic [ref=e63]: AI 用例
+    - generic [ref=e64]:
+      - generic [ref=e66]: 🔗
+      - generic [ref=e67]: 接口测试
+    - generic [ref=e68]:
+      - generic [ref=e70]: 🐞
+      - generic [ref=e71]: 缺陷管理
+    - generic [ref=e72]:
+      - generic [ref=e74]: 📱
+      - generic [ref=e75]: App 自动化
+  - generic [ref=e76]:
+    - heading "九大能力模块" [level=2] [ref=e77]
+    - paragraph [ref=e78]: 覆盖测试设计 → 执行 → 管理 → 分析全流程
+    - generic [ref=e79]:
+      - generic [ref=e80]:
+        - generic [ref=e81]: 01 · LOAD ORCHESTRATION
+        - heading "🧪 可视化压测编排" [level=3] [ref=e82]
+        - paragraph [ref=e83]: 拖拽式编排测试计划、线程组与 HTTP 请求，自动生成 JMX；对接 InfluxDB + Grafana 实时观测 QPS、RT 与错误率。
+        - generic [ref=e84]:
+          - generic [ref=e85]: 测试计划
+          - generic [ref=e86]: JMX 导出
+          - generic [ref=e87]: 批量造数
+        - link "打开压测工作台 →" [ref=e88] [cursor=pointer]:
+          - /url: /app?tab=exec
+      - generic [ref=e89]:
+        - generic [ref=e90]: 02 · AI CASES
+        - heading "🤖 AI 需求转用例" [level=3] [ref=e91]
+        - paragraph [ref=e92]: 粘贴需求文档，AI 生成结构化可执行测试用例；支持会话精修、智能改写与附件上下文，需求到用例一条流水线。
+        - generic [ref=e93]:
+          - generic [ref=e94]: 需求解析
+          - generic [ref=e95]: 流式生成
+          - generic [ref=e96]: 会话精修
+        - link "打开 AI 用例工作台 →" [ref=e97] [cursor=pointer]:
+          - /url: /app?tab=manage
+      - generic [ref=e98]:
+        - generic [ref=e99]: 03 · API TESTING
+        - heading "🔗 接口测试" [level=3] [ref=e100]
+        - paragraph [ref=e101]: 接口集合管理、参数化断言、环境变量切换、用例编排串行/并行执行；AI 辅助生成断言与 Mock 数据。
+        - generic [ref=e102]:
+          - generic [ref=e103]: 集合管理
+          - generic [ref=e104]: 环境变量
+          - generic [ref=e105]: 断言
+        - link "打开接口测试 →" [ref=e106] [cursor=pointer]:
+          - /url: /app?tab=exec
+      - generic [ref=e107]:
+        - generic [ref=e108]: 04 · CASE MANAGEMENT
+        - heading "🗂️ 用例管理" [level=3] [ref=e109]
+        - paragraph [ref=e110]: 模块树 + 用例库双视图，评审流程、批次执行与结果统计；与 AI 生成、缺陷管理双向关联。
+        - generic [ref=e111]:
+          - generic [ref=e112]: 模块树
+          - generic [ref=e113]: 评审
+          - generic [ref=e114]: 执行批次
+        - link "打开用例管理 →" [ref=e115] [cursor=pointer]:
+          - /url: /app?tab=manage
+      - generic [ref=e116]:
+        - generic [ref=e117]: 05 · DEFECTS
+        - heading "🐞 缺陷管理" [level=3] [ref=e118]
+        - paragraph [ref=e119]: 缺陷全生命周期流转，严重等级与优先级矩阵、重复缺陷 AI 检测、关联用例与执行记录。
+        - generic [ref=e120]:
+          - generic [ref=e121]: 状态流转
+          - generic [ref=e122]: AI 查重
+          - generic [ref=e123]: 关联追溯
+        - link "打开缺陷管理 →" [ref=e124] [cursor=pointer]:
+          - /url: /app?tab=manage
+      - generic [ref=e125]:
+        - generic [ref=e126]: 06 · OMNIFLOW UI
+        - heading "🖱️ 可视化 UI 自动化" [level=3] [ref=e127]
+        - paragraph [ref=e128]: 填写目标 URL，用自然语言步骤搭场景；服务器无头执行，运行后查看截图、录像，进入运行记录与回放。
+        - generic [ref=e129]:
+          - generic [ref=e130]: 步骤编排
+          - generic [ref=e131]: 截图录像
+          - generic [ref=e132]: 运行回放
+        - link "打开 UI 自动化 →" [ref=e133] [cursor=pointer]:
+          - /url: /app?tab=exec
+      - generic [ref=e134]:
+        - generic [ref=e135]: 07 · APP AUTOMATION
+        - heading "📱 App 自动化" [level=3] [ref=e136]
+        - paragraph [ref=e137]: Android · ADB/Appium 设备管理、应用包管理、自动化脚本与执行流水线，边缘设备接入与定时任务。
+        - generic [ref=e138]:
+          - generic [ref=e139]: 设备管理
+          - generic [ref=e140]: ADB / Appium
+          - generic [ref=e141]: 执行流水线
+        - link "打开 App 自动化 →" [ref=e142] [cursor=pointer]:
+          - /url: /app?tab=exec
+      - generic [ref=e143]:
+        - generic [ref=e144]: 08 · PROMPT LIBRARY
+        - heading "📚 实战提示词库" [level=3] [ref=e145]
+        - paragraph [ref=e146]: 按场景分类浏览模板，一键复制到 Cursor / Agent 即用。覆盖测试设计、缺陷分析、接口与自动化等高频场景。
+        - generic [ref=e147]:
+          - generic [ref=e148]: 分类筛选
+          - generic [ref=e149]: 一键复制
+          - generic [ref=e150]: Agent 就绪
+        - link "浏览提示词库 →" [ref=e151] [cursor=pointer]:
+          - /url: /prompts
+      - generic [ref=e152]:
+        - generic [ref=e153]: 09 · TOOLKIT
+        - heading "🧰 媒体与数据工具箱" [level=3] [ref=e154]
+        - paragraph [ref=e155]: 图片压缩、格式转换、音频生成，以及 JSON 格式化、Base64、文本 Diff、时间戳、URL 编解码，一页集齐。
+        - generic [ref=e156]:
+          - generic [ref=e157]: JSON
+          - generic [ref=e158]: Diff
+          - generic [ref=e159]: 时间戳
+        - link "打开工具箱 →" [ref=e160] [cursor=pointer]:
+          - /url: /app?tab=plat
+  - generic [ref=e161]:
+    - heading "三步开始你的第一场测试" [level=2] [ref=e162]
+    - paragraph [ref=e163]: 零代码，像整理一叠照片一样管理测试资产
+    - generic [ref=e164]:
+      - generic [ref=e165]:
+        - generic [ref=e167]: ✍️
+        - generic [ref=e168]: STEP 1 · 设计用例
+      - generic [ref=e169]:
+        - generic [ref=e171]: ▶️
+        - generic [ref=e172]: STEP 2 · 执行观测
+      - generic [ref=e173]:
+        - generic [ref=e175]: 📒
+        - generic [ref=e176]: STEP 3 · 管理追溯
+    - link "立即体验压测编排 →" [ref=e178] [cursor=pointer]:
+      - /url: /app?tab=exec
+  - generic [ref=e180]:
+    - heading "准备好提升测试效率了吗？" [level=2] [ref=e181]
+    - paragraph [ref=e182]: 九大能力一页集齐，浏览器打开即用，个人学习与日用免费。
+    - generic [ref=e183]:
+      - link "登录 / 注册" [ref=e184] [cursor=pointer]:
+        - /url: /auth
+      - link "先看提示词库" [ref=e185] [cursor=pointer]:
+        - /url: /prompts
+  - contentinfo [ref=e186]:
+    - generic [ref=e187]:
+      - generic [ref=e188]: © 2026 AITest Hub · AI 驱动的测试平台（演示环境）
+      - generic [ref=e189]:
+        - link "首页" [ref=e190] [cursor=pointer]:
+          - /url: /
+        - link "工具台" [ref=e191] [cursor=pointer]:
+          - /url: /app
+        - link "接口测试" [ref=e192] [cursor=pointer]:
+          - /url: /app?tab=exec
+        - link "提示词库" [ref=e193] [cursor=pointer]:
+          - /url: /prompts
+        - link "登录" [ref=e194] [cursor=pointer]:
+          - /url: /auth
+        - link "注册" [ref=e195] [cursor=pointer]:
+          - /url: /register

@@ -1,0 +1,54 @@
+{
+  "app": "AITest Hub · 序列生成演示",
+  "version": 1,
+  "models": [
+    { "id": "deepseek-v3", "name": "DeepSeek-V3", "tier": "free" },
+    { "id": "qwen-plus", "name": "通义千问 Qwen-Plus", "tier": "paid" },
+    { "id": "glm-4", "name": "智谱 GLM-4-Plus", "tier": "free" },
+    { "id": "gpt-4o", "name": "OpenAI GPT-4o", "tier": "paid" }
+  ],
+  "records": [
+    {
+      "id": "SQ-DEMO-0001",
+      "time": "2026-10-20 14:02:11",
+      "model": "DeepSeek-V3",
+      "tier": "free",
+      "mode": "serial",
+      "concurrency": 1,
+      "status": "已完成",
+      "tasks": 3,
+      "done": 3,
+      "fail": 0,
+      "cases": 28,
+      "seconds": 12
+    },
+    {
+      "id": "SQ-DEMO-0002",
+      "time": "2026-10-20 15:37:48",
+      "model": "OpenAI GPT-4o",
+      "tier": "paid",
+      "mode": "parallel",
+      "concurrency": 3,
+      "status": "已完成",
+      "tasks": 6,
+      "done": 6,
+      "fail": 0,
+      "cases": 74,
+      "seconds": 5
+    },
+    {
+      "id": "SQ-DEMO-0003",
+      "time": "2026-10-20 18:20:03",
+      "model": "通义千问 Qwen-Plus",
+      "tier": "paid",
+      "mode": "parallel",
+      "concurrency": 3,
+      "status": "部分失败",
+      "tasks": 4,
+      "done": 3,
+      "fail": 1,
+      "cases": 41,
+      "seconds": 4
+    }
+  ]
+}

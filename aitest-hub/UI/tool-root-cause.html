@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>根因分析 — AITest Hub</title>
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Cdefs%3E%3ClinearGradient id=%27g%27 x1=%270%27 y1=%270%27 x2=%271%27 y2=%271%27%3E%3Cstop offset=%270%27 stop-color=%27%23e0685a%27/%3E%3Cstop offset=%271%27 stop-color=%27%23d98e2b%27/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width=%2732%27 height=%2732%27 rx=%278%27 fill=%27url(%23g)%27 transform=%27rotate(-4 16 16)%27/%3E%3Ctext x=%2716%27 y=%2721%27 font-size=%2713%27 font-weight=%27800%27 font-family=%27sans-serif%27 fill=%27%23fff%27 text-anchor=%27middle%27%3EAT%3C/text%3E%3C/svg%3E">
+</head>
+<body data-require-login>
+
+<div class="workspace">
+  <aside class="sidebar"></aside>
+  <main class="main-area">
+    <div class="breadcrumb"><a href="app.html">工具台</a> / 根因分析</div>
+    <div class="page-head">
+      <div>
+        <h1>🔍 根因分析</h1>
+        <div class="sub">AI 对失败用例 / 缺陷做根因定位：置信度评估、影响程度分级、关联缺陷溯源，输出排查建议</div>
+      </div>
+      <div class="flex">
+        <a class="btn btn-ghost" href="tool-ai-reports.html">📊 AI 报告中心</a>
+        <a class="btn btn-ghost" href="tool-defect-management.html">🐞 缺陷管理</a>
+        <button class="btn btn-primary" data-open-modal="modal-rc">✨ AI 根因分析</button>
+      </div>
+    </div>
+
+    <div class="banner banner-info">ℹ️ 对应平台 RootCauseAnalysis 模块：分析对象为失败执行记录或缺陷，AI 结合失败日志、代码变更与历史缺陷给出根因假设（含置信度）与排查建议；结论可一键转缺陷或回填<a href="tool-ai-reports.html">测试报告</a>。</div>
+
+    <!-- 统计 -->
+    <div class="tabs">
+      <button class="tab active" data-tab="stats">📊 统计概览</button>
+      <button class="tab" data-tab="list">🔍 分析记录</button>
+    </div>
+    <div class="tab-panes">
+    <div class="tab-pane active" data-pane="stats">
+      <div class="banner">数据总览与快捷入口；详细数据请切到「🔍 分析记录」查看（支持筛选与分页）。</div>
+<div class="grid grid-4 mb-16">
+      <div class="card stat-card"><div class="s-label">分析总数</div><div class="s-value" id="rc-total">0</div></div>
+      <div class="card stat-card"><div class="s-label">分析中</div><div class="s-value" style="color:var(--orange)" id="rc-running">0</div></div>
+      <div class="card stat-card"><div class="s-label">平均置信度</div><div class="s-value" style="color:var(--blue)">81%</div></div>
+      <div class="card stat-card"><div class="s-label">高危影响</div><div class="s-value" style="color:var(--red)" id="rc-high">0</div></div>
+    </div>
+
+    </div>
+    <div class="tab-pane" data-pane="list">
+    <div class="filter-bar">
+      <input class="input search" id="rc-kw" placeholder="🔍 搜索分析名称…">
+      <select class="select" id="rc-status"><option value="">全部状态</option><option>已完成</option><option>分析中</option><option>分析失败</option></select>
+      <select class="select" id="rc-type"><option value="">全部类型</option><option>失败用例分析</option><option>缺陷根因分析</option><option>性能瓶颈分析</option><option>崩溃日志分析</option></select>
+      <button class="btn btn-ghost btn-sm" id="rc-reset">重置筛选</button>
+    </div>
+
+    <div id="rc-table"></div>
+    </div>
+    </div>
+  </main>
+</div>
+
+<!-- AI 根因分析弹窗 -->
+<div class="modal-mask" id="modal-rc">
+  <div class="modal">
+    <div class="modal-head"><h3>✨ AI 根因分析</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>分析名称 <span class="text-red">*</span></label><input class="input" id="cf-name" placeholder="请输入分析名称"></div>
+      <div class="field"><label>描述</label><input class="input" id="cf-desc" placeholder="请输入分析描述"></div>
+      <div class="field"><label>分析类型</label>
+        <select class="select" id="cf-type"><option>失败用例分析</option><option>缺陷根因分析</option><option>性能瓶颈分析</option><option>崩溃日志分析</option></select>
+      </div>
+      <div class="field"><label>分析对象</label>
+        <select class="select" id="cf-target"><option>失败执行：EX-906 App 核心冒烟（步骤 4 元素未找到）</option><option>缺陷：BUG-2049 支付按钮定位失效</option><option>缺陷：BUG-2042 退款说明截断</option><option>压测：秒杀链路 4500 QPS 错误率 3.2%</option></select>
+      </div>
+      <div class="field"><label>关联缺陷（选填）</label>
+        <select class="select" id="cf-defect"><option value="">不关联</option><option>BUG-2049</option><option>BUG-2042</option><option>BUG-2038</option></select>
+      </div>
+      <div class="field"><label>AI 模型</label>
+        <select class="select" id="cf-model"><option>DeepSeek-V3</option><option>通义千问-Max</option><option>硅基流动 · GLM-4</option></select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" data-close-modal>取消</button>
+      <button class="btn btn-primary" id="cf-go">🚀 开始分析</button>
+    </div>
+  </div>
+</div>
+
+<!-- 分析详情弹窗 -->
+<div class="modal-mask" id="modal-rc-view">
+  <div class="modal modal-lg">
+    <div class="modal-head"><h3 id="cw-title">分析详情</h3><button class="modal-close" data-close-modal>✕</button></div>
+    <div class="modal-body" id="cw-body"></div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" id="cw-defect">🐞 转缺陷</button>
+      <button class="btn btn-primary" data-close-modal>关闭</button>
+    </div>
+  </div>
+</div>
+
+<script src="assets/common.js"></script>
+<script>
+(function () {
+  var T_CLS = { "失败用例分析": "tag-blue", "缺陷根因分析": "tag-orange", "性能瓶颈分析": "tag-purple", "崩溃日志分析": "tag-red" };
+  var I_CLS = { "高危": "tag-red", "中危": "tag-orange", "低危": "tag" };
+  var analyses = [
+    { id: "RC-31", name: "App 冒烟步骤 4 元素未找到", desc: "EX-906 失败执行分析", type: "失败用例分析", status: "已完成", conf: "87%", impact: "中危", model: "DeepSeek-V3", dur: "24s", created: "2026-09-22 03:10", defect: "BUG-2049", cause: "前端 v2.4 改版将支付按钮由 button.pay 改为 data-testid=pay-btn，定位脚本未同步更新", suggest: "1. 脚本改用 getByTestId 定位\n2. UI 自动化接入「定位策略降级」：testid → role → text\n3. 前端改版流程增加「选择器变更通知测试组」检查项", evidence: "变更记录：frontend #4821 改版提交 · 失败截图 failure-step4.png" },
+    { id: "RC-30", name: "秒杀链路 4500 QPS 错误率抬升", desc: "压测瓶颈定位", type: "性能瓶颈分析", status: "已完成", conf: "92%", impact: "高危", model: "DeepSeek-V3", dur: "38s", created: "2026-09-20 18:40", defect: "", cause: "DB 连接池上限 100 打满，获取连接等待超时导致错误率 3.2%", suggest: "1. 连接池扩容至 200\n2. 开启读写分离分流查询\n3. 热点接口增加本地缓存（库存预扣）", evidence: "监控：connection_wait_time P99 4.2s · slow log 全部指向 order insert" },
+    { id: "RC-29", name: "退款说明 200 字截断丢字", desc: "BUG-2042 溯源", type: "缺陷根因分析", status: "已完成", conf: "95%", impact: "低危", model: "通义千问-Max", dur: "19s", created: "2026-09-19 11:02", defect: "BUG-2042", cause: "前端 maxlength=200 按 UTF-16 计数，emoji 占 2 位导致实际入库截断", suggest: "改用 Array.from(str).length 计数；后端按字符数（非字节）校验", evidence: "复现：输入 199 汉字 + 1 emoji 提交 → 库中 200 截断最后 1 字" },
+    { id: "RC-28", name: "iOS 低电量上传失败群", desc: "崩溃/异常日志聚类", type: "崩溃日志分析", status: "已完成", conf: "78%", impact: "中危", model: "DeepSeek-V3", dur: "31s", created: "2026-09-18 09:15", defect: "", cause: "低电量模式下 iOS 网络策略收紧，上传请求超时未被捕获", suggest: "上传层统一捕获异常并重试；弱网探测降级为队列延迟上传", evidence: "近 7 日崩溃聚类：78% 集中于 uploadTask timeout" },
+    { id: "RC-27", name: "支付回调幂等校验分析", desc: "BUG-2038 双扣款溯源", type: "缺陷根因分析", status: "分析中", conf: "—", impact: "高危", model: "DeepSeek-V3", dur: "—", created: "2026-09-22 16:55", defect: "BUG-2038", cause: "", suggest: "" },
+    { id: "RC-26", name: "优惠券叠加金额为负", desc: "营销规则缺陷溯源", type: "缺陷根因分析", status: "分析失败", conf: "—", impact: "中危", model: "通义千问-Max", dur: "—", created: "2026-09-17 14:20", defect: "", cause: "", suggest: "AI 调用超时，可重试。" }
+  ];
+
+  function refreshStats() {
+    document.getElementById("rc-total").textContent = analyses.length;
+    document.getElementById("rc-running").textContent = analyses.filter(function (r) { return r.status === "分析中"; }).length;
+    document.getElementById("rc-high").textContent = analyses.filter(function (r) { return r.impact === "高危"; }).length;
+  }
+  function render() {
+    refreshStats();
+    var kw = document.getElementById("rc-kw").value.trim().toLowerCase();
+    var st = document.getElementById("rc-status").value;
+    var tp = document.getElementById("rc-type").value;
+    var d = analyses.filter(function (r) {
+      return (!kw || r.name.toLowerCase().indexOf(kw) >= 0) && (!st || r.status === st) && (!tp || r.type === tp);
+    });
+    var html = '<div class="table-wrap"><table class="table"><thead><tr><th>分析名称</th><th>类型</th><th>状态</th><th>置信度</th><th>影响程度</th><th>关联缺陷</th><th>AI 模型</th><th>耗时</th><th>创建时间</th><th style="width:130px">操作</th></tr></thead><tbody>';
+    if (!d.length) html += '<tr><td colspan="10"><div class="empty"><div class="e-icon">🔍</div><div class="e-text">无匹配分析</div></div></td></tr>';
+    d.forEach(function (r) {
+      html += '<tr><td><div class="cell-main">' + r.name + '</div><div class="cell-sub">' + r.desc + "</div></td>" +
+        '<td><span class="tag ' + T_CLS[r.type] + '">' + r.type + "</span></td>" +
+        "<td>" + (r.status === "已完成" ? '<span class="tag tag-green">已完成</span>' : r.status === "分析中" ? '<span class="tag tag-orange">分析中…</span>' : '<span class="tag tag-red">失败</span>') + "</td>" +
+        '<td class="mono">' + r.conf + "</td>" +
+        "<td>" + (r.impact === "—" ? '<span class="text-faint">—</span>' : '<span class="tag ' + I_CLS[r.impact] + '">' + r.impact + "</span>") + "</td>" +
+        "<td>" + (r.defect ? '<a href="tool-defect-management.html" class="mono" style="font-size:12px">' + r.defect + " →</a>" : '<span class="text-faint">—</span>') + "</td>" +
+        '<td class="cell-sub" style="font-size:12px">' + r.model + '</td><td class="mono">' + r.dur + "</td>" +
+        '<td class="mono" style="font-size:12px">' + r.created + "</td>" +
+        '<td><div class="row-actions" style="opacity:1">' +
+        (r.status === "已完成" ? '<button class="btn btn-sm btn-ghost" data-v="' + r.id + '">详情</button>' : '<button class="btn btn-sm btn-ghost" data-retry="' + r.id + '">重试</button>') +
+        '<button class="btn btn-sm btn-danger" data-del="' + r.id + '">删除</button></div></td></tr>';
+    });
+    html += "</tbody></table></div>";
+    document.getElementById("rc-table").innerHTML = html;
+    bind();
+  }
+  function bind() {
+    document.querySelectorAll("[data-v]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var r = analyses.find(function (x) { return x.id === b.dataset.v; });
+        document.getElementById("cw-title").textContent = r.name;
+        document.getElementById("cw-body").innerHTML =
+          '<div class="flex mb-16" style="flex-wrap:wrap"><span class="tag ' + T_CLS[r.type] + '">' + r.type + '</span>' +
+          '<span class="tag tag-blue">置信度 ' + r.conf + '</span><span class="tag ' + I_CLS[r.impact] + '">' + r.impact + '</span>' +
+          '<span class="tag">🧠 ' + r.model + '</span><span class="tag">⏱ ' + r.dur + '</span>' +
+          (r.defect ? '<a class="tag tag-red" href="tool-defect-management.html" style="text-decoration:none">🐞 ' + r.defect + "</a>" : "") +
+          '<span class="tag mono" style="font-size:11px">' + r.created + "</span></div>" +
+          '<div class="field"><label>根因结论</label><div class="code-block" style="white-space:normal">' + r.cause + "</div></div>" +
+          '<div class="field mt-16"><label>排查 / 修复建议</label><div class="code-block" style="white-space:normal">' + r.suggest.replace(/\n/g, "<br>") + "</div></div>" +
+          '<div class="field mt-16"><label>分析依据</label><div class="code-block" style="white-space:normal">' + r.evidence + "</div></div>";
+        document.getElementById("cw-defect").onclick = function () {
+          closeModal("modal-rc-view");
+          toast("已按分析结论创建缺陷草稿，可去缺陷管理确认提交", "success");
+        };
+        openModal("modal-rc-view");
+      });
+    });
+    document.querySelectorAll("[data-retry]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var r = analyses.find(function (x) { return x.id === b.dataset.retry; });
+        toast("正在重试分析「" + r.name + "」…", "info");
+        r.status = "分析中"; render();
+        setTimeout(function () {
+          r.status = "已完成"; r.conf = "83%"; r.dur = "27s";
+          r.cause = "（重试成功）优惠叠加计算顺序错误：满减先于折扣应用导致金额为负";
+          r.suggest = "1. 统一优惠计算顺序：折扣 → 满减 → 优惠券\n2. 服务端重算并校验下限 0.01 元";
+          render(); toast("分析完成 ✅", "success");
+        }, 1800);
+      });
+    });
+    document.querySelectorAll("[data-del]").forEach(function (b) {
+      b.addEventListener("click", function () {
+        var r = analyses.find(function (x) { return x.id === b.dataset.del; });
+        confirmAction({ title: "删除分析", message: "确定删除「" + r.name + "」吗？已生成的缺陷与报告不受影响。", onOk: function () {
+          analyses = analyses.filter(function (x) { return x.id !== r.id; });
+          render(); toast("分析已删除", "success");
+        }});
+      });
+    });
+  }
+  ["rc-kw", "rc-status", "rc-type"].forEach(function (id, i) {
+    document.getElementById(id).addEventListener(i === 0 ? "input" : "change", debounce(render, i === 0 ? 200 : 0));
+  });
+  document.getElementById("rc-reset").addEventListener("click", function () {
+    document.getElementById("rc-kw").value = ""; document.getElementById("rc-status").value = ""; document.getElementById("rc-type").value = "";
+    render(); toast("筛选已重置", "info");
+  });
+
+  /* ---------- AI 分析 ---------- */
+  document.getElementById("cf-go").addEventListener("click", function () {
+    var n = document.getElementById("cf-name").value.trim();
+    if (!n) return toast("请输入分析名称", "error");
+    var r = { id: "RC-" + (32 + analyses.length - 6), name: n, desc: document.getElementById("cf-desc").value || "—", type: document.getElementById("cf-type").value, status: "分析中", conf: "—", impact: "—", model: document.getElementById("cf-model").value, dur: "—", created: "刚刚", defect: document.getElementById("cf-defect").value, cause: "", suggest: "" };
+    analyses.unshift(r);
+    closeModal("modal-rc");
+    document.getElementById("cf-name").value = ""; document.getElementById("cf-desc").value = "";
+    render(); toast("AI 正在结合日志与变更记录分析根因…", "info");
+    setTimeout(function () {
+      r.status = "已完成"; r.conf = (72 + Math.floor(Math.random() * 25)) + "%"; r.dur = (18 + Math.floor(Math.random() * 25)) + "s";
+      r.impact = ["高危", "中危", "低危"][Math.floor(Math.random() * 3)];
+      r.cause = "AI 结论：根据失败日志与近期变更比对，最可能根因为配置项变更未同步至测试环境（置信度见上）";
+      r.suggest = "1. 核对测试环境配置版本\n2. 增加配置漂移检测\n3. 回归失败相关模块后复测";
+      render(); toast("根因分析完成 ✅", "success");
+    }, 2200);
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

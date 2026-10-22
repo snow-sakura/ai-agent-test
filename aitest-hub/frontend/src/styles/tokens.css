@@ -1,0 +1,34 @@
+/* ============================================================
+   AITest Hub — 全站设计系统 · 浅色拍立得风格 (Polaroid Light)
+   米白纸面 / 拍立得相框卡片 / 手账贴纸标签 / 柔和阴影
+   ============================================================ */
+:root {
+  --bg: #f6f2ea;            /* 米白纸面 */
+  --bg-soft: #efe9de;       /* 深一度的纸面 */
+  --panel: #fffdf8;         /* 相纸白 */
+  --panel-2: #faf6ee;
+  --border: #e4dccd;
+  --border-light: #d4c9b4;
+  --text: #3d3629;
+  --text-dim: #7d7462;
+  --text-faint: #a89d88;
+  --primary: #e0685a;       /* 拍立得珊瑚红 */
+  --primary-hover: #c95547;
+  --primary-soft: rgba(224, 104, 90, .12);
+  --green: #4f9e6e;
+  --green-soft: rgba(79, 158, 110, .13);
+  --orange: #d98e2b;
+  --orange-soft: rgba(217, 142, 43, .14);
+  --red: #d4574a;
+  --red-soft: rgba(212, 87, 74, .12);
+  --purple: #8a6fc0;
+  --purple-soft: rgba(138, 111, 192, .13);
+  --blue: #5a86c9;
+  --blue-soft: rgba(90, 134, 201, .13);
+  --radius: 10px;
+  --radius-lg: 14px;
+  --shadow: 0 10px 28px rgba(93, 78, 55, .14);
+  --shadow-sm: 0 3px 10px rgba(93, 78, 55, .10);
+  --font: "PingFang SC", "Microsoft YaHei", -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono: "SF Mono", "JetBrains Mono", Consolas, monospace;
+}
