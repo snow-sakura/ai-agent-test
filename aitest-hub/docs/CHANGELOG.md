@@ -18,7 +18,7 @@
 - B5：UI 提交后 `kill -9` 后端再重启 → 时间线自动转 `⚠️ 已中断` ×2、进度 `2/2（✅0 ❌2）`、按钮出现、点重试恢复执行。
 - F1 看门狗：本地 SSE 桩「回 1 块后彻底停滞」注入 → **75.03s** 精确收敛，`reasoning` 提示截断修复 + **必有 `done` 终止帧**（不留悬挂流）；连接被拒场景 5s 内返回 `error` 终止帧。
 - D1 纯静态演示（GitHub Pages 形态）本地实测：串行 3 任务 4.6s vs 付费 3 路并行 2s、并发步进器 1-8、模拟失败 → `部分失败` + 重试按钮、localStorage 记录持久化。截图 `docs/images/seq-11-demo-parallel.png`。
-- 未闭环：D5 GitHub Pages 线上地址——远端仓库 `snow-sakura/aitest-hub` 尚不存在（推送受 token 权限限制），自托管后需复验一次。详见 `docs/verification-bugs.md` BUG-07 / BUG-08。
+- D5 已闭环：项目已切换为根仓库 `snow-sakura/ai-agent-test`，GitHub Pages 源分支 `main`、源目录 `/`，根 URL `https://snow-sakura.github.io/ai-agent-test/` 自动跳转至 `aitest-hub/demo/index.html`；`aitest-hub/demo/data/seed.json` 亦可在线读取。
 
 ## 2026-09-29
 
